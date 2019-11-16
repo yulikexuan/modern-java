@@ -1,0 +1,18 @@
+These are the properties that are application-specific. The files will be located in the TecsysWeb.war/WEB-INF/classes/ApplicationSettings directory beneath the deployed environment and will be called [application].properties (e.g. meta.properties).,,,,,,
+,,,,,,
+Key,Template Value,Value Type,Description,,,
+[GENERAL],,,,,,
+general.version,,string,EliteSeries version,,,
+[DATABASE UPGRADE],,,Contains parameters used by the EliteSeries Web Components Database Upgrade Utility.,,,
+database.upgrade.xyz.step_required,major_minor_custom,integer_integer_integer,"The upgrade step that the xyz database must be at in order for the application to run.
+The xyz database may be any of meta, dms, wms, tms, or other.
+major identifies the highest level of the upgrade step, minor identifies the lower level of the upgrade step, and custom identifies the custom level of the upgrade step.",,,
+[RESOURCE],,,,,,
+general.resource.js.artifact.version,,integer.integer.integer,The JavaScript code artifact version.,,,
+general.resource.css.artifact.version,,integer.integer.integer,The CSS code artifact version.,,,
+[FACTORY TOOLKIT],,,,,,
+factory.toolkit.com.tecsys.xyz,,class name,The class name for a given key. ,,,
+[HTTP REQUEST],,,,,,
+http.request.handler.servlet_name.default,com.tecsys.sub_package.DefaultHandlerClassName,class name,The class that should handle requests when no action is specified for a given servlet.,,,
+http.request.handler.servlet_name.action,com.tecsys.sub_package.ActionHandlerClassName,class name,The class that should handle requests for the specified action for a given servlet.,,,
+http.request.error_handler.servlet_name,com.tecsys.sub_package.ErrorHandlerClassName,class name,The class that should handle errors for a given servlet.,,,

@@ -1,4 +1,4 @@
-//: com.yulikexuan.modernjava.io.FileCopy.java
+//: com.yulikexuan.modernjava.io.FileIO.java
 
 package com.yulikexuan.modernjava.io;
 
@@ -12,21 +12,25 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 
 
-public class FileCopy {
+public class FileIO {
 
-    URL getResource(String resourceName) {
+    public static FileIO newInstance() {
+        return new FileIO();
+    }
+
+    public URL getResource(String resourceName) {
         return this.getClass().getClassLoader().getResource(resourceName);
     }
 
-    String getResourcePath(String resourceName) {
+    public String getResourcePath(String resourceName) {
         return this.getResource(resourceName).getPath();
     }
 
-    File getFile(String fileName) {
+    public File getFile(String fileName) {
         return FileUtils.getFile(this.getResourcePath(fileName));
     }
 
-    Optional<String> getFileContent(File file) throws IOException {
+    public Optional<String> getFileContent(File file) throws IOException {
         return file == null ? Optional.empty() :
                 Optional.ofNullable(FileUtils.readFileToString(
                         file, Charset.defaultCharset()));

@@ -1,0 +1,971 @@
+﻿Key,Default Value,Value Type,Description
+AUTHENTICATION,,,
+authentication.authentication_method,UMS,string,The authentication system to use. This value is derived from the file Bootstrap.properties
+authentication.unprotected_url_patterns,"/rest/login,/rest/resources,/base,/script,/theme,/ws,/ums/contentSecurityPolicyParser,/ums/authenticator,/meta/wsdl,/msg/wsdl,/saml,/service,/system_resource,/user_resource,/ping.html,/index.html,/component_info.xml,/sms,/api,/help,/meta/voice",Comma delimited string values,The list of unprotected URL patterns.
+authentication.sso.excluded.hosts,{authentication.sso.excluded.hosts},string,The list of hosts excluded from SSO. This value is derived from the file Bootstrap.properties
+AUTHENTICATION JWT,,,
+authentication.jwt.ISSUER.secret,{authentication.jwt.ISSUER.secret},string,"A passphrase used to encrypt the token. We recommend that the passphrase has a minimum of 30 characters. The ISSUER must be a lowercase value and match the value specified in the JWT ""iss"" claim.  This value is derived from the file Bootstrap.properties"
+authentication.jwt.ISSUER.default_expiration_time_in_seconds,300,numeric,"The token expiry in seconds (e.g. 300).
+The ISSUER must be a lowercase value and match the value specified in the JWT ""iss"" claim. "
+AUTHENTICATION PROXY,,,
+authentication.proxy.remote_user_variable_name,{authentication.proxy.remote_user_variable_name},string,"The HTTP request header variable name that identifies the username when an SSO is enabled using a Reverse Proxy. Should be set to the value of ""http_uid"" when SiteMinder is the Reverse Proxy. Should be set to blank when using a Kerberos-based SSO. This value is derived from the file Bootstrap.properties"
+authentication.proxy.test_remote_user,,string,"Used as a test user, when testing the system without a valid proxy server."
+AUTHENTICATION SAML,,,
+authentication.saml.assertion_consumer_service_url,{portal.home_url},string,Used to specify the path to the Identity Provider metadata XML file path (e.g. <path>/idp.xml).
+authentication.saml.entity_id,{app.server.protocol}://{general.host}/{environment.name},string,The Entity Descriptor entityID as specified inside the Identity Provider metadata XML file. This value is derived from the file Bootstrap.properties
+authentication.saml.identity.provider.metadata.entity_descriptor_id,{authentication.saml.identity.provider.metadata.entity_descriptor_id},string,The Entity Descriptor ID specified in the Identity Provider Metadata. This value is derived from the file Bootstrap.properties
+authentication.saml.identity.provider.metadata.uri,{authentication.saml.identity.provider.metadata.uri},string,The file path to the Identity Provider Metadata. This value is derived from the file Bootstrap.properties
+authentication.saml.key.store,{authentication.saml.key.store},string,The location of the Java truststore. This value is derived from the file Bootstrap.properties
+authentication.saml.key.store.entry.alias,{authentication.saml.key.store.entry.alias},string,The SSL certificate alias used for SAML Assertion signing.
+authentication.saml.key.store.entry.password,{authentication.saml.key.store.entry.password},string,The SSL certificate password.
+authentication.saml.key.store.password,{authentication.saml.key.store.password},string,The Java truststore password. This value is derived from the file Bootstrap.properties
+authentication.saml.username.attribute.key,username,string,"n/a, default is username"
+BUILD COMPONENT,,,
+environment.url.build_component.url.1,{general.base_url}/component_info.xml,string,The URL to a file that identifies the build number and summary of modifications for the EliteSeries Web Components build.
+jalf.software_update_path,{deployment.directory}/{tecsysweb.war.name}/updates/JALF,string,The location of the software update patch files.
+CAPTURE USAGE STATISTICS,,,
+db.capture_usage_statistics,1,integer,"Enable/Disable database usage statistics. Based on thresholds defined by the following properties (min_seconds, min_row_count, min_lock_retry), statements are logged to help optimize the code or the SQL statements. The generated files will be stored in a subfolder of the work directory. The subfolder is db_usage_stats."
+db.capture_usage_statistics.log_stack_trace,1,integer,"Enable/Disable the stack trace logging in all database data stored in the files. For each statement logged, the stack trace that led to its execution will be logged as well. It helps find where the statement is being executed. "
+db.capture_usage_statistics.min_lock_retry,10,integer,"If a select for update was executed multiple times because of a locked row and the number of retries is higher than the number defined by the property, then it is logged. The following information is recorded: the thread name that was executing the code, the time when it was logged, the time that it took to get a response from the DB server, the number of retry attempts, a Boolean indicating if the maximum number of retries has been exceeded, the context (workflow step, if available), the statement, the parameters of the prepared statement, and the stack trace (if enabled). This is information is stored for all the users in the same file. The file is named lockretry_{date}.txt."
+db.capture_usage_statistics.min_row_count,1000,integer,"If a result set contains more rows than the number defined by the property, then it is logged. The following information is recorded: the thread name that was executing the code, the time when it was logged, the time that it took to get a response from the DB server, the number of rows returned, the memory size when it is cached, the context (workflow step, if available), the statement, the parameters of the prepared statement, and the stack trace (if enabled). This is information is stored for all the users in the same file. The file is named resultset_{date}.txt."
+db.capture_usage_statistics.min_seconds,0.1,float,"If an SQL statement (select, insert, etc.) takes more than the time defined by the property, then it is logged. The following information is recorded: the thread name that was executing the code, the time when it was logged, the time that it took to get a response from the DB server, the context (workflow step, if available), the statement, the parameters of the prepared statement, and the stack trace (if enabled). This is information is stored for all the users in the same file. The file is named statement_{date}.txt."
+db.capture_usage_statistics.pool,0,boolean,Enable/Disable logging the database connection that is requested and returned to the pool.
+db.capture_usage_statistics.pool.min_active,20,integer,The minimum active connections required before statistics are logged.
+db.capture_usage_statistics.pool.min_threshold,5000,integer,Defines how long a connection must be in use to be logged.
+db.capture_usage_statistics.transactions,0,boolean,"Captures the begin, commit, and rollback operations."
+meta.capture_usage_statistics,0,boolean,"A flag that indicates whether the usage statistics must be captured. A file will be generated for each user. They will be stored in the sub-directory meta_usage_stats in the directory specified by the property general.work.resource.dir. This property gathers the view used, the action, the workflow, and the step (if available). "
+queue.capture_usage_statistics,0,boolean,"Enable/Disable queue usage statistics. It logs every queue message consumed. The following information is recorded: the queue name, the time when the consumption process started (Start Time), the time when the consumption process ended (End Time), the total time in milliseconds that it took to consume the message (Elapsed Time), the time the iTopia® Messaging System spent retrieving and updating the queue message (Messaging System Time), the time spent by the business logic consuming the message (Message Consumption Time), the time spent accessing the database (SQL Time), the time spent in the code (Code Time), the queue message body (Message Body), and the exception is any Java exception, error, or special status is encountered that results in the queue message not being fully consumed (Exception). Please note that the sum total of Messaging System Time and Message Consumption Time should equal the Elapsed Time and that the sum total of SQL Time and Code Time should equal Elapsed Time. The files generated will be stored in a subfolder of the work directory. The subfolder is ws_usage_stats. A file is created for each queue (meta_generic, meta_xml_file_in, etc.)."
+queue.task.capture_usage_statistics,0,boolean,
+timer.capture_usage_statistics,0,boolean,Enable/Disable timer usage statistics. Logs the time to execute a timer executable. The files will be added to the timer_usage_stats folder.
+ums.capture_usage_statistics,1,boolean,"When set to 1, logs user usage (Login, Logout, Register Application, Unregister Application, Handle Session, etc.) to file."
+voice.capture_usage_statistics,0,boolean,"When set to 1, prints voice device usage statistics to file."
+web_service.capture_usage_statistics,0,boolean,"Enable/Disable Web services usage statistics. This property logs every web service executed. The following information is recorded: the endpoint and web service method used, the user name, session ID, view name, and action (if applicable), the status code returned, the total time that it took to process the request (unmarshalling and marshalling of the XML excluded) (elapsedTime), the time when the request was received, the time when the response was sent, the time spent in the database (sqlConnectionTime), and the time spent in the code (elapsedTime - SqlConnectionTime). The files generated will be stored in a subfolder of the work directory. The subfolder is ws_usage_stats. A file is created for each endpoint (MetaBaseWebService, WmsBaseWebService, etc.)."
+pubsub.capture_usage_statistics,0,boolean,"Enable/Disable the topic publisher/subscriber usage statistics. This property logs important events related to the publisher and subscribing throughout the whole process. It uses a UUID, thereby making it possible to track a single transaction from beginning to end. The following information is recorded: Current Time (the time at which this specific entry was logged), Thread ID, Thread Name, Parent Class, Child Class, Action Type (the type of operation being performed: Do, Split, Start, Stop), Elapsed Time (how long the tracked operation took to execute), Pub/Sub Name, UUID (a unique identifier to keep track of a specific transaction), Related UUID (used when one transaction is split into multiple publishes, so we can keep track of what the original UUID was). The files generated are stored in a subfolder of the work directory. The subfolder is pubsub_usage_stats."
+meta.capture.app.action,0,boolean,"Enable/Disable logging of meta actions in md_session_app_action table. Each action should have as a minimum action name, muid of the action owner, also user name, thread state, resource name, start time. If one of these is not present, the action will still be logged. There are also fields for delegate action (additional action within the main one), duration and workflow step. All existing fields of md_session_app_action in fact can be used, depending on the context in which the action is called. this is up to the user to decide how much information they want to log for certain action."
+DBTOOLS,,,
+dbtools.logs.dir,{logs.directory}/db-tools,string,The logs directory for the DB-Tools utility. This value is derived from the file Bootstrap.properties
+DEBUG,,,
+debug.dbcp.snapshot.log.name.append.date,1,boolean,"When set to 1, the date will be appended to the file name."
+debug.dbcp.snapshot.log.name,{logs.directory}/dbcp-snapshot.txt,string,
+debug.error.email.contact,{sys.admin.email},string,The email address where a user may submit an error report when the program throws an abnormal termination. Currently only supports Java exceptions. Will only work if the smtp server is set up and a contact is specified.
+debug.error.email.attachment.max-size,1000000,integer,The maximum size of the attachment in the email logged error message when debugging.
+debug.error.log.name.append.date,1,boolean,"When set, will cause a new error log file to be created for each date (the date will be appended to the value of the debug.error.log.name property to form the log's file name). This property is only taken into consideration when the debug.error.log.to.file property is enabled."
+debug.error.log.name,{logs.directory}/error.txt,file path string,A name for the error log file. This value is derived from the file Bootstrap.properties
+debug.error.log.to.file,1,boolean,"When set, all errors will be recorded in an error log file (identified by the debug.error.log.name property); otherwise, error messages will be ignored."
+debug.error.to.standard.output,0,boolean,
+debug.error.message.context.data,0,boolean,"Defines if the data context associated with an error is printed. Currently, it is only used in the queue user interface (in the Message Error part)."
+debug.error.message.context.stacktrace,0,boolean,Defines if the Java stack trace is created each time data context is transferred initially from its error source to another object that will carry it. The stack trace is only printed if the data context is printed (debug.error.message.context.data).
+debug.filename.append.date,1,boolean,"When set, will cause a new debug file to be created for each date (the date will be appended to the value of the debug.filename property to form the log's file name). This property is only taken into consideration when the debug.to.file property is enabled."
+debug.filename,{logs.directory}/debug.txt,file path string,A name for the debug log file. This value is derived from the file Bootstrap.properties
+debug.is_invalid_http_request_blocking_disabled,0,boolean,"When set to 1, will not block an invalid HTTP request."
+debug.key.xyz,0,boolean,"When set, all messages that correspond to debug key xyz will be output. This is subject to the debug.scope setting."
+debug.key.xyz-StackTrace,0,boolean,"When set, displays the current stack trace. This is subject to the debug.key.xyz setting."
+debug.log_invalid_http_method_access,1,boolean,"When set to 1, will log the invalid HTTP method access to file and will log the usage statistic tracker message as well."
+debug.memory.manager.log.name.append.date,1,boolean,"When set, will cause a new memory-manager log file to be created for each date (the date will be appended to the value of the debug.memory-manager.log.name property to form the log's file name). This property is only taken into consideration when the debug.memory-manager.log.to.file property is enabled."
+debug.memory.manager.log.name,{logs.directory}/memory-manager.txt,file path string,"A name for the memory-manager log file. It can be a relative path/filename (e.g. logs/memory-manager.txt), in which case the file would be relative to the [Destination Folder]/[Enterprise Application Name].ear folder, or it can be an absolute path/filename (e.g. C:/Tecsys/Elite_7x/eswc/logs/memory-manager.txt). The [Destination Folder] and [Enterprise Application Name] are chosen during the install."
+debug.memory.manager.log.to.file,1,boolean,"When set, all memory-manager messages will be recorded in a memory-manager log file (identified by the debug.memory-manager.log.name property); otherwise, memory-manager messages will be ignored."
+debug.scope,2,integer,"Controls whether there is any debug output.  Possible values are: 0=None (no debug printing), 1=All (print all messages), 2=Only those categories whose keys are enabled.  Debug keys are identified as properties beginning with debug.key"
+debug.show.sequence,1,boolean,"When set, outputs a numerical sequence at the beginning of each debug message."
+debug.show.thread,1,boolean,"When set, displays the current thread ID and name preceding any debug message."
+debug.show.time,1,boolean,"When set, puts the current time at the beginning of each debug message."
+debug.task.crashing.simulation,0,boolean,"When set, reads task view attributes starting with the prefix ""task.crash_"" in order to simulate business logic crashes or runtime exceptions in the sub-tasks."
+debug.to.file,1,boolean,"When set, writes debug messages to a file."
+debug.to.standard.output,0,boolean,"When set, writes debug messages to the standard output device."
+debug.unprotected.access.log.name.append.date,1,boolean,"When set, will cause a new log file to be created for each date (the date will be appended to the value of the debug.unprotected.access.log.name property to form the log's file name). This property is only taken into consideration when the debug.unprotected.access.log.to.file is enabled."
+debug.unprotected.access.log.name,{logs.directory}/unprotected-access.txt,file path string,"A name for the unprotected access log file. It can be a relative path/filename (e.g. logs/unprotected-access.txt), in which case the file would be relative to the [Destination Folder]/[Enterprise Application Name].ear folder, or it can be an absolute path/filename (e.g. C:/Tecsys/Elite_7x/eswc/logs/unprotected-access.txt). The [Destination Folder] and [Enterprise Application Name] are chosen during the install."
+debug.unprotected.access.log.to.file,1,boolean,"When set, all HTTP requests that are not valid will be recorded in a unprotected access log file (identified by the debug.unprotected.access.log.name property); otherwise, invalid HTTP requests will not be logged."
+debug.warning.developer.enable,0,boolean,
+debug.warning.log.cache.size,1000,integer,Sets the cache size of warning log.
+debug.warning.log.cache.stats,0,boolean,"When set to 1, creates a cache for the warning log."
+debug.warning.log.name.append.date,1,boolean,"When set, will cause a new warning log file to be created for each date (the date will be appended to the value of the debug.warning.log.name property to form the log's file name). This property is only taken into consideration when the debug.warning.log.to.file property is enabled."
+debug.warning.log.name,{logs.directory}/warning.txt,file path string,"A name for the warning log file. It can be a relative path/filename (e.g. logs/warning.txt), in which case the file would be relative to the [Destination Folder]/[Enterprise Application Name].ear folder, or it can be an absolute path/filename (e.g. C:/Tecsys/Elite_7x/eswc/logs/warning.txt). The [Destination Folder] and [Enterprise Application Name] are chosen during the install."
+debug.warning.log.to.file,1,boolean,"When set, all warnings will be recorded in a warning log file (identified by the debug.warning.log.name property); otherwise, warning messages will be ignored."
+debug.key.pubsub.trace,0,boolean,"Enable/Disable debugging of some core process about topic publishers/subscribers. Such processes include opening a connection with the hub, creating a topic on the hub, etc. These are operations that are not tracked in the usage statistics because they occur too early in the process."
+debug.web.service.payload.log.name.append.date,1,boolean,
+debug.web.service.payload.log.name,{logs.directory}/web-service-payload.txt,file path string,
+debug.web.service.payload.log.to.file,0,boolean,
+EXCEL WRITER,,,
+excel.writer.max.rows,60000,integer,"Currently only used by the MetadataMigrationTool and the MetaRelationshipValidator. A maximum of this many rows will be written to a single Excel workbook (from the ExcelWriter class). When the number of rows exceeds this number, an additional workbook will be created. All workbook names will end with a 2 digit counter (starting at 00). This counter will be incremented for all subsequent workbooks created."
+GENERAL,,,
+general.character.encoding,UTF-8,string,The character encoding to use for the application.
+general.class.load.method,0,"integer value from list {0,1}","Set to 1 when using Jboss; otherwise, set to 0. Controls the way in which Java classes are loaded into memory."
+general.cloud,0,boolean,
+general.corporate.user.name,system,string,Defines which user is the corporate system user. Only used for the System Views feature for now. Default: system.
+general.data.resource.dir,{data.directory},string,The directory where to drop or retrieve data files used by the import/export feature. This value is derived from the file Bootstrap.properties
+general.date.display_format,{month2}/{day2}/{year4},format mask string,"A mask that indicates how dates will be displayed to the user. Possible values are: 1={month2}/{day2}/{year4}, 2={day2}-{month2}-{year4}, 3={year4}/{month2}/{day2}"
+general.environment.support.error503,1,boolean,"This property controls whether the environment should handle the 503 errors or Apache. By default (set to 1), the environment handles the 503 errors by setting a cookie that is read by the Apache 503 page. The user is then redirected to a page in the environment that displays the appropriate message and the page automatically tries to log back in when the server is available again. Set it to 0 if you want it to just go to the Apache 503 page and do nothing else."
+general.excel.addin.version,3,integer,The version of the Excel Add In supported by this release.
+general.extensions.nocache,0,boolean,"When set to 1 (true), this property disables extension caching. This is the mechanism used to cause all extension dependents and prerequisites to be recalculated on each request. This is useful when debugging code and defining those dependencies, as the server does not need to be restarted each time the developer changes dependencies. This is likely to cause a very significant performance hit. Default is false (0). This should always be set to false (0) in QA and PROD environments."
+general.extensions.nocontextualize,0,boolean,"When set to 1 (true), this property disables contextualization logic. This is useful when testing validation logic, as fields are not disabled and values can be changed. This works with new extension API only. Default is false (0). This should always be set to false (0) in PROD environments."
+general.gs1.fnc1.conversion,/,string,Converts non-printable characters in scanned GS1 bar codes to the character specified. 
+general.gs1.user.defined.symbology.identifier,C5,string,The user-defined symbology to use for GS1-128 bar codes.
+general.http.content-security-policy.child_domains,*.google.com,string,"The valid sources for web workers and nested browsing contexts loaded using elements such as <frame> and <iframe>. For workers, non-compliant requests are treated as fatal network errors by the user agent."
+general.http.content-security-policy.connect_domains,*.sigwebtablet.com:47290 *.sigwebtablet.com:47289,string,"A directive that restricts the URLs which can be loaded using script interfaces. The APIs that are restricted are: <a> ping, Fetch, XMLHttpRequest, WebSocket, and EventSource."
+general.http.content-security-policy.enabled,1,boolean,"Content Security Policy (CSP) is a computer security standard introduced to prevent cross-site scripting (XSS), clickjacking and other code injection attacks resulting from execution of malicious content in the trusted web page context.
+When set to 1, enable Content Security Policy."
+general.http.content-security-policy.object_domains,,string,"The valid sources for the <object>, <embed>, and <applet> elements."
+general.http.content-security-policy.script_domains,,string,"The valid sources for JavaScript. This includes not only URLs loaded directly into <script> elements, but also things like inline script event handlers (onclick) and XSLT stylesheets which can trigger script execution."
+general.http.hsts-security-policy.enabled,0,boolean,"When set to 1, this property will notify the browser used to access the EliteSeries Web Components software to use the HTTP Strict Transport Security (HSTS) security policy. When the HSTS security policy is used, any communications being sent over HTTP to a specified domain and will be sent over HTTPS. It also prevents HTTPS click through prompts on browsers."
+general.http.hsts-security-policy.max_age,31536000,integer,The number of seconds for which HSTS security policy is in effect. The default value is equivalent to 365 days.
+general.http.hsts-security-policy.include_sub_domains,1,boolean,"When set to 1, this property determines whether or not subdomains (i.e. subdomain.domain.com) are also included when the HSTS security policy is used. If the property is set to 0, only the main domain (i.e. domain.com) will be included. It is strongly recommended to include subdomains when using the HSTS security policy."
+general.label.dtd,C\:\\Program Files\\Loftware Labeling\\batch\\label.dtd,string,The location of the document type definition (DTD) file used to validate the XML structure of the XML files generated for label printing.
+general.label.printer.software,loftware,string,The label printing software being used.
+general.language.1.default.locale,en_US,locale string,The locale to use when the first language is selected for customers and vendors in the EliteSeries DMS/WMS when forms are printed.
+general.language.1.locales,"en_US,en_CA,en_UK",locale string,"The locales that map to the la1 language. When determining which language-specific column to use (example: desc_1 or desc_2), the system will use this property. If the user's locale is found within the list of locales provided, then the la1 column is used (example: desc_1); otherwise, the la2 column is used (example: desc_2). Note that each locale must be specified (example: en_US, en_CA)."
+general.language.2.default.locale,fr_CA,locale string,The locale to use when forms are printed and the second language is selected for customers and vendors in the EliteSeries DMS/WMS.
+general.literal.resource.bundle,0,integer,
+general.locale.country,US,string,See note on general.locale.language.
+general.locale.language,en,string,"Together with the general.locale.country property forms the default locale. It is used in areas of the application where a user's locale is not available; for example, before the user has logged in."
+general.login.save_last_username,0,boolean,Defines whether the system remembers the last user name that logged in from that PC.
+general.memory.manager.correction.damper.ratio,0.25,float,"Each time a release is triggered, the memory manager evaluates how accurately the MemoryManaged reports the estimated memory used and adjusts its own correction factor. When set to 0, the correction factor is not adjusted. When set to 1, the correction factor is adjusted rapidly but can cause glitches as the evaluation of accuracy is not accurate in itself. Never set the value to greater than 1."
+general.memory.manager.high.usage.dump,0,boolean,Generates a heapdump when low memory is detected.
+general.memory.manager.high.usage.threshold,0.85,float,The threshold above which the memory manager will trigger the memory release.
+general.memory.manager.initial.correction.factor,1,float,The correction factor used by the memory manager to estimate the MemoryManaged usages. This typically changes on 32-bit and 64-bit platforms.
+general.memory.manager.log.detail,0,integer,MemoryManager - Log: Details the memory managed instance that is released from the manager.
+general.memory.manager.log.detail.min.threshold,0,integer,MemoryManager - Log: Only details the memory managed instance that is released if its size is greater than the defined threshold (in bytes).
+general.memory.manager.log.register,0,integer,MemoryManager - Log: Details when a memory managed instance is registered against the manager. Logged when a memory managed instance is unregistered from the manager.
+general.memory.manager.log.stacktrace,0,integer,MemoryManager - Log: The registered stack trace of the memory managed instance when memory is released from the manager. The stack trace is captured when registering the memory managed instance. This information is printed if the memory managed instance details are printed (log.detail).
+general.memory.manager.max.correction.factor,2,float,The maximum value of the correction factor.
+general.memory.manager.max.wait.time,15000,long,The maximum time (ms) the memory manager can wait for MemoryManaged to finish the release.
+general.memory.manager.min.correction.factor,0.5,float,The minimum value of the correction factor.
+general.memory.manager.notification.emails,,string,The list of email recipients that will receive a notification when a heapdump is generated.
+general.memory.manager.release.target,0.8,float,The target memory usage the memory manager is aiming at when a release is triggered.
+general.memory.manager.sleep.time.after.gc,0,long,"The time (ms) the memory manager will wait after the MemoryManager has finished releasing and calling a GC, but before reading the new memory usage from the JVM."
+general.memory.manager.sleep.time.before.gc,250,long,"The time (ms) the memory manager will wait after MemoryManager has finished the release, but before calling a GC. This is necessary to leave time for the JVM to realize that some references has been nullified."
+general.memory.manager.wait.interval,100,long,The period of time (ms) the memory manager will wait before checking if the MemoryManager has finished releasing in a for loop until the MemoryManaged actually finishes.
+general.memory.manager.warn.usage.threshold,0.7,float,The threshold above which a warning is issued informing users that the system is running with low memory. Not implemented yet.
+general.metadata.prime.view.max,30,integer,"When refreshing the metadata, iTopia® primes a subset of the metadata based on the views used most frequently . This property defines the number of frequently used views that should be primed."
+general.minimized_resources.enabled,1,boolean,
+general.multi.time_zone.support,0,boolean,"Defines whether multiple time zones are supported. When set to Yes, the user can select different time zones with system, and in the UI, all the value in the timestamp columns will be calculated by user's time zone. When set to No, the user's time zone is set to the system time zone."
+general.notifications.active,1,boolean,"Defines whether the notification mechanism is active. If inactive, neither the user, nor the server will send requests to get notifications.
+Dynamically refreshed if changed (for development purposes). The drawback is that the notification mechanism will not take into account the new values in the pages that are not refreshed."
+general.notifications.server_threshold.refresh,15000,integer,The threshold between two refreshes of cached notification lists for the server. Verified when the user makes a request.
+general.notifications.user_threshold.prompt,6000,integer,The duration that the notification prompt is displayed (= delay for a JavaScript timer).
+general.notifications.user_threshold.refresh,15000,integer,The threshold between two user requests to the server to get new notifications (= delay for a JavaScript timer).
+general.number.decimal_separator,{period},Either {period} or {comma} string,"The choice of a digit group separator, commonly the thousands separator. For example, in the number 123.456.789,000 the period is the thousands separator and the comma is the decimal separator. 
+Note: The digit group separator must be different than the decimal separator."
+general.number.digit_group_separator,{comma},Either {period} or {comma} string,"The choice of a digit group separator, commonly the thousands separator. For example, in the number 123.456.789,000 the period is the thousands separator and the comma is the decimal separator. 
+Note: The digit group separator must be different than the decimal separator."
+general.outbound.plan.serial,0,boolean,
+general.query_pending_transaction_retry.attempts,300,integer,The number of times to query database system tables to determine if there are still transactions executing.
+general.query_pending_transaction_retry.interval,5000,integer,The time in milliseconds between attempts to check if pending transactions have been completed.
+general.resource.custom.css.artifact.version,,string,
+general.results.max_num_cells,50000,integer > 0,The maximum number of cells that are permitted to be created or updated using the Edit with Excel functionality.
+general.session.cache.dir,{temp.directory}/cache,absolute directory string,The directory where to store the sessions cache. This value is derived from the file Bootstrap.properties.
+general.session.cache.max,5,integer > 0,"The maximum number of pages kept in the cache queue for every user session. When the queue is full, the oldest information is bumped off of the queue and written to a disk."
+general.show.build.number,0,boolean,"When set to 1, the build number will be displayed on the login page."
+general.show.whats.new,1,boolean,
+general.ssl.key.password,{ssl.key.password},string,The password to load the key in the keystore.
+general.ssl.key.store,{ssl.key.store},file path - relative or absolute string,The location of the Java keystore. This value is derived from the file Bootstrap.properties
+general.ssl.key.store.password,{ssl.key.store.password},string,The password to load the keystore. This value is derived from the file Bootstrap.properties
+general.sql.statement.max.size,50000,integer,Defines the maximum size allowed for SQL select statements that are dynamically generated by the system.
+general.sql.tracker.enable,1,boolean,"When set to 1, tracks SQL statements and logs them to a file."
+general.startup.load.jar,0,boolean,"When set, loads all of the JARs at startup time. Any change made during development will be reflected immediately in the local environment currently running."
+general.support.user.name,tecuser,string,The username with which Tecsys support representatives access the system.
+general.task.skip.session.attributes,"dms_trans_date,dms_curr_period,dms_curr_year",string,"When a task is scheduled to be executed, any session attributes specified on this list will be kept instead of being replaced by the values saved in the task. The list of attributes is separated by commas."
+general.tecsys.resource.base,,directory path - relative or absolute string,"Populated by the deployer script. HTML, image, JavaScript, and other resources required by the application are expected in this location."
+general.tg.show_visual,1,boolean,Controls whether or not visual information (i.e. pictures/images/text) will be displayed when the Tecsys Voice Client is used.
+general.theme,default,string,The theme that will be used before the user has logged in. Currently there is only one possible value.
+general.unfiltered.resource_extensions,css|jpg|png|gif|js|svg|pdf|html|htm|txt|jpeg|xml|dtd|xsd|zip|jar|jnlp|ico|map|xls|xlsx,list of string values separated by a pipe sign (|),
+general.user.available.theme,"default,wine",string,The list of available themes.
+general.user.name,tecsys,string,The user that represents the system. The preferences for the system user are the default (system-wide) preferences. The system user is the only user that can specify permanent criteria on a view. The system user ID is used to perform housekeeping and internal system functions.
+general.user_resource.dir,{deployment.directory}/{tecsysweb.war.name}/user_resource,file path string,The location of the user resources directory. This value is derived from the file Bootstrap.properties
+general.web.dir,{deployment.directory}/{tecsysweb.war.name},file path - relative or absolute string,This specifies the path/filename on the hard disk where the web root is. This folder can access any file available to the web layer.
+general.wf.use_forward,1,integer,
+general.work.resource.dir,{temp.directory}/work,file path string,The location of the work directory. This value is derived from the file Bootstrap.properties
+general.xsl.dir,{deployment.directory}/{tecsysweb.war.name}/xsl,file path - relative or absolute string,This specifies the path/filename on the hard disk where the XSL style sheets used by some Metadata Engine components are kept.
+JASPER REPORT,,,#N/A
+jasper.global.from.email,{mail.server.sender.jasper},string,"The property specifying the From email to use when emailing Jasper form reports. For example, if the email is system specific, the following could be used: Jasper.global.from.email.<database_name>."
+jasper.output.format,0,boolean,"Specifies if a specific printer should be used.
+Bypassing output device (1=bypass and 0=no bypass)."
+jasper.output.format.printername,,integer,"If the jasper.output.format property is set to 1, look for the printer specified by this property."
+jasper.output.max.enabled,1,boolean,"If this property is set to 1, then a limit is enforced on the possible number of pages that can be produced, thus preventing the system from running out of memory."
+jasper.output.max.wms_bol,1000,integer,The maximum number of pages of the WMS bill of lading for each system.
+jasper.output.max.wms_cpack,1000,integer,The maximum number of pages for WMS container packing lists for each system.
+jasper.output.max.wms_mpack,1000,integer,The maximum number of pages for WMS master packing lists for each system.
+jasper.output.max.wms_pick,1000,integer,The maximum number of pages for WMS picking lists for each system.
+jasper.printer.timeout,60000,integer,Ensures that the application does not get hung up in case there is a network hang up on the other end.
+jasper.report_compiled.cache,0,integer,
+jasper.test.tool.container.query.filename,mpackContainer.txt,filename string,
+jasper.test.tool.detail.comments.filename,mpackDetailComments.txt,filename string,
+jasper.test.tool.header.comments.filename,mpackHeaderComments.txt,filename string,
+jasper.test.tool.lot.query.filename,mpackLot.txt,filename string,
+jasper.test.tool.main.query.filename,mainQuery.txt,filename string,
+jasper.test.tool.main.query.url,sqlQuery,filename string,
+jasper.test.tool.query.parameter.filename,mainQueryParameter.txt,filename string,
+jasper.test.tool.serial.number.filename,mpackSerialNumber.txt,filename string,
+MESSAGING,,,#N/A
+msg.admin.email,{sys.admin.email},string,"In the database tool, when running a task (for example, Copy Data), will send an email to this value."
+msg.admin.email.interval,30,integer,The number of minutes to wait before a fatal or system error is sent to the email administrator.
+msg.admin.email.recipients,{sys.admin.email},email addresses string,A list of recipient email addresses separated by commas.
+msg.admin.email.sender,{mail.server.sender},email address string,"The system administrator’s email address. Used by the Messaging System to notify the administrator when an errant message is encountered, or when an agent terminates abnormally."
+msg.autoresume.job,1,boolean,Allows incomplete messaging jobs to be resumed on server startup. 
+msg.autostart.listener,0,boolean,Enable service listeners on server startup. Currently only used for Hl7.
+msg.autostart.queue,1,boolean,Automatically start all queue consumers on server startup. 
+msg.autostart.timer,1,boolean,Automatically start all timers on server startup. 
+msg.debug.dir,{logs.directory},diabsolute directory string,
+msg.dedicated_resources.queues,,string,"The queues defined as a dedicated resource. Multiple queues can be defined by separating them with commas.
+A queue defined as a dedicated resource has the following characteristics:
+- The number of prepared statements allowed by the database connection for the associated queue ignores the value defined for the database connection and uses a fixed high value (300).
+- The database connection used by a queue defined as a dedicated resource is not closed.
+
+If you experience connectivity issues when using a queue defined as a dedicated resource, you will need to set the following properties to the associated database connection:
+
+db.connection.abc.xyz.pool.properties.validation.query=[validation query statement]
+db.connection.abc.xyz.pool.properties.test.on.borrow=true
+
+Where abc is the application database associated with the queue being used and xyz is the connection set. Please refer to these properties for more information.
+
+For example:
+
+db.connection.wms.eliteseries_3.pool.properties.validation.query=select 1
+db.connection.wms.eliteseries_3.pool.properties.test.on.borrow=true"
+msg.file.detect.growth.interval,500,integer,"The time to wait before processing a file for queues consuming files (email, transfer, remote data, transformation, XML file in). If the size of a file is growing during that time, then it will not be processed as part of the consumption of this queue message."
+msg.queue.timeout_in_min,420,integer,The time in minutes before the session used to consume a queue messages times out.
+msg.queue_wakeup.interval-in-miliseconds,50,milliseconds integer,The time in milliseconds to wait between checks for queues to wakeup.
+msg.subscriber.meta_email_notification.class_name,com.tecsys.msg.api.sub.MsgEmailNotificationSubscriber,string,
+msg.transaction.error.threshold,1000,integer,
+msg.webservice.timeout-in-ms,0,integer,
+queue.meta_label_print.rename.delay.before.milliseconds,0,integer,"Used by LabelPrintUtil, to sprcify the delay time in millisecond before rename the label"
+queue.meta_label_print.rename.delay.error.milliseconds,50,integer,"Used by LabelPrintUtil, to sprcify the delay time in millisecond after rename-error"
+cache.queue_count.expiry_in_seconds,60,integer,"The amount of time (in seconds) that information related to the queue count will be kept in the cache. 
+This cache is primarily used in the hub monitor for performance reason.  Using this cache means that the data shown by the monitor may be as old as the expriry_in_seconds.
+For example, if the expiry is 60, that means the data being shown in the monitor may be up to 1 minute old."
+cache.message_broker_console.expiry_in_seconds,60,integer,"The amount of time (in seconds) that information related to the message broker admin console will be kept in the cache. 
+This cache is primarily used in the hub monitor for performance reason.  Using this cache means that the data shown by the monitor may be as old as the expriry_in_seconds.
+For example, if the expiry is 60, that means the data being shown in the monitor may be up to 1 minute old."
+METADATA ENGINE,,#N/A,#N/A
+meta.attachment.max.size,1000,integer,The maximum file size (in megabytes) of files that can be uploaded to an md_attachment table.
+meta.domain.clob.data_length.max,100000,integer,"The maximum data length of CLOB allowed. If the data length in domain of CLOB was set 0, then this column's data length must be less than this value."
+meta.domain.data_length.max,50000,integer,"The maximum data length allowed. All domains must have a data length value less than this value, and therefore, all values (including CLOB values) are restricted by this size. Increasing the value beyond 10,000 is strongly discouraged as it will increase demand for memory and could ultimately lead to out-of-memory issues."
+meta.encode.value.macros,1,boolean,
+meta.event.publisher.enabled,0,boolean,
+meta.expired_lock_cleanup.interval,5,integer,
+meta.generate.xml.request,1,boolean,"When set, the Metadata Engine will enable the Prepare SOAP Request action on the search page."
+meta.image.inline.size,32000,integer,
+meta.image.inline.type,"bmp,gif,jpg,jpeg,png,svg,svg+xml",string,
+meta.linking.auto.search,1,boolean,"When set, the Metadata Engine will automatically perform a search when a user links to a view."
+meta.metadata.owner,local,string,
+meta.metadata.version,9.6.0,string,
+#meta.pdq.priority.dms.inv_shp_l,0,integer,
+meta.preview_results.max_rows,12,integer,The number of records displayed when hovering over a preview link. 
+meta.results_filter.max_rows,10,integer,"The number of items in a filter. If the number of filter items is greater than this value, the system will show a More + link."
+meta.rule.cache.size,100,integer,Same as meta.view.cache.size except this refers to rules being cached.
+#meta.search.timeout.dms.ar_hist,0,integer,
+meta.table_search.max_rows,50,integer,The number of rows displayed in the table search results.
+meta.task.capture.log.system,0,boolean,"For creating boolean property of log system message.
+If it's value is 1, system messages will be logged. Otherwise, if it's value is 0, system message won't be logged."
+meta.text.render.preview.length,10,integer,The default number of words displayed when showing a preview of a text field. 
+meta.view.cache.size,2000,integer,"The number of user views cached in memory. The cache implements an LRU algorithm, ensuring the most infrequently used views are first to be replaced in the cache. This value should allow 90% of user views accessed in a single day to be cached. If too large it will consume memory unnecessarily."
+,,,
+# Regular expression pattern of criteria expressions to ignore,,,
+meta.search.criteria.ignore,^~$|^~[*]$|^~[*][*]$|^[*][*]$,string,
+meta.search.timeline.enabled.databases,"ice,ibis,mdm",string,
+METADATA VALIDATION,,,#N/A
+metadata.validation.output.directory,{temp.directory}/metadata_validation,file path string,
+meta.development.enablePrepareDeprecatedWebService,1,boolean,
+meta.development.logExtensionWarnings,1,boolean,
+META DATABASE CONNECTION,,,#N/A
+db.connection.meta.lock_retry.attempts,1000,integer > 0,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.meta.lock_retry.interval,100,milliseconds,The time in milliseconds between locked row retries.
+db.connection.meta.connection.expiration_hour,24,hours,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.meta.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.meta.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+META ENGINE,,,#N/A
+meta.extension.package.meta,com.tecsys.meta.ext,string,The root package for the database extension points.
+meta.non_conversation_mode.create.disabled.meta,,boolean,
+meta.non_conversation_mode.delete.disabled.meta,,boolean,
+meta.non_conversation_mode.update.disabled.meta,,boolean,
+meta.rules.enabled.tables,"dms~dms_queue,dms~md_mq_generic,fcst~md_mq_generic,ice,itms,mdm~package,mdm~event_log,sms~tracking_log,tms~manifest,tms~manifest_shipfile,tms~md_mq_generic,tms~shipment,tms~shipment_package,tms~ship_order,tms~ship_order_package,tms~shipment_package_event,wms~md_mq_generic,sms~consignment_billing,sms~location_item_binlabel,sms~tag_reading",string,"Lists the databases and tables for which the Transformation Rules Engine can be used. If a database is defined, the rules engine will be available for all the tables in this database."
+META ENVIRONMENT,,,#N/A
+ ,,,
+META MESSAGING,,,#N/A
+msg.queue.disabled.meta,0,boolean,A flag that indicates whether or not queues associated with the meta database are disabled (i.e. excluded from being processed).
+METAAUDIT DATABASE CONNECTION,,,#N/A
+db.connection.metaaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.metaaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.metaaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.metaaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.metaaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+METAAUDIT ENGINE,,,#N/A
+meta.extension.package.metaaudit,com.tecsys.metaaudit.ext,string,The root package for the database extension points.
+meta.non_conversation_mode.create.disabled.metaaudit,,boolean,
+meta.non_conversation_mode.delete.disabled.metaaudit,,boolean,
+meta.non_conversation_mode.update.disabled.metaaudit,,boolean,
+METAAUDIT MESSAGING,,,#N/A
+msg.queue.disabled.metaaudit,0,boolean,A flag that indicates whether or not queues associated with the meta database are disabled (i.e. excluded from being processed).
+PORTAL,,,#N/A
+portal.general.links.url,,string,
+portal.resource.preview.enable,0,boolean,Enables or disables previews on the portal.
+REFRESH AGENT,,,#N/A
+TProperties.refresh.agent,1,boolean,"When set, the application will periodically get the latest properties where permitted. The following properties are subject to being refreshed:
+debug.*
+xml.*"
+TProperties.refresh.agent.interval,10000,integer,The time in milliseconds to wait between refreshes.
+REMOTE DATA,,#VALUE!,#N/A
+remote.data.connection.timeout,30000,integer,
+remote.data.password.replacement.string,{password},string,
+remote.data.connection.enforce_valid_cert,1,boolean,
+UMS,,#VALUE!,#N/A
+ums.browser.title.format,{resourceName} - {userName} - {environment},string,"The value of this property can contain the following placeholders:
+{environment} - environment
+{userName} - user
+{resourceName} - resource
+A browser window used to access the application will have a title equal to this value, where the placeholders are substituted with their interpreted values at runtime."
+ums.browser.title.format.login,{resourceName} - {environment},string,"The value of this property can contain the following placeholders:
+{environment} - environment
+{resourceName} - resource
+A browser window used to log in to the application will have a title equal to this value, where the placeholders are substituted with their interpreted values at runtime."
+ums.expired_session_cleanup.interval,5,integer,
+ums.expired.sessions.log.file.name,{logs.directory}/expiredSessionLog.txt,string,"The path/filename on the hard disk for the expired sessions log file, which may be useful while debugging. This can be a relative path/filename (e.g. expiredSessionLog.txt), in which case the log file would need to be placed in the [Destination Folder]/[Enterprise Application Name].ear folder, or it can be an absolute path/filename (e.g. C:/Tecsys/Elite_8x/eswc/logs/expiredSessionLog.txt). The [Destination Folder] and [Enterprise Application Name] are chosen during the install."
+ums.login.confirm.confidential.lit_key,,boolean,"Ensures that users accept company confidentially rules (or other such text) on the Login page. When empty (default), no check box or message is displayed."
+ums.maintain.role.permissions.max.resources,800,integer,"The maximum number of resources that can be maintained in the role permissions page (custom action named ""Permissions"" in the Role view). If the role contains more resources than the value specified, an error message will appear preventing the user from maintaining the resources for that role."
+ums.resource.cache.size,1000,integer,The number of UMS resources cached in memory. A cached resource will be removed from the cache after it has not been accessed for 20 minutes.
+ums.session_app.keepalive.active,1,boolean,
+ums.user.email_address.default,{firstName}.{lastName}@{domainName},string,"The template to use for the user's email address when a user is created. 
+
+The following macros are supported within the template:
+
+{userName} - The user’s user name.
+{firstName} - The user’s first name.
+{firstInitial} - The first letter of the user's first name.
+{middleName} - The user’s middle name.
+{middleInitial} - The first letter of the user's middle name.
+{lastName} - The user’s last name.
+{lastInitial} - The first letter of the user's last name.
+{honor} - The user’s honor (i.e. Mr., Mrs., Miss, etc.).
+{domainName} - The general domain name used for the server.
+
+Any other text in the template is left as is.
+
+If the property is not defined, the following template will be used:
+
+{firstName}.{lastName}@{domainName}
+
+If values used in the template are changed before saving the user record, the email address is updated, unless the email address is manually overridden.
+
+Once the user record is saved, the person maintaining a user record must manually change the email address."
+UMS AUTHENTICATION LDAP,,#VALUE!,#N/A
+ldap.connection.default.current,aws,string,
+ldap.connection.default.aws.initial.context.factory,com.sun.jndi.ldap.LdapCtxFactory,string,
+ldap.connection.default.aws.provider.url,ldap://{ldap.server.name}:{ldap.server.port},string,
+ldap.connection.default.aws.base.dn,{ldap.server.base.dn},string,
+ldap.connection.default.aws.type,1,boolean,
+ldap.connection.aws.allow_update,1,boolean,
+ldap.connection.default.aws.authentication,simple,string,
+ldap.connection.default.aws.username.prefix,,string,
+ldap.connection.default.aws.username,{ldap.server.username},string,
+ldap.connection.default.aws.username.suffix,,string,
+ldap.connection.default.aws.password.encrypted,{ldap.server.password.encrypted},string,
+ldap.connection.default.aws.search.named_context,,string,
+ldap.connection.default.aws.search.lookup_attribute,cn,string,
+ldap.connection.default.aws.search.filter_object_class,user,string,
+,,,
+ldap.connection.ums.current,eliteseries,string,The set (or instance) of LDAP connectivity information to use.
+ldap.connection.ums.eliteseries.initial.context.factory,com.sun.jndi.ldap.LdapCtxFactory,string,A Java class used to help load other Java classes pertinent to communication with the LDAP server.
+ldap.connection.ums.eliteseries.provider.url,{ldap.provider.url},string,The URL to the LDAP server.
+ldap.connection.ums.eliteseries.base.dn,{ldap.base.dn},string,"If your Directory Information Tree contains a base DN, then you specify its value here. It is usually recommended to use your Inet domain for this purpose (i.e. dc=tecsys, dc=com). This property value, if specified, is prefixed with the slash (/) and then concatenated to the provider URL."
+ldap.connection.ums.eliteseries.type,{ldap.type},integer,"The LDAP server type. Currently, the only values that are supported are: 0=Generic, 1=Microsoft Active Directory"
+ldap.connection.ums.eliteseries.allow_update,{ldap.allow_update},integer,Defines whether or not iTopia can write to it.
+ldap.connection.ums.eliteseries.authentication,{ldap.authentication},string,The authentication method of the connection.
+ldap.connection.ums.eliteseries.search.filter_object_class,{ldap.search.filter_object_class},string,"The meta_ldap_user resource. The user's object class to use when performing a search operation (i.e. user for Active Directory, person for Sun Java System)."
+ldap.connection.ums.eliteseries.search.lookup_attribute,{ldap.search.lookup_attribute},string,The attribute used for looking up the user. Some directory servers such as Active Directory may use CN instead of UID.
+ldap.connection.ums.eliteseries.search.named_context,{ldap.search.named_context},string,"The meta_ldap_user resource. The named context to use when performing a search operation (i.e. ou=Tecsys Regular Users, ou=Tecsys Users)."
+ldap.connection.ums.eliteseries.username.prefix,{ldap.username.prefix},string,"The custom.username.prefix is used on LDAP Servers such as Active Directory that require that the username be prefixed by a domain when establishing a connection. For example, if you wish to connect to an Active Directory server as user peterp where the domain is TECSYS, then you need to specify TECSYS\peterp as the username when connecting. But the UMS login page will prompt for the actual username only (without the domain). The login function then uses this property value as a prefix to the actual username in order to establish an LDAP connection. Bear in mind that the \ character is the Java escape. For this reason, the character needs to be escaped. As a result, a prefix of TECSYS\ would have to be specified as TECSYS\\ with 2 slashes."
+ldap.connection.ums.eliteseries.username,{ldap.username},string,Populated by the deployer script. The username used to connect to the LDAP server.
+ldap.connection.ums.eliteseries.username.suffix,{ldap.username.suffix},string,"The custom.username.suffix is used on LDAP Servers such as Active Directory that require that the username be suffixed by some text, when establishing a connection. Bear in mind that the \ character is the Java escape. For this reason, the character needs to be escaped. As a result, a suffix of abc\123 would have to be specified as abc\\123 with 2 slashes."
+ldap.connection.ums.eliteseries.password.encrypted,{ldap.password.encrypted},string,Populated by the deployer script. The encrypted password used to connect to the LDAP server.
+UMS ENVIRONMENT,,#VALUE!,#N/A
+environment.url.general.accepted_domains,{accepted.domains},string,"The list of domains, separated by commas, that can be used when redirecting to other URLs. If left blank, all domains can be redirected."
+environment.url.general.base_url,{app.server.protocol}://{general.host}/{environment.name},string,
+environment.url.general.base_url_secured,https://{general.host}/{environment.name},string,
+environment.url.general.canonical_host,{virtual.host.name},string,"The canonical host name (machine name qualified with the domain) where the environment is installed. Will be set to the {LocalCanonicalHostName} placeholder value when the actual machine name is used, or the virtual host name when a virtual hosting strategy is used."
+environment.url.general.domain_name,{domain.name},string,
+environment.url.general.environment,{environment.name},string,
+environment.url.general.external_host,{general.canonical_host}{app.server.port},string,
+environment.url.general.help_url,{app.server.protocol}://{general.host}/{help.environment},string,
+environment.url.general.home_url,{portal.home_url},string,
+environment.url.general.host,{general.canonical_host}{app.server.port},string,The host name (canonical host qualified with the port) where the environment is installed.
+environment.url.general.local_canonical_host,{app.server.name},string,"The local canonical host name (machine name qualified with the domain) where the environment is installed. This entry should match the environment.url.general.canonical_host when the node is not deployed in a clustered environment. If the node is deployed in a clustered environment, it should be set to the {LocalCanonicalHostName} placeholder value."
+environment.url.general.login_url,{ums.base_url}/authenticator,string,
+environment.url.general.logout_mobile_redirect_url,{ums.base_url}/authenticator,string,The URL to redirect to after a mobile user logs out.
+environment.url.general.logout_redirect_url,{ums.base_url}/authenticator,string,The URL to redirect to after a desktop user logs out.
+environment.url.general.logout_url,{ums.base_url}/authenticator?actionCode=logout,string,
+environment.url.general.port,{app.server.port},string,
+environment.url.general.protocol,{app.server.protocol},string,
+environment.url.general.report_issue_url,{meta.base_url}/reportIssue,string,
+,,,
+environment.url.tecsyshelp.war.name,TecsysHelp.war,string,
+environment.url.tecsysweb.war.name,TecsysWeb.war,string,
+,,,
+environment.url.help.about_url,{help.general.engine_url}?actionCode=about,string,
+environment.url.help.contents_url,{help.engine_url},string,
+environment.url.help.copyright_notice_url,{help.engine_url}?path=meta/base/meta_copyrights.html,string,
+environment.url.help.engine_url,{general.help_url}/help/engine,string,
+environment.url.help.environment,{general.environment}_help,string,The name of the Help environment.
+environment.url.help.general.engine_url,{general.base_url}/help/engine,string,
+environment.url.help.meta_topic_url,{help.engine_url},string,
+environment.url.help.search_tips_url,,string,
+environment.url.help.system_compatibility_learn_more_ie_url,{help.engine_url}?path=meta/basics/meta_compatibility_requirements_for_internet_explorer.html,string,The compatibility requirements for IE when running Help - System Check List - Learn More in IE.
+environment.url.help.system_compatibility_learn_more_chrome_url,{help.engine_url}?path=meta/basics/meta_compatibility_requirements_for_chrome.html,string,The compatibility requirements for Chrome when running Help - System Check List - Learn More in Chrome.
+environment.url.help.system_compatibility_url,{help.general.engine_url}?actionCode=systemCompatibility,string,
+,,,
+environment.url.iguana.base_url,{iguana.base_url},string,
+,,,
+environment.url.meta.base_url,{general.base_url}/meta,string,
+environment.url.meta.engine_url,{meta.base_url}/engine,string,
+environment.url.meta.manager_url,{meta.base_url}/manager,string,
+environment.url.meta.web_service_url,{app.server.protocol}://{general.local_canonical_host}{app.server.port}/{general.environment}/ws/MetaWebService?wsdl,string,
+,,,
+environment.url.msg.base_url,{general.base_url}/msg,string,
+environment.url.msg.engine_url,{msg.base_url}/engine,string,
+environment.url.msg.web_service_url,{app.server.protocol}://{general.local_canonical_host}{app.server.port}/{general.environment}/ws/MsgWebService?wsdl,string,
+,,,
+environment.url.portal.base_url,{general.base_url}/portal,string,
+environment.url.portal.base_url_secured,{general.base_url_secured}/portal,string,
+environment.url.portal.home_url,{portal.base_url}/home,string,
+,,,
+environment.url.resource.base_url,{general.base_url},string,
+environment.url.resource.operation_url,{resource.system.base_url}/meta/_domain/operation_name,string,
+environment.url.resource.system.base_url,{resource.base_url}/system_resource,string,
+environment.url.resource.user.base_url,{resource.base_url}/user_resource,string,
+,,,
+environment.url.session_parameters_page_url,{wf.base_url}/engine?resourceName=meta_session_parameters.wf,string,The URL to the session parameters page that is displayed after the login (the parameters are retrieved from the session extensions).
+environment.url.ums.base_url,{general.base_url}/ums,string,
+environment.url.ums.base_url_secured,{general.base_url_secured}/ums,string,
+environment.url.ums.engine_url,{ums.base_url}/engine,string,
+environment.url.view.default.search.results.show_totals,0,boolean,"If this value is set to 1 as the view option default value, views will show the total number. 0 will not show the total number."
+,,,
+environment.url.wf.base_url,{general.base_url}/wf,string,
+environment.url.wf.engine_url,{wf.base_url}/engine,string,
+BI DATABASE CONNECTION,,#VALUE!,#N/A
+db.connection.bi.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.bi.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.bi.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.bi.prepared.statement.queue.size,50,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.bi.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+BI ENVIRONMENT,,#VALUE!,#N/A
+bi.service.url,{bi.service.url},string,The BI Service URL.
+bi.service.namespace,{bi.service.namespace},string,The BI Service namespace.
+bi.service.username,{bi.service.username},string,The BI Service username.
+bi.service.password.encrypted,{bi.service.password.encrypted},string,The BI Service encrypted password.
+bi.service.logon-policy,1,boolean,The BI service logon police. 1 means log on on the server side.
+environment.url.bi.engine_url,{general.base_url}/bi/engine,string,
+BMS DATABASE CONNECTION,,#VALUE!,#N/A
+db.connection.bms.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.bms.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.bms.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.bms.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.bms.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+BMS ENGINE,,,
+meta.extension.package.bms,com.tecsys.bms.ext,string,The root package for the database extension points.
+meta.non_conversation_mode.create.disabled.bms,,boolean,
+meta.non_conversation_mode.delete.disabled.bms,,boolean,
+meta.non_conversation_mode.update.disabled.bms,,boolean,
+BMS ENVIRONMENT,,,
+ ,,,
+BMS INTERFACE,,,
+,,,
+BMS MESSAGING,,,
+msg.queue.disabled.bms,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+BMS XML,,,
+,,,
+BMSAUDIT DATABASE CONNECTION,,,
+db.connection.bmsaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.bmsaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.bmsaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.bmsaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.bmsaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+BMSAUDIT ENGINE,,,
+meta.extension.package.bmsaudit,com.tecsys.bmsaudit.ext,string,
+meta.non_conversation_mode.create.disabled.bmsaudit,,boolean,
+meta.non_conversation_mode.delete.disabled.bmsaudit,,boolean,
+meta.non_conversation_mode.update.disabled.bmsaudit,,boolean,
+BMSAUDIT MESSAGING,,,
+msg.queue.disabled.bmsaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+DMS DATABASE CONNECTION,,,
+db.connection.dms.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.dms.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.dms.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.dms.prepared.statement.queue.size,75,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.dms.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+DMS ENGINE,,,
+meta.extension.package.dms,com.tecsys.dms.ext,string,
+meta.non_conversation_mode.create.disabled.dms,,boolean,
+meta.non_conversation_mode.delete.disabled.dms,,boolean,
+meta.non_conversation_mode.update.disabled.dms,,boolean,
+DMS ENVIRONMENT,,,
+dms.domain.cc_expiry_date.date.display_format,{month2}/{year4},string,
+DMS MESSAGING,,,
+msg.queue.disabled.dms,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+environment.url.dms.adp.interface.url,http://{dms.adp.interface.host}/twe/services/,string,The URL to use when making SOAP calls to the ADP Taxware Enterprise software.
+dms.adp.interface.username,{dms.adp.interface.username},string,The user name to use to access the ADP Taxware Enterprise software.
+dms.adp.interface.password.encrypted,{dms.adp.interface.password.encrypted},string,The encrypted password that is used to access the ADP Taxware Enterprise software.
+dms.adp.interface.connect.timeout,60000,integer,"The number of milliseconds to wait for a connection to the ADP Taxware Enterprise software to be established. If a connection is not established within this period of time, the system will issue an error message. Set this property to 0 to make the system wait forever for a connection to be established."
+dms.adp.interface.georequest,TaxUtilityManagerService,string,The web service to use to make a Geo code request to the ADP Taxware Enterprise software.
+dms.adp.interface.read.timeout,120000,integer,"The number of milliseconds to wait to receive a response from the ADP Taxware Enterprise software after a connection has been established. If a response is not received within this period of time, the system will issue an error message. Set this property to 0 to make the system wait forever to receive a response."
+dms.adp.interface.taxrequest,TaxCalculationManagerService,string,The web service to use to make a Tax request to the ADP Taxware Enterprise software.
+DMS TRACKABOUT INTERFACE,,,
+environment.url.trackabout.base.url,https://{dms.trackabout.portal}.trackabout.com,string,The Base URL to use to access the TrackAbout system.
+environment.url.trackabout.customer.url,{dms.trackabout.base.url}/customer,string,The URL to use when performing customer-based queries into TrackAbout (i.e. Asset Balance and Asset List).
+environment.url.trackabout.rentalinvoice.url,{dms.trackabout.base.url}/rentalinvoice,string,The URL to use when performing rental invoice queries into TrackAbout.
+dms.trackabout.interface.inbound_url.rental_invoices,https://{dms.trackabout.portal}.trackabout.com/ws/EliteSeries/RentalInvoices.asmx?v3&gz,string,"The URL to use when downloading rental invoice information from the TrackAbout system. Normally, the value should not be changed."
+dms.trackabout.interface.inbound_url.asset_balances,https://{dms.trackabout.portal}.trackabout.com/ws/EliteSeries/AssetBalances.asmx?v3.1&gz,string,"The URL to use when downloading rental invoice information from the TrackAbout system. Normally, the value should not be changed."
+dms.trackabout.interface.inbound_argument,argument1=abc,string,"An argument required by the TrackAbout system in order to transfer. Normally, the value should not be changed."
+dms.trackabout.interface.outbound_url,https://{dms.trackabout.portal}.trackabout.com/ws/EliteSeries.asmx,string,"The URL to use when uploading data from the TrackAbout system. Normally, the value should not be changed."
+dms.trackabout.interface.username,{dms.trackabout.interface.username},string,The user name that is used to log in to the TrackAbout system when data is transferred between the TrackAbout and EliteSeries systems.
+dms.trackabout.interface.password.encrypted,{dms.trackabout.interface.password.encrypted},string,The encrypted password that is used to log in to the TrackAbout system when data is transferred between the TrackAbout and EliteSeries systems.
+dms.trackabout.interface.enforce_valid_cert,0,boolean,"When set, a valid digital certificate must be added to the Tecsys keystore file (as defined in the general.ssl.trust.store property) in order to transfer data between the EliteSeries and TrackAbout systems."
+DMS FCST INTERFACE,,,
+dms.fcst.interface.classname,com.tecsys.dms.api.fcst.DmsFcstInterfaceImpl,string,
+dms.fcst.interface.external_system_name,DMS-FCST,string,
+DMS RMS INTERFACE,,,
+dms.rms.interface.classname,com.tecsys.dms.api.rms.DmsRmsInterfaceImpl,string,Required to initiate the DmsRmsInterface in order to pass data from DMS to RMS.
+dms.rms.interface.external_system_name,DMS-RMS,string,Required to check country code and state/province code in md_extsys_country and md_extsys_state_prov tables.
+DMS WMS INTERFACE,,,
+dms.wms.interface.classname,com.tecsys.dms.api.wms.DmsWmsInterfaceImpl,string,
+DMS EXTERNAL SYSTEM INTEGRATIONS,,,
+DMS STAGING UTILITY,,,
+DMSAUDIT DATABASE CONNECTION,,,
+db.connection.dmsaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.dmsaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.dmsaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.dmsaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.dmsaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+DMSAUDIT ENGINE,,,
+meta.extension.package.dmsaudit,com.tecsys.dmsaudit.ext,,
+meta.non_conversation_mode.create.disabled.dmsaudit,,,
+meta.non_conversation_mode.delete.disabled.dmsaudit,,,
+meta.non_conversation_mode.update.disabled.dmsaudit,,,
+DMSAUDIT MESSAGING,,,
+msg.queue.disabled.dmsaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+FCST DATABASE CONNECTION,,,
+db.connection.fcst.lock_retry.attempts,200,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.fcst.lock_retry.interval,250,integer,The time in milliseconds between locked row retries.
+db.connection.fcst.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.fcst.prepared.statement.queue.size,50,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.fcst.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+FCST ENGINE,,,
+meta.extension.package.fcst,com.tecsys.fcst.ext,,
+meta.non_conversation_mode.create.disabled.fcst,,,
+meta.non_conversation_mode.delete.disabled.fcst,,,
+meta.non_conversation_mode.update.disabled.fcst,,,
+FCST ENVIRONMENT,,,
+fcst.signal.schedulers,1,,
+fcst.task.wait.interval,250,,
+fcst.task.wait.max.time,2000,,
+fcst.task.wait.auto.refresh,2,,
+FCST MESSAGING,,,
+msg.queue.disabled.fcst,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+FCST XML,,,
+ ,,,
+FCSTAUDIT DATABASE CONNECTION,,,
+db.connection.fcstaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.fcstaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.fcstaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.fcstaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.fcstaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+FCSTAUDIT ENGINE,,,
+meta.extension.package.fcstaudit,com.tecsys.fcstaudit.ext,,
+meta.non_conversation_mode.create.disabled.fcstaudit,,,
+meta.non_conversation_mode.delete.disabled.fcstaudit,,,
+meta.non_conversation_mode.update.disabled.fcstaudit,,,
+FCSTAUDIT MESSAGING,,,
+msg.queue.disabled.fcstaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+GLOBAL DATABASE CONNECTION,,,
+db.connection.global.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.global.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.global.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.global.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.global.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+GLOBAL ENGINE,,,
+meta.extension.package.global,com.tecsys.global.ext,,
+meta.non_conversation_mode.create.disabled.global,,,
+meta.non_conversation_mode.delete.disabled.global,,,
+meta.non_conversation_mode.update.disabled.global,,,
+GLOBAL ENVIRONMENT,,,
+global.domain.cc_expiry_date.date.display_format,{month2}/{year4},,
+global.signal.schedulers,1,,
+global.task.wait.interval,250,,
+global.task.wait.max.time,2000,,
+global.task.wait.auto.refresh,2,,
+GLOBAL INTERFACE,,,
+ ,,,
+GLOBAL MESSAGING,,,
+msg.queue.disabled.global,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+GLOBAL XML,,,
+ ,,,
+IBIS DATABASE CONNECTION,,,
+db.connection.ibis.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.ibis.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.ibis.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.ibis.prepared.statement.queue.size,50,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.ibis.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+IBIS ENGINE,,,
+meta.extension.package.ibis,com.tecsys.ibis.ext,,
+meta.non_conversation_mode.create.disabled.ibis,,boolean,
+meta.non_conversation_mode.delete.disabled.ibis,,boolean,
+meta.non_conversation_mode.update.disabled.ibis,,boolean,
+IBIS ENVIRONMENT,,,
+ibis.prolen,21,integer,Product Code Length 
+ibis.cuslen,7,integer,Customer Code Length
+ibis.glalen,8,integer,G/L Account Code Length
+ibis.clrlen,6,integer,Color Code Length
+ibis.salreplen,{ibis.salreplen},integer,Sales Representative Code Length
+ibis.pvx.url,“tecpvx” + <<PFE Version>> + <<Client Code>> + <<Instance>>,string,Windows Registry Entry With Required Arguments 
+IBIS MESSAGING,,,
+msg.queue.disabled.ibis,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+IBISAUDIT DATABASE CONNECTION,,,
+db.connection.ibisaudit.lock_retry.attempts,1000,integer,The number of times the application will rexecute an SQL statement when it encounters a locked row.
+db.connection.ibisaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.ibisaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.ibisaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.ibisaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+IBISAUDIT ENGINE,,,
+meta.extension.package.ibisaudit,com.tecsys.ibisaudit.ext,,
+meta.non_conversation_mode.create.disabled.ibisaudit,,,
+meta.non_conversation_mode.delete.disabled.ibisaudit,,,
+meta.non_conversation_mode.update.disabled.ibisaudit,,,
+IBISAUDIT MESSAGING,,,
+msg.queue.disabled.ibisaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+ICE DATABASE CONNECTION,,,
+db.connection.ice.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.ice.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.ice.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.ice.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.ice.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+ICE ENGINE,,,
+meta.extension.package.ice,com.tecsys.ice.ext,,
+meta.non_conversation_mode.create.disabled.ice,,,
+meta.non_conversation_mode.delete.disabled.ice,,,
+meta.non_conversation_mode.update.disabled.ice,,,
+ICE ENVIRONMENT,,,
+ ,,,
+ICE MESSAGING,,,
+msg.queue.disabled.ice,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+ICE XML,,,
+ ,,,
+ICEAUDIT DATABASE CONNECTION,,,
+db.connection.iceaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.iceaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.iceaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.iceaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.iceaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,
+ICEAUDIT ENGINE,,,
+meta.extension.package.iceaudit,com.tecsys.iceaudit.ext,,
+meta.non_conversation_mode.create.disabled.iceaudit,,,
+meta.non_conversation_mode.delete.disabled.iceaudit,,,
+meta.non_conversation_mode.update.disabled.iceaudit,,,
+ICEAUDIT MESSAGING,,,
+msg.queue.disabled.iceaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+ICEVALID DATABASE CONNECTION,,,
+db.connection.icevalid.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.icevalid.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.icevalid.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.icevalid.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.icevalid.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+ICEVALID ENGINE,,,
+meta.extension.package.icevalid,com.tecsys.icevalid.ext,,
+meta.non_conversation_mode.create.disabled.icevalid,,,
+meta.non_conversation_mode.delete.disabled.icevalid,,,
+meta.non_conversation_mode.update.disabled.icevalid,,,
+ICEVALID ENVIRONMENT,,,
+ ,,,
+ICEVALID MESSAGING,,,
+msg.queue.disabled.icevalid,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+ICEVALID XML,,,
+ ,,,
+ITMS DATABASE CONNECTION,,,
+db.connection.itms.lock_retry.attempts,200,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.itms.lock_retry.interval,250,integer,The time in milliseconds between locked row retries.
+db.connection.itms.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.itms.prepared.statement.queue.size,50,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.itms.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+ITMS ENGINE,,,
+meta.extension.package.itms,com.tecsys.itms.ext,,
+meta.non_conversation_mode.create.disabled.itms,,,
+meta.non_conversation_mode.delete.disabled.itms,,,
+meta.non_conversation_mode.update.disabled.itms,,,
+ITMS ENVIRONMENT,,,
+environment.url.itms.resource.interface.url,,,
+environment.url.itms.self_link_url,,,
+environment.url.targetprocess.interface.host,,,
+environment.url.targetprocess.interface.rest_api_url,,,
+itms.resource.interface.login,,,
+itms.resource.interface.password.encrypted,,,
+itms.signal.schedulers,1,,
+itms.targetprocess.interface.rest_api.access_token,,,
+itms.targetprocess.interface.active,0,,
+itms.task.wait.auto.refresh,2,,
+itms.task.wait.interval,250,,
+itms.task.wait.max.time,2000,,
+itms.task.wait.auto.refresh,2,,
+ITMS MESSAGING,,,
+msg.queue.disabled.itms,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+ITMS XML,,,
+ ,,,
+ITMSAUDIT DATABASE CONNECTION,,,
+db.connection.itmsaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.itmsaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.itmsaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.itmsaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.itmsaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+ITMSAUDIT ENGINE,,,
+meta.extension.package.itmsaudit,com.tecsys.itmsaudit.ext,,
+meta.non_conversation_mode.create.disabled.itmsaudit,,,
+meta.non_conversation_mode.delete.disabled.itmsaudit,,,
+meta.non_conversation_mode.update.disabled.itmsaudit,,,
+ITMSAUDIT MESSAGING,,,
+msg.queue.disabled.itmsaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+IWMS DATABASE CONNECTION,,,
+db.connection.iwms.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.iwms.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.iwms.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.iwms.prepared.statement.queue.size,50,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.iwms.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+IWMS ENGINE,,,
+meta.extension.package.iwms,com.tecsys.iwms.ext,,
+meta.non_conversation_mode.create.disabled.iwms,,,
+meta.non_conversation_mode.delete.disabled.iwms,,,
+meta.non_conversation_mode.update.disabled.iwms,,,
+IWMS ENVIRONMENT,,,
+ ,,,
+IWMS MESSAGING,,,
+msg.queue.disabled.iwms,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+IWMS XML,,,
+,,,
+MDM DATABASE CONNECTION,,,
+db.connection.mdm.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.mdm.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.mdm.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.mdm.prepared.statement.queue.size,50,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.mdm.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+MDM ENGINE,,,
+meta.extension.package.mdm,com.tecsys.mdm.ext,,
+meta.non_conversation_mode.create.disabled.mdm,,,
+meta.non_conversation_mode.delete.disabled.mdm,,,
+meta.non_conversation_mode.update.disabled.mdm,,,
+mdm.load_vehicle.find_packages,0,,"The Show Packages to be Loaded action is only available for Windows CE and is available from the More Actions menu when this value set to 1. When this action is selected, a list of packages available to be loaded on the vehicle displays before the Load Vehicle summary screen opens (These packages are not required to be loaded on the vehicle.)."
+MDM MESSAGING,,,
+msg.queue.disabled.mdm,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+MDMAUDIT DATABASE CONNECTION,,,
+db.connection.mdmaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.mdmaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.mdmaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.mdmaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.mdmaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+MDMAUDIT ENGINE,,,
+meta.extension.package.mdmaudit,com.tecsys.mdmaudit.ext,,
+meta.non_conversation_mode.create.disabled.mdmaudit,,,
+meta.non_conversation_mode.delete.disabled.mdmaudit,,,
+meta.non_conversation_mode.update.disabled.mdmaudit,,,
+MDMAUDIT MESSAGING,,,
+msg.queue.disabled.mdmaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+RMS DATABASE CONNECTION,,,
+db.connection.rms.lock_retry.attempts,200,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.rms.lock_retry.interval,250,integer,The time in milliseconds between locked row retries.
+db.connection.rms.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.rms.prepared.statement.queue.size,50,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.rms.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+RMS ENGINE,,,
+meta.extension.package.rms,com.tecsys.rms.ext,,
+meta.non_conversation_mode.create.disabled.rms,,,
+meta.non_conversation_mode.delete.disabled.rms,,,
+meta.non_conversation_mode.update.disabled.rms,,,
+RMS ENVIRONMENT,,,
+rms.signal.schedulers,1,,
+rms.task.wait.interval,250,,
+rms.task.wait.max.time,2000,,
+rms.task.wait.auto.refresh,2,,
+RMS MESSAGING,,,
+msg.queue.disabled.rms,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+RMS XML,,,
+ ,,,
+RMSAUDIT DATABASE CONNECTION,,,
+db.connection.rmsaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.rmsaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.rmsaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.rmsaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.rmsaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+RMSAUDIT ENGINE,,,
+meta.extension.package.rmsaudit,com.tecsys.rmsaudit.ext,,
+meta.non_conversation_mode.create.disabled.rmsaudit,,,
+meta.non_conversation_mode.delete.disabled.rmsaudit,,,
+meta.non_conversation_mode.update.disabled.rmsaudit,,,
+RMSAUDIT MESSAGING,,,
+msg.queue.disabled.rmsaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+SMS DATABASE CONNECTION,,,
+db.connection.sms.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.sms.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.sms.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.sms.prepared.statement.queue.size,50,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.sms.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+SMS ENGINE,,,
+meta.extension.package.sms,com.tecsys.sms.ext,,
+meta.non_conversation_mode.create.disabled.sms,,,
+meta.non_conversation_mode.delete.disabled.sms,,,
+meta.non_conversation_mode.update.disabled.sms,,,
+SMS ENVIRONMENT,,,
+,,,
+SMS MESSAGING,,,
+msg.queue.disabled.sms,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+SMS CABINETRY,,,
+environment.url.sms.tecsysCloud.cabinets.base.url,{sms.tecsysCloud.cabinets.protocol}://{sms.tecsysCloud.cabinets.host}/cabinetry,string,
+environment.url.sms.tecsysCloud.cabinets.service.name,execute-api,string,
+environment.url.sms.tecsysCloud.cabinets.region,{sms.tecsysCloud.cabinets.region},string,
+environment.url.sms.tecsysCloud.cabinets.endpoint.tenant,/tenant,string,
+environment.url.sms.tecsysCloud.cabinets.endpoint.device,/cabinet,string,
+environment.url.sms.tecsysCloud.cabinets.endpoint.type,/cabinettype,string,
+environment.url.sms.tecsysCloud.cabinets.endpoint.accessPass,/cabinet/accesspass/{accessPassId},string,
+environment.url.sms.tecsysCloud.cabinets.endpoint.accessControl,/cabinet/{cabinetId}/accesscontrol,string,
+environment.url.sms.tecsysCloud.cabinets.endpoint.inventory,/cabinet/{cabinetId}/inventory,string,
+sms.tecsysCloud.cabinets.access.key,{sms.tecsysCloud.cabinets.access.key},string,
+sms.tecsysCloud.cabinets.secret.key.encrypted,{sms.tecsysCloud.cabinets.secret.key.encrypted},string,
+SMS SMART PANEL,,,
+environment.url.sms.smartPanelProxy.led.url,{sms.smartPanel.proxy.protocol}://{sms.smartPanel.proxy.host}:{sms.smartPanel.proxy.port}/api/geniiboard/v1/{serialNumber}/led,string,The URL of the smartpanel LED (Light Emitting Diode) status endpoint. The SMS smartpanel port must be unique for each environment.
+environment.url.sms.smartPanelProxy.ccPutAway.url,{sms.smartPanel.proxy.protocol}://{sms.smartPanel.proxy.host}:{sms.smartPanel.proxy.port}/api/geniiboard/v1/{serialNumber}/ccPutAway,string,The URL of the smartpanel tracked item putaway endpoint. The SMS smartpanel port must be unique for each environment.
+environment.url.sms.smartPanelProxy.confirmGraceExpiry.url,{sms.smartPanel.proxy.protocol}://{sms.smartPanel.proxy.host}:{sms.smartPanel.proxy.port}/api/geniiboard/v1/confirmGraceExpiry,string,The URL of the smartpanel tag removal grace expiry confirmation endpoint. The SMS smartpanel port must be unique for each environment.
+environment.url.sms.smartPanelProxy.tagInventory.url,{sms.smartPanel.proxy.protocol}://{sms.smartPanel.proxy.host}:{sms.smartPanel.proxy.port}/api/geniiboard/v1/tagInventory,string,The URL of the smartpanel tag inventory endpoint. The SMS smartpanel port must be unique for each environment.
+environment.url.sms.printRFIDService.url,{sms.printRFIDService.protocol}://{sms.printRFIDService.host}:{sms.printRFIDService.port}/print,string,The URL of SMS RFID Printing Service endpoint.
+environment.url.sms.queueService.url,{sms.queueService.protocol}://{sms.queueService.host}:{sms.queueService.port}/api/queue/,string,"The URL of the smartpanel™ Expiring Queue service endpoint. The SMS queue service port must be unique for each environment.
+
+Note: In previous versions, the port number to use was defaulted to 1340."
+environment.url.sms.smartPanel.language,en_US,string,The language to use when interfacing with smartpanel devices.
+environment.url.sms.smartPanel.lateReplenishmentFeature,false,boolean,This indicates whether or not the smartpanel late replenishment feature is enabled.
+environment.url.sms.tagManagementService.url,{app.server.protocol}://{sms.smartpanel.tag.management.service.host}{app.server.port}/{environment.name}/api/tagManagementService/v1/,string,The URL of the EliteSeries tag inventory endpoint.
+environment.url.sms.tagManagementService.fullInventory.interval,4,integer,It's the interval in hours after which the system will process the full tag inventory contained in the next event coming from the smartpanel even if said event indicates to the system to only process the added/removed tags
+sms.printRFIDService.interval,1000,integer,The delay to use when printing labels from SMS to a Datamax RFID printer.
+sms.rfid.batch.re-print.limit,4,integer,
+sms.rfid.label.re-print.limit,1,integer,
+SMS XML,,,
+ ,,,
+SMSAUDIT DATABASE CONNECTION,,,
+db.connection.smsaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.smsaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.smsaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.smsaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.smsaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+SMSAUDIT ENGINE,,,
+meta.extension.package.smsaudit,com.tecsys.smsaudit.ext,,
+meta.non_conversation_mode.create.disabled.smsaudit,,,
+meta.non_conversation_mode.delete.disabled.smsaudit,,,
+meta.non_conversation_mode.update.disabled.smsaudit,,,
+SMSAUDIT MESSAGING,,,
+msg.queue.disabled.smsaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+TECSYS_ADMIN DATABASE CONNECTION,,,
+db.connection.tecsys_admin.lock_retry.attempts,200,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.tecsys_admin.lock_retry.interval,250,integer,The time in milliseconds between locked row retries.
+db.connection.tecsys_admin.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.tecsys_admin.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.tecsys_admin.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+TMS DATABASE CONNECTION,,,
+db.connection.tms.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.tms.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.tms.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.tms.prepared.statement.queue.size,50,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.tms.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,
+TMS ENGINE,,,
+meta.extension.package.tms,com.tecsys.tms.ext,,
+meta.non_conversation_mode.create.disabled.tms,,,
+meta.non_conversation_mode.delete.disabled.tms,,,
+meta.non_conversation_mode.update.disabled.tms,,,
+TMS CONNECTSHIP,,,
+environment.url.tms.connectship.interface.url,{app.server.protocol}://{tms.connectship.interface.host}/progistics/XML_Processor/Server/XMLProcDLL.asp,string,The URL used by TMS software to access the ConnectShip Progistics interface.
+tms.connectship.interface.username,{tms.connectship.interface.username},string,The user name which accesses the ConnectShip interface.
+tms.connectship.interface.password.encrypted,{tms.connectship.interface.password.encrypted},string,The encrypted password to use to access the ConnectShip Interface.
+tms.connectship.interface.connect.timeout,60000,long,"The time (in milliseconds) to wait until a connection to the ConnectShip software is established. If a connection is not established within this period of time, the system will issue an error message. Set this property to 0 to make the system wait forever until a connection is established."
+tms.connectship.interface.read.timeout,600000,long,"The time (in milliseconds) to wait until a response is received from the ConnectShip software after a connection has been established. If a response is not received within this period of time, the system will issue an error message. Set this property to 0 to make the system wait forever until a response is received."
+#tms.connectship.Zebra.ZebraZ4MPlus.DARKNESS,10,,
+#tms.connectship.Zebra.ZebraZ4MPlus.HORIZONTAL_ADJUSTMENT,0,,
+#tms.connectship.Zebra.ZebraZ4MPlus.PRINT_SPEED,10,,
+#tms.connectship.Zebra.ZebraZ4MPlus.RESOLUTION,203,,
+#tms.connectship.Zebra.ZebraZ4MPlus.SLEW_SPEED,10,,
+#tms.connectship.Zebra.ZebraZ4MPlus.VERTICAL_ADJUSTMENT,0,,
+,,,
+tms.carrier.manifest.class.TANDATA_MISC.ATS,com.tecsys.tms.api.cmd.TmsAtsTransmitManifest,string,
+TMS FSMS ENVIRONMENT,,,
+tms.fsms.carrier.module.host,{tms.fsms.carrier.module.host},string,The host to connect to when using the FedEx Ship Manager Server® (FSMS) Interface.
+tms.fsms.carrier.module.port,{tms.fsms.carrier.module.port},integer,The port to connect to when using the FedEx Ship Manager Server® (FSMS) Interface. The default port is 2000.
+tms.fsms.carrier.module.product.name,QJEC5,string,0
+tms.fsms.carrier.module.product.version,5642,integer,0
+tms.fsms.carrier.module.read.timeout,120000,long,
+,,,
+environment.url.tms.fsms.carrier.module.label_output_url,http://localhost.domain.com/fsmsImages/,string,
+TMS FILE TRANSFER CONNECTION,,,
+ftp.connection.SITE_NAME.server,,string,
+ftp.connection.SITE_NAME.port,,integer,
+ftp.connection.SITE_NAME.username,,string,
+ftp.connection.SITE_NAME.password.encrypted,,string,
+TMS MESSAGING,,,
+msg.queue.disabled.tms,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+TMS REMOTE DATA LOGICAL SITES,,,
+remote.data.SITE_NAME.soapaction,,string,
+remote.data.SITE_NAME.contenttype,text/xml; charset=utf-8,string,
+remote.data.SITE_NAME.password.encrypted,,string,
+remote.data.SITE_NAME.http.username,,string,
+remote.data.SITE_NAME.http.password.encrypted,,string,
+remote.data.SITE_NAME.ssl.trust.password,,string,
+remote.data.SITE_NAME.ssl.trust.store,,string,
+remote.data.SITE_NAME.ssl.key.password,,string,
+remote.data.SITE_NAME.ssl.key.store.password,,string,
+remote.data.SITE_NAME.ssl.key.store,,string,
+TMS SITE CONFIGURATION,,,
+ ,,,
+TMS XML,,,
+ ,,,
+TMSAUDIT DATABASE CONNECTION,,,
+db.connection.tmsaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.tmsaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.tmsaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.tmsaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.tmsaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+TMSAUDIT ENGINE,,,
+meta.extension.package.tmsaudit,com.tecsys.tmsaudit.ext,,
+meta.non_conversation_mode.create.disabled.tmsaudit,,,
+meta.non_conversation_mode.delete.disabled.tmsaudit,,,
+meta.non_conversation_mode.update.disabled.tmsaudit,,,
+TMSAUDIT MESSAGING,,,
+msg.queue.disabled.tmsaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+WMS DATABASE CONNECTION,,,
+db.connection.wms.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.wms.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.wms.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.wms.prepared.statement.queue.size,50,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.wms.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+WMS ENGINE,,,
+meta.extension.package.wms,com.tecsys.wms.ext,,
+meta.non_conversation_mode.create.disabled.wms,,,
+meta.non_conversation_mode.delete.disabled.wms,,,
+meta.non_conversation_mode.update.disabled.wms,,,
+WMS ENVIRONMENT,,,
+wms.reset.transaction.tables.enabled,0,integer,"Controls the ability to reset (clear) all WMS transaction tables. When the property is set to 1, this feature is available using the Reset Transaction Tables action in the Warehouse Options resource or the Transaction Table Reset task."
+wms.task.wait.interval,250,,
+wms.task.wait.max.time,2000,,
+wms.task.wait.auto.refresh,2,,
+WMS MESSAGING,,,
+msg.queue.disabled.wms,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+WMS MDM INTERFACE,,,
+wms.mdm.interface.file_out.method,0,integer,"Indicates whether the integration between WMS and DM is done through a file out or directly through the database. The file out method should be used when WMS and DM are running in different versions/servers. The default integration process uses a database connection, assuming both applications are running in the same version/server."
+WMS EPCIS CAPTURE INTERFACE,,,
+environment.url.wms.epcis.get.item.status.url,https://{wms.epcis.interface.host}{wms.epcis.interface.port}/trackntraceserver/services/GetItemStatusService,string,
+environment.url.wms.epcis.epcglobalepcisservice.url,https://{wms.epcis.interface.host}{wms.epcis.interface.port}/trackntraceserver/services/EPCglobalEPCISService,string,
+environment.url.wms.epcis.capture.interface.url,https://{wms.epcis.interface.host}{wms.epcis.interface.port}/trackntraceserver/capture,string,
+wms.epcis.interface.user,{wms.epcis.interface.user},string,
+wms.epcis.interface.password.encrypted,{wms.epcis.interface.password.encrypted},string,
+WMS XML,,,
+,,,
+WMSAUDIT DATABASE CONNECTION,,,
+db.connection.wmsaudit.lock_retry.attempts,1000,integer,The number of times the application will reexecute an SQL statement when it encounters a locked row.
+db.connection.wmsaudit.lock_retry.interval,100,integer,The time in milliseconds between locked row retries.
+db.connection.wmsaudit.connection.expiration_hour,24,integer,The interval at which the framework will flush its prepared statements and close its connection.
+db.connection.wmsaudit.prepared.statement.queue.size,25,integer,"The maximum size of the prepared statement queue. Prepared statements are cached using the least recently used (LRU) algorithm. For example, if the queue size is set to 1000 and there currently are 1000 prepared statements cached internally, then the least recently used one will be removed from the list in order to make space for the new one."
+db.connection.wmsaudit.management.class_name,com.tecsys.base.dbupgr.DatabaseManagementImpl,string,The database management class name.
+WMSAUDIT ENGINE,,,
+meta.extension.package.wmsaudit,com.tecsys.wmsaudit.ext,,
+meta.non_conversation_mode.create.disabled.wmsaudit,,,
+meta.non_conversation_mode.delete.disabled.wmsaudit,,,
+meta.non_conversation_mode.update.disabled.wmsaudit,,,
+WMSAUDIT MESSAGING,,,
+msg.queue.disabled.wmsaudit,0,boolean,A flag that indicates whether or not queues associated with this database are disabled (i.e. excluded from being processed).
+PURGE TOOL,,,
+purge.tool.log.dir,{logs.directory}/purge-tools,string,

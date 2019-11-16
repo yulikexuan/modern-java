@@ -1,0 +1,235 @@
+﻿Key,Template Value,Value Type,Dynamic?,Description
+APPLICATION SERVER,,,,
+as.jvm.memory,%MEMORY_TO_ALLOCATE%m,string,N,"The amount of memory to be used for the environment. The value entered must be followed by an “m” to indicate how many megabytes to use. For example, to allocate 512 megabytes of memory, you would enter 512m. If not specified, 512 megabytes of memory will be allocated."
+as.jvm.options,%JVM_OPTIONS% %KEY_STORE_OPTION% %TRUST_STORE_OPTION%,string,N,"This property is only used for JBoss environments on UNIX. JBoss environments on Windows set this value but do not use the value after the environment is deployed. This property allows you to specify any options to be passed to the Java virtual machine. Garbage collections and the ability to disable just in time compilation are added when the environment is installed. Any other JVM options can be set on this property. On JBoss installations for Unix, the build.xml script will set this value to -Djava.awt.headless=true. All other bundles will leave this value blank. "
+AUTHENTICATION,,,,
+env.admin.username,%ADMIN_USERNAME%,string,N,The username of Administrator
+env.admin.password,%ADMIN_PASSWORD%,string,N,The password of Administrator
+env.authentication.authentication_method,%AUTHENTICATION_AUTHENTICATION_METHOD%,string,N,"The authentication system to use; either UMS, which is the default, or one of the following SSO mechanisms: KERBEROS, PROXY, SAML."
+env.authentication.sso.excluded.hosts,%AUTHENTICATION_SSO_EXCLUDED_HOSTS%,string,,Used to exclude a host in DMZ.
+AUTHENTICATION JWT,,,,
+env.authentication.jwt.ISSUER.secret,%AUTHENTICATION_JWT_ISSUER_SECRET%,,,"A passphrase used to encrypt the token. We recommend that the passphrase contain a minimum of 30 characters.
+The ISSUER must be a lowercase value and match the value specified in the JWT ""iss"" claim. "
+AUTHENTICATION KERBEROS,,,,
+env.authentication.kerberos.spnego.preauth.username,%AUTHENTICATION_KERBEROS_SPNEGO_PREAUTH_USERNAME%,string,N,The Windows NT Domain user to use when using Windows Integrated authentication.
+env.authentication.kerberos.spnego.preauth.password.encrypted,%AUTHENTICATION_KERBEROS_SPNEGO_PREAUTH_PASSWORD%,string,N,"The password, in encrypted format, of the Windows NT Domain user to use when using Windows Integrated authentication."
+env.authentication.kerberos.spnego.krb5.conf,%AUTHENTICATION_KERBEROS_SPNEGO_KRB5_CONF%,string,N,The name of the Kerberos configuration file to use when Kerberos authentication is enabled.
+AUTHENTICATION PROXY,,,,
+env.authentication.proxy.remote_user_variable_name,%AUTHENTICATION_PROXY_REMOTE_USER_VARIABLE_NAME%,string,N,A test user to be used when testing the system without a valid proxy server.
+AUTHENTICATION SAML,,,,
+env.authentication.identity.provider.metadata.entity_descriptor_id,%AUTHENTICATION_IDENTITY_PROVIDER_METADATA_ENTITY_DESCRIPTOR_ID%,string,N,The Entity Descriptor ID specified in the Identity Provider Metadata.
+env.authentication.identity.provider.metadata.uri,%AUTHENTICATION_IDENTITY_PROVIDER_METADATA_URI%,string,N,The file path to the Identity Provider Metadata.
+AWS,,,,
+env.aws.s3.folder,%AWS_S3_FOLDER%,,,The prefix of objects saved in AWS S3
+DATABASE SERVER,,,,
+env.db.configured.databases,%CONFIGURED_DATABASES%,string,N,Used for TMC deployments. Provides list of databases to deploy for when the app instance first starts up
+env.db.image.name,%DATABASE_IMAGE_NAME%,string,N,"Used for TMC deployments. Provides the database image to use for the deployment of the databases (i.e. prod_gen, rdqa_gen, train_gen, etc.)"
+env.db.images.s3_bucket,%DATABASE_IMAGES_S3_BUCKET%,string,N,Used for transferring to and from AWS S3 for the File In and File Out processes
+env.db.set.name,%DB_SET_NAME%,string,N,"The database type. Possible values are: sqlserver, sqlserver_encrypted, sqlserver_instance, sqlserver_instance_encrypted, oracle, oracle_rac."
+env.db.server.clustered,%DB_SERVER_CLUSTERED%,string,N,Used to indicate whether or not the DB Server is clustered (i.e. Oracle RAC)
+env.db.server.data.dir,%DB_SERVER_DATA_DIR%,string,N,Used for TMC deployments. Provides the directory where the data file is deployed to in the case of Microsoft SQL Server
+env.db.server.default.tablespace,%DB_SERVER_TABLESPACE%,string,N,Used for TMC deployments. Provides the default tablespace where the where the database is installed in the case of Oracle
+env.db.server.deployment.type,%DB_SERVER_DEPLOYMENT_TYPE%,string,N,Used for TMC deployments. Defines whether the database is installed on-premise style (ONPREMISE) or AWS RDS (AWS)
+env.db.server.image.dir,%DB_SERVER_IMAGE_DIR%,string,N,Used for TMC deployments. Provides the directory where the image is deployed 
+env.db.server.index.tablespace,%DB_SERVER_INDEX_TABLESPACE%,string,N,Used for TMC deployments. Provides the default tablespace where the indices of the database is installed in the case of Oracle
+env.db.server.logs.dir,%DB_SERVER_LOGS_DIR%,string,N,Used for TMC deployments. Provides the directory where the log file is deployed 
+env.db.server.name,%DB_SERVER_NAME%,string,N,The database server host name or IP address.
+env.db.server.tablespace,%DB_SERVER_TABLESPACE%,string,N,Used for TMC deployments. Provides the temp tablespace for the database installation in the case of Oracle
+env.db.server.vendor.type,%DB_SERVER_VENDOR_TYPE%,string,N,Used for TMC deployments. Defines whether the database is Microsoft SQL Server (MSSQL) or Oracle (ORACLE)
+env.db.server.instance,%DB_SERVER_INSTANCE%,string,N,The database server instance name (SQL Server) or SID (Oracle).
+env.db.server.port,%DB_SERVER_PORT%,integer,N,The database server port.
+env.db.server.username,%DB_SERVER_USERNAME%,string,N,The database server connection user (SQL Server).
+env.db.server.password.encrypted,%DB_SERVER_PASSWORD%,string,N,The database server connection password (SQL Server).
+DOCKER,,,,
+env.docker.image.version,%DOCKER_VERSION%,string,N,Used for TMC deployments. Defines the Docker version deployed
+DIRECTORIES,,,,
+env.data.directory,%DATA_DIR%,file path string,N,The directory where to drop or retrieve data files used by the import/export feature.
+env.deployment.directory,%DEPLOYMENT_DIRECTORY%,file path string,N,The directory where the application is installed.
+env.logs.directory,%LOGS_DIR%,file path string,N,The logs directory.
+env.temp.directory,%TEMP_DIR%,file path string,N,The directory for storing temporary files.
+ENVIRONMENT,,,,
+env.account.name,%ACCOUNT_NAME%,string,N,The account name of the application.
+env.app.instance.name,%APP_INSTANCE_NAME%,string,N,The instance name of the application.
+env.environment.name,%ENVIRONMENT_NAME%,string,N,The name of the environment. Default value: env.account.name_env.app.instance.name
+env.environment.set.name,%ENVIRONMENT_SET_NAME%,string,N,For future use.
+env.license.key.file.path,%LICENSE_KEY_FILE_PATH%,file path,N,Defines the file path to the license file
+HOST,,,,
+env.app.server.name,%APP_SERVER_NAME%,string,N,The application server fully qualified host name.
+env.app.server.port,:443,string,N,The port to use to connect to the application server prefixed with a colon (:).
+env.app.server.protocol,%APP_SERVER_PROTOCOL%,string,N,The protocol to use to connect to the application server.
+env.app.server.deployment.type,%APP_SERVER_DEPLOYMENT_TYPE%,string,N,The deployment type of the application server
+env.accepted.domains,%ACCEPTED_DOMAINS%,string,N,"The list of domains, separated by commas, that can be used when redirecting to other URLs. If left blank, all domains can be redirected."
+env.domain.name,%DOMAIN_NAME%,string,N,The network domain name.
+env.exit.on.failure,FALSE,boolean,N,Used for TMC deployments. To control whether or not the container exits of failure or stays alive so that personal can view a failed status.  Used for Continuous Integration pipeline only
+env.second.level.domain.name,%SECOND_LEVEL_DOMAIN_NAME%,string,N,For future use.
+env.test.mode,%MOCKED_APP_INSTANCE%,string,N,Used for TMC deployments to simulate a mock deployment
+env.top.level.domain.name,%TOP_LEVEL_DOMAIN_NAME%,string,N,For future use.
+env.virtual.host.name,%VIRTUAL_HOST_NAME%,string,N,The dispatcher or external fully qualified host name.
+KEYSTORES,,,,
+env.ssl.key.password,%SSL_KEY_PASSWORD%,string,N,The SSL Key password.
+env.ssl.key.store,%SSL_TRUST_STORE%,file path string,N,The location of the Java keystore.
+env.ssl.key.store.password,%SSL_TRUST_STORE_PASSWORD%,string,N,The Java keystore password.
+env.ssl.trust.store,%SSL_TRUST_STORE%,file path string,N,The location of the Java truststore.
+env.ssl.trust.store.password,%SSL_TRUST_STORE_PASSWORD%,string,N,The Java truststore password.
+LDAP,,,,
+env.ldap.server.name,%LDAP_SERVER_NAME%,string,N,The LDAP fully qualified host name.
+env.ldap.server.port,%LDAP_SERVER_PORT%,numeric,N,The LDAP server port.
+env.ldap.server.base.dn,%LDAP_SERVER_BASE_DN%,string,N,The LDAP base distinguished name (DN).
+env.ldap.server.username,%LDAP_SERVER_USERNAME%,string,N,The user to connect to the LDAP server.
+env.ldap.server.password.encrypted,%LDAP_SERVER_PASSWORD%,string,N,The password for the LDAP user.
+,,,,
+env.ldap.provider.url,%LDAP_PROVIDER_URL%,string,N,"The URL for the LDAP server, including the port number."
+env.ldap.base.dn,%LDAP_BASE_DN%,string,N,The LDAP base distinguished name (DN).
+env.ldap.type,%LDAP_TYPE%,integer,N,"The LDAP type. 0=Generic, 1=Windows Active Directory"
+env.ldap.allow_update,%LDAP_ALLOW_UPDATE%,integer,N,"Defines whether the LDAP server can be updated. 0=No, 1=Yes"
+env.ldap.authentication,%LDAP_AUTHENTICATION%,string,N,The LDAP authentication method. Default=simple.
+env.ldap.search.filter_object_class,%LDAP_SEARCH_FILTER_OBJECT_CLASS%,string,N,THE LDAP search filter object class. Default=person.
+env.ldap.search.lookup_attribute,%LDAP_SEARCH_LOOKUP_ATTRIBUTE%,string,N,The LDAP search lookup attribute.
+env.ldap.search.named_context,%LDAP_SEARCH_NAMED_CONTEXT%,string,N,The LDAP search named context. 
+env.ldap.username.prefix,%LDAP_USERNAME_PREFIX%,string,N,The LDAP user connection user name prefix.
+env.ldap.username,%LDAP_USERNAME%,string,N,The LDAP user name.
+env.ldap.username.suffix,%LDAP_USERNAME_SUFFIX%,string,N,The LDAP user name suffix.
+env.ldap.password.encrypted,%LDAP_PASSWORD_ENCRYPTED%,string,N,The LDAP user password.
+MESSAGE BROKERS,,,,
+env.msgbroker.default.driver,%MSGBROKER_DEFAULT_DRIVER%,string,N,For future use.
+env.msgbroker.default.url,%MSGBROKER_DEFAULT_URL%,string,N,For future use.
+env.msgbroker.default.username,%MSGBROKER_DEFAULT_USERNAME%,string,N,For future use.
+env.msgbroker.default.password.encrypted,%MSGBROKER_DEFAULT_PASSWORD%,string,N,For future use.
+,,,,
+env.msgbroker.cabinets.driver,%MSGBROKER_CABINETS_DRIVER%,string,N,The smart cabinet message broker driver class name.
+env.msgbroker.cabinets.url,%MSGBROKER_CABINETS_URL%,string,N,The smart cabinets message broker hosts. The fully qualified  host name and port should be specified (e.g. smartcabinet1.domain.com:61167). Multiple message broker hosts can be specified by separating them with commas.
+env.msgbroker.cabinets.username,%ENVIRONMENT_NAME%,string,N,The smart cabinets message broker user name or environment name.
+env.msgbroker.cabinets.password.encrypted,%MSGBROKER_CABINETS_PASSWORD%,string,N,The smart cabinets message broker encrypted password.
+MAIL SERVER,,,,
+env.mail.server.hostname,%MAIL_SERVER_HOSTNAME%,string,N,The mail server fully qualified host name.
+env.mail.server.port,%MAIL_SERVER_PORT%,integer,N,The mail server port.
+env.mail.server.user,%MAIL_SERVER_USER%,string,N,The user name to connect to the mail server.
+env.mail.server.password.encrypted,%MAIL_SERVER_PASSWORD%,string,N,The password for the mail user name.
+env.mail.server.sender,%MAIL_SERVER_SENDER%,string,N,The email sender. Default=no-reply@%DOMAIN_NAME%
+env.mail.server.sender.jasper,%MAIL_SERVER_SENDER_JASPER%,string,N,The email sender used by Jasper. Default=no-reply@%DOMAIN_NAME%
+env.sys.admin.email,%SYS_ADMIN_EMAIL%,string,N,The system administrator email.
+BI COGNOS,,,,
+env.bi.service.url,%BI_SERVICE_URL%,string,N,The Cognos BI server fully qualified host name.
+env.bi.service.namespace,%BI_SERVICE_NAMESPACE%,string,N,The Cognos BI namespace.
+env.bi.service.username,%BI_SERVICE_USERNAME%,string,N,The user name to connect to the BI service.
+env.bi.service.password.encrypted,%BI_SERVICE_PASSWORD%,string,N,The password for the user to connect to the BI service.
+DMS ADP INTERFACE,,,,
+env.dms.adp.interface.host,%DMS_ADP_INTERFACE_HOST%,string,N,The fully qualified host name of the ADP server.
+env.dms.adp.interface.username,%DMS_ADP_INTERFACE_USERNAME%,string,N,The user name used to connect to the ADP server.
+env.dms.adp.interface.password.encrypted,%DMS_ADP_INTERFACE_PASSWORD%,string,N,The password for the user used to connect to the ADP server.
+DMS TRACKABOUT INTERFACE,,,,
+env.dms.trackabout.portal,%DMS_TRACKABOUT_INTERFACE_PORTAL%,string,N,The fully qualified host name of the Track About portal.
+env.dms.trackabout.interface.username,%DMS_TRACKABOUT_INTERFACE_USERNAME%,string,N,The user name used to connect to the TrackAbout portal.
+env.dms.trackabout.interface.password.encrypted,%DMS_TRACKABOUT_INTERFACE_PASSWORD%,string,N,The password for the user name used to connect to the TrackAbout portal.
+IGUANA,,,,
+env.iguana.base_url,%IGUANA_BASE_URL%,string,N,The URL for the Iguana host.
+POINTFORCE,,,,
+env.ibis.prolen,%IBIS_PRO_LEN%,number,N,The Ibis product code length.
+env.ibis.cuslen,%IBIS_CUS_LEN%,number,N,The Ibis customer code length.
+env.ibis.glalen,%IBIS_GLALEN%,number,N,The Ibis G/L account code length.
+env.ibis.clrlen,%IBIS_CLRLEN%,number,N,The Ibis color code length.
+env.ibis.salreplen,%IBIS_SALREPLEN%,number,N,The Ibis sales representative code length.
+env.ibis.pvx.url,%IBIS_PVX_URL%,number,N,The Ibis Providex UTL.
+SMS CABINETRY,,,,
+env.sms.tecsysCloud.cabinets.protocol,%SMS_SMARTCABINET_PROTOCOL%,string,N,The smartcabinet host protocol.
+env.sms.tecsysCloud.cabinets.host,%SMS_SMARTCABINET_HOST%,string,N,The smartcabinet fully qualified host name.
+env.sms.tecsysCloud.cabinets.region,%SMS_SMARTCABINET_REGION%,string,N,The cloud provider region where the smartcabinet control system is located.
+env.sms.tecsysCloud.cabinets.access.key,%SMS_SMARTCABINET_ACCESS_KEY%,string,N,The access key used to access the smartcabinet control system.
+env.sms.tecsysCloud.cabinets.secret.key.encrypted,%SMS_SMARTCABINET_SECRET_KEY%,string,N,The secret access key used to access the smartcabinet control system.
+SMS SMART PANELS,,,,
+env.sms.smartPanel.proxy.host,%SMS_SMARTPANEL_PROXY_HOST%,string,N,The smartpanel fully qualified host name.
+env.sms.smartPanel.proxy.port,%SMS_SMARTPANEL_PROXY_PORT%,integer,N,The smartpanel host port number.
+env.sms.smartPanel.proxy.protocol,%SMS_SMARTPANEL_PROXY_PROTOCOL%,string,N,The smartpanel host protocol.
+env.sms.smartpanel.tag.management.service.host,%SMS_SMARTPANEL_TAG_MANAGEMENT_HOST%,string,N,The smartpanel tag management fully qualified host name.
+env.sms.queueService.host,%SMS_QUEUE_SERVICE_HOST%,string,N,The SMS Queue Service fully qualified host name.
+env.sms.queueService.port,%SMS_QUEUE_SERVICE_PORT%,integer,N,The SMS Queue Service port number.
+env.sms.queueService.protocol,%SMS_QUEUE_SERVICE_PROTOCOL%,string,N,The SMS Queue Service host protocol.
+env.sms.printRFIDService.host,%SMS_PRINT_RFID_SERVICE_HOST%,string,N,The SMS Print RFID Service fully qualified host name.
+env.sms.printRFIDService.port,%SMS_PRINT_RFID_SERVICE_PORT%,integer,N,The SMS Print RFID Service port number.
+env.sms.printRFIDService.protocol,%SMS_PRINT_RFID_SERVICE_PROTOCOL%,string,N,The SMS Print RFID host protocol.
+TMS CONNECTSHIP,,,,
+env.tms.connectship.interface.host,%TMS_CONNECTSHIP_INTERFACE_HOST%,string,N,The ConnectShip interface fully qualified host name.
+env.tms.connectship.interface.username,%TMS_CONNECTSHIP_INTERFACE_USERNAME%,string,N,The ConnectShip interface user name.
+env.tms.connectship.interface.password.encrypted,%TMS_CONNECTSHIP_INTERFACE_PASSWORD%,string,N,The ConnectShip interface password.
+TMS FEDEX,,,,
+env.tms.fsms.carrier.module.host,%TMS_FSMS_CARRIER_MODULE_HOST%,string,N,The FSMS carrier module fully qualified host name.
+env.tms.fsms.carrier.module.port,%TMS_FSMS_CARRIER_MODULE_PORT%,integer,N,The FSMS carrier port number.
+WMSEPCIS,,,,
+env.wms.epcis.interface.host,%WMS_EPCIS_INTERFACE_HOST%,string,N,The EPCIS interface fully qualified host name.
+env.wms.epcis.interface.port,%WMS_EPCIS_INTERFACE_PORT%,string,N,The EPCIS interface port number.
+env.wms.epcis.interface.user,%WMS_EPCIS_INTERFACE_USERNAME%,string,N,The EPCIS interface user name.
+env.wms.epcis.interface.password.encrypted,%WMS_EPCIS_INTERFACE_PASSWORD%,string,N,The EPCIS interface password.
+BOOTSTRAP DATABASE,,,,
+db.connection.bootstrap.current,{db.set.name},string,N,The bootstrap database set. Default: db.set.name.
+,,,,
+db.connection.bootstrap.oracle.pool.class,com.tecsys.base.sql.DBCP,string,N,"The connection pool class to use for an Oracle bootstrap database. If that property is not specified, no connection pool will be used and connections will be cached in beans."
+db.connection.bootstrap.oracle.username,{account.name}_{app.instance.name}_m,string,N,The user name for the Oracle bootstrap database.
+db.connection.bootstrap.oracle.password.encrypted,{db.server.password.encrypted},string,N,The encrypted password for the Oracle bootstrap database.
+db.connection.bootstrap.oracle.jdbc.driver,oracle.jdbc.OracleDriver,string,N,The driver to use for the Oracle bootstrap database.
+db.connection.bootstrap.oracle.url,jdbc:oracle:thin:@{db.server.name}:{db.server.port}:{db.server.instance},string,N,The JDBC URL for the Oracle bootstrap database.
+db.connection.bootstrap.oracle.type,2,number,N,The database type for the Oracle bootstrap database. Must be set to 2.
+db.connection.bootstrap.oracle.explain,0,number,N,"When set, the application will try to enable database explain for this database. If explain is supported by the database, the output will be sent to the debug file."
+db.connection.bootstrap.oracle.timeout,10,number,N,"Will provide the timeout value in seconds whenever the application requires a timeout. If 0 is specified, the application will not use a timeout for any SQL."
+,,,,
+db.connection.bootstrap.oracle_rac.pool.class,com.tecsys.base.sql.DBCP,string,N,"The connection pool class to use for an Oracle RAC bootstrap database. If that property is not specified, no connection pool will be used and connections will be cached in beans."
+db.connection.bootstrap.oracle_rac.username,{account.name}_{app.instance.name}_m,string,N,The user name for the Oracle RAC bootstrap database.
+db.connection.bootstrap.oracle_rac.password.encrypted,{db.server.password.encrypted},string,N,The encrypted password for the Oracle RAC bootstrap database.
+db.connection.bootstrap.oracle_rac.jdbc.driver,oracle.jdbc.OracleDriver,string,N,The driver to use for the Oracle RAC bootstrap database.
+db.connection.bootstrap.oracle_rac.url,jdbc:oracle:thin:@{db.server.name}:{db.server.port}/{db.server.instance},string,N,The JDBC URL for the Oracle RAC bootstrap database.
+db.connection.bootstrap.oracle_rac.type,2,number,N,The database type for the Oracle RAC bootstrap database. Must be set to 2.
+db.connection.bootstrap.oracle_rac.explain,0,number,N,"When set, the application will try to enable database explain for this database. If explain is supported by the database, the output will be sent to the debug file."
+db.connection.bootstrap.oracle_rac.timeout,10,number,N,"Will provide the timeout value in seconds whenever the application requires a timeout. If 0 is specified, the application will not use a timeout for any SQL."
+,,,,
+db.connection.bootstrap.sqlserver.pool.class,com.tecsys.base.sql.DBCP,string,N,"The connection pool class to use for an SQL Server bootstrap database. If that property is not specified, no connection pool will be used and connections will be cached in beans."
+db.connection.bootstrap.sqlserver.username,{db.server.username},string,N,The user name for the SQL Server bootstrap database.
+db.connection.bootstrap.sqlserver.password.encrypted,{db.server.password.encrypted},string,N,The encrypted password for the SQL Server bootstrap database.
+db.connection.bootstrap.sqlserver.jdbc.driver,com.microsoft.sqlserver.jdbc.SQLServerDriver,string,N,The driver to use for the SQL Server bootstrap database.
+db.connection.bootstrap.sqlserver.url,jdbc:sqlserver://{db.server.name}:{db.server.port};databaseName={account.name}_{app.instance.name}_m;forwardReadOnlyMethod=serverCursor;lockTimeout=0,string,N,The JDBC URL for the SQL Server bootstrap database.
+db.connection.bootstrap.sqlserver.type,3,number,N,The database type for the SQL Server bootstrap database. Must be set to 3.
+db.connection.bootstrap.sqlserver.explain,0,number,N,"When set, the application will try to enable database explain for this database. If explain is supported by the database, the output will be sent to the debug file."
+db.connection.bootstrap.sqlserver.timeout,10,number,N,"Will provide the timeout value in seconds whenever the application requires a timeout. If 0 is specified, the application will not use a timeout for any SQL."
+,,,,
+db.connection.bootstrap.sqlserver_encrypted.pool.class,com.tecsys.base.sql.DBCP,string,N,"The connection pool class to use for an SQL Server Encrypted bootstrap database. If that property is not specified, no connection pool will be used and connections will be cached in beans."
+db.connection.bootstrap.sqlserver_encrypted.username,{db.server.username},string,N,The user name for the SQL Server Encrypted bootstrap database.
+db.connection.bootstrap.sqlserver_encrypted.password.encrypted,{db.server.password.encrypted},string,N,The encrypted password for the SQL Server Encrypted bootstrap database.
+db.connection.bootstrap.sqlserver_encrypted.jdbc.driver,com.microsoft.sqlserver.jdbc.SQLServerDriver,string,N,The driver to use for the SQL Server Encrypted bootstrap database.
+db.connection.bootstrap.sqlserver_encrypted.url,jdbc:sqlserver://{db.server.name}:{db.server.port};databaseName={account.name}_{app.instance.name}_m;forwardReadOnlyMethod=serverCursor;lockTimeout=0;integratedSecurity=false;encrypt=true;trustServerCertificate=true,string,N,The JDBC URL for the SQL Server Encrypted bootstrap database.
+db.connection.bootstrap.sqlserver_encrypted.type,3,number,N,The database type for the SQL Server Encrypted bootstrap database. Must be set to 3.
+db.connection.bootstrap.sqlserver_encrypted.explain,0,number,N,"When set, the application will try to enable database explain for this database. If explain is supported by the database, the output will be sent to the debug file."
+db.connection.bootstrap.sqlserver_encrypted.timeout,10,number,N,"Will provide the timeout value in seconds whenever the application requires a timeout. If 0 is specified, the application will not use a timeout for any SQL."
+,,,,
+db.connection.bootstrap.sqlserver_instance.pool.class,com.tecsys.base.sql.DBCP,string,N,"Defines the connection pool class to use for an SQL Server Instance bootstrap database. If that property is not specified, no connection pool will be used and connections will be cached in beans."
+db.connection.bootstrap.sqlserver_instance.data.source.initial.context.factory,,string,N,
+db.connection.bootstrap.sqlserver_instance.data.source.name,,string,N,
+db.connection.bootstrap.sqlserver_instance.data.source.provider.url,,string,N,
+db.connection.bootstrap.sqlserver_instance.username,{db.server.username},string,N,The user name for the SQL Server Instance bootstrap database.
+db.connection.bootstrap.sqlserver_instance.password.encrypted,{db.server.password.encrypted},string,N,The encrypted password for the SQL Server Instance bootstrap database.
+db.connection.bootstrap.sqlserver_instance.jdbc.driver,com.microsoft.sqlserver_instance.jdbc.SQLServerDriver,string,N,The driver to use for the SQL Server Instance bootstrap database.
+db.connection.bootstrap.sqlserver_instance.url,jdbc:sqlserver_instance://{db.server.name}:{db.server.port};databaseName={account.name}_{app.instance.name}_m;forwardReadOnlyMethodserverCursor;lockTimeout=0,string,N,The JDBC URL for the SQL Server Instance bootstrap database.
+db.connection.bootstrap.sqlserver_instance.type,3,number,N,The database type for the SQL Server Instance bootstrap database. Must be set to 3.
+db.connection.bootstrap.sqlserver_instance.explain,0,number,N,"When set, the application will try to enable database explain for this database. If explain is supported by the database, the output will be sent to the debug file."
+db.connection.bootstrap.sqlserver_instance.timeout,10,number,N,"Will provide the timeout value in seconds whenever the application requires a timeout. If 0 is specified, the application will not use a timeout for any SQL."
+,,,,
+db.connection.bootstrap.sqlserver_instance_encrypted.pool.class,com.tecsys.base.sql.DBCP,string,N,"The connection pool class to use for an SQL Server Instance Encrypted bootstrap database. If that property is not specified, no connection pool will be used and connections will be cached in beans."
+db.connection.bootstrap.sqlserver_instance_encrypted.data.source.initial.context.factory,,string,N,
+db.connection.bootstrap.sqlserver_instance_encrypted.data.source.name,,string,N,
+db.connection.bootstrap.sqlserver_instance_encrypted.data.source.provider.url,,string,N,
+db.connection.bootstrap.sqlserver_instance_encrypted.username,{db.server.username},string,N,The user name for the SQL Server Instance Encrypted bootstrap database.
+db.connection.bootstrap.sqlserver_instance_encrypted.password.encrypted,{db.server.password.encrypted},string,N,The encrypted password for the SQL Server Instance Encrypted bootstrap database.
+db.connection.bootstrap.sqlserver_instance_encrypted.jdbc.driver,com.microsoft.sqlserver.jdbc.SQLServerDriver,string,N,The driver to use for the SQL Server Instance Encrypted bootstrap database.
+db.connection.bootstrap.sqlserver_instance_encrypted.url,jdbc:sqlserver://{db.server.name}:{db.server.port};databaseName={account.name}_{app.instance.name}_m;forwardReadOnlyMethod=serverCursor;lockTimeout=0;integratedSecurity=false;encrypt=true;trustServerCertificate=true,string,N,The JDBC URL for the SQL Server Instance Encrypted bootstrap database.
+db.connection.bootstrap.sqlserver_instance_encrypted.type,3,number,N,The database type for the SQL Server Instance Encrypted bootstrap database. Must be set to 3.
+db.connection.bootstrap.sqlserver_instance_encrypted.explain,0,number,N,"When set, the application will try to enable database explain for this database. If explain is supported by the database, the output will be sent to the debug file."
+db.connection.bootstrap.sqlserver_instance_encrypted.timeout,10,number,N,"Will provide the timeout value in seconds whenever the application requires a timeout. If 0 is specified, the application will not use a timeout for any SQL."
+,,,,
+db.connection.bootstrap.db2.pool.class,com.tecsys.base.sql.DBCP,string,N,"Defines the connection pool class to use for an IBM DB2 bootstrap database. If that property is not specified, no connection pool will be used and connections will be cached in beans."
+db.connection.bootstrap.db2.data.source.initial.context.factory,,string,N,
+db.connection.bootstrap.db2.data.source.name,,string,N,
+db.connection.bootstrap.db2.data.source.provider.url,,string,N,
+db.connection.bootstrap.db2.username,{db.server.username},string,N,The user name for the IBM DB2 bootstrap database.
+db.connection.bootstrap.db2.password.encrypted,{db.server.password.encrypted},string,N,The encrypted password for the IBM DB2 bootstrap database.
+db.connection.bootstrap.db2.jdbc.driver,com.ibm.as400.access.AS400JDBCDriver,string,N,The driver to use for the IBM DB2 bootstrap database.
+db.connection.bootstrap.db2.url,jdbc:as400://{db.server.name}/{account.name}_{app.instance.name}_m;date format=iso;transaction isolation=none,string,N,The JDBC URL for the IBM DB2 bootstrap database.
+db.connection.bootstrap.db2.type,4,number,N,The database type for the IBM DB2 bootstrap database. Must be set to 4.
+db.connection.bootstrap.db2.explain,0,number,N,"When set, the application will try to enable database explain for this database. If explain is supported by the database, the output will be sent to the debug file."
+db.connection.bootstrap.db2.timeout,0,number,N,"Will provide the timeout value in seconds whenever the application requires a timeout. If 0 is specified, the application will not use a timeout for any SQL."

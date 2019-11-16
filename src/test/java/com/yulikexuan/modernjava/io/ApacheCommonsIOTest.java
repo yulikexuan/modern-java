@@ -6,6 +6,7 @@ package com.yulikexuan.modernjava.io;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,12 +29,12 @@ class ApacheCommonsIOTest {
             RandomStringUtils.randomAlphabetic(10),
             RandomStringUtils.randomAlphabetic(10));
 
-    private FileCopy fileCopy;
+    private FileIO fileIO;
     private File targetFile;
 
     @BeforeEach
     void setUp() {
-        this.fileCopy = new FileCopy();
+        this.fileIO = FileIO.newInstance();
     }
 
     @AfterEach
@@ -48,14 +49,14 @@ class ApacheCommonsIOTest {
     void able_To_Copy_Files_With_FileUtils() throws Exception {
 
         // Given
-        File srcFile = this.fileCopy.getFile(TEST_FILE_NAME);
+        File srcFile = this.fileIO.getFile(TEST_FILE_NAME);
         FileUtils.writeLines(srcFile, FILE_CONTENT);
         File targetDir = FileUtils.getTempDirectory();
 
         // When
         FileUtils.copyFileToDirectory(srcFile, targetDir);
         this.targetFile = FileUtils.getFile(targetDir, TEST_FILE_NAME);
-        String targetContent = this.fileCopy.getFileContent(targetFile).get();
+        String targetContent = this.fileIO.getFileContent(targetFile).get();
 
         // Then
         assertThat(targetContent).containsSubsequence(
@@ -64,6 +65,32 @@ class ApacheCommonsIOTest {
                 FILE_CONTENT.get(2));
     }
 
+    @DisplayName("FilenameUtils Tests - ")
+    @Test
+    void able_To_Access_File_Names_Or_Path() throws IOException {
 
+        // Given
+        File srcFile = this.fileIO.getFile(TEST_FILE_NAME);
+        // Gets the full path from a full filename, which is the prefix + path
+        String fullName = srcFile.getCanonicalPath();
+        System.out.printf("Full Name (Canonical Path): %1$s%n", fullName);
+
+        System.out.printf("Base Name: %1$s%n", FilenameUtils.getBaseName(fullName));
+
+        String fullPath = FilenameUtils.getFullPathNoEndSeparator(fullName);
+        System.out.printf("Full Path: %1$s%n", fullPath);
+
+        String path = FilenameUtils.getPath(fullName);
+        System.out.printf("Path: %1$s%n", path);
+
+        System.out.printf("Extension: %1$s%n",
+                FilenameUtils.getExtension(fullName));
+    }
+
+//    @DisplayName("FileSystemUtils Tests - ")
+//    @Test
+//    void able_To_Know_Free_Space_On_A_Given_Volume() throws IOException {
+//
+//    }
 
 }///:~
