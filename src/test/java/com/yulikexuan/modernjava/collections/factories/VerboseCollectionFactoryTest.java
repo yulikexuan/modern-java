@@ -4,7 +4,6 @@
 package com.yulikexuan.modernjava.collections.factories;
 
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,7 +22,6 @@ import static org.assertj.core.data.Index.atIndex;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 
-@Slf4j
 public class VerboseCollectionFactoryTest {
 
     private List<String> friends;
