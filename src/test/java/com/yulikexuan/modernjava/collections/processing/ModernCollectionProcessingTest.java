@@ -10,9 +10,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.ConcurrentModificationException;
+import java.util.List;
+import java.util.ListIterator;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -27,7 +30,7 @@ public class ModernCollectionProcessingTest {
 
     @BeforeEach
     void setUp() {
-        friendNames = Arrays.stream(names).collect(Collectors.toList());
+        friendNames = Arrays.stream(names).collect(toList());
         lowerCaseNames = new String[]{"raphael", "olivia", "thibaut"};
     }
 
@@ -106,43 +109,5 @@ public class ModernCollectionProcessingTest {
         }
 
     } //: End of class ModernListProcessiongTest
-
-    @Nested
-    @DisplayName("Modern Map Processing Methods Test - ")
-    class ModernMapProcessiongTest {
-
-        private Map<String, Integer> ageOfFriends;
-
-        @BeforeEach
-        void setUp() {
-            ageOfFriends = Map.of(
-                    "Raphael", 30,
-                    "Olivia", 25,
-                    "Thibaut", 26);
-        }
-
-        private void printAges(String name, int age) {
-            System.out.println(">>>>>>> - " + name + " is " +
-                    age + " years old.");
-        }
-
-        @DisplayName("Test modern iteration method of Map - ")
-        @Test
-        void test_Modern_Iteration_Method_Of_Map() {
-
-            // Given
-            System.out.println("------- [Verbose printing]: ");
-            for(Map.Entry<String, Integer> entry: ageOfFriends.entrySet()) {
-                String friend = entry.getKey();
-                Integer age = entry.getValue();
-                this.printAges(friend, age);
-            }
-
-            // When
-            System.out.println("+++++++ [Modern printing]: ");
-            ageOfFriends.forEach(this::printAges);
-        }
-
-    }
 
 }///:~
