@@ -23,6 +23,7 @@ import java.util.stream.Collector;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
@@ -34,7 +35,10 @@ public class ModernMapProcessingTest {
     private Map<String, String> favouriteMovies;
 
     @Mock
-    BiConsumer<String, Integer> entryPrinter;
+    private BiConsumer<String, Integer> entryPrinter;
+
+    private String[] friendNames;
+    private Map<String, List<String>> friendMovies;
 
     @BeforeEach
     void setUp() {
@@ -46,6 +50,8 @@ public class ModernMapProcessingTest {
                 entry("Raphael", "Star Wars"),
                 entry("Cristina", "Matrix"),
                 entry("Olivia", "James Bond"));
+        friendNames = new String[] {"Raphael", "Olivia", "Thibaut"};
+        friendMovies = new HashMap<>();
     }
 
     @Nested
@@ -199,7 +205,6 @@ public class ModernMapProcessingTest {
     class ModernMapComputePatternsTest {
 
         private MessageDigest messageDigest;
-
         private int digestTimes;
 
         @BeforeEach
@@ -216,6 +221,14 @@ public class ModernMapProcessingTest {
         @DisplayName("Test Modern Map's computeIfAbsent method for Singl Value - ")
         @Test
         void test_Modern_Map_computeIfAbsent_For_Single_Value() {
+
+// The implementation of computeIfAbsent:
+//
+//            if (map.get(key) == null) {
+//                V newValue = mappingFunction.apply(key);
+//                if (newValue != null)
+//                    map.put(key, newValue);
+//            }
 
             // Given: Only two lines are calculated
             Map<String, byte[]> dataToHash = new HashMap<>();
@@ -247,18 +260,156 @@ public class ModernMapProcessingTest {
         void test_Modern_Map_computeIfAbsent_For_Multi_Values() {
 
             // Given
-            String[] names = {"Raphael", "Olivia", "Thibaut"};
-            Map<String, List<String>> friendMovies = new HashMap<>();
-            Arrays.stream(names).forEach(name -> friendMovies.put(name, null));
+            Arrays.stream(friendNames).forEach(name -> friendMovies.put(name, null));
+            friendMovies.put("yul", new ArrayList<>());
+            friendMovies.get("yul").add("Midway");
 
             // When
-            Arrays.stream(names).forEach(name -> friendMovies.computeIfAbsent(
-                    name, n -> new ArrayList<>()).add("Midway"));
+            friendMovies.computeIfAbsent("Raphael", n -> new ArrayList<>())
+                    .add("Star Wars");
+            friendMovies.computeIfAbsent("Olivia", n -> new ArrayList<>())
+                    .add("James Bond");
+            friendMovies.computeIfAbsent("Thibaut", n -> new ArrayList<>())
+                    .add("Matrix");
+            friendMovies.computeIfAbsent("yul", n -> new ArrayList<>())
+                    .add("Matrix");
+            friendMovies.computeIfAbsent("Cristina", n -> new ArrayList<>())
+                    .add("The Ring");
 
             // Then
-            System.out.println(friendMovies);
+            assertAll("Each friend has their own movies",
+                    () -> assertThat(friendMovies.get("Raphael"))
+                            .containsExactly("Star Wars"), // Before: value was null
+                    () -> assertThat(friendMovies.get("Olivia"))
+                            .containsExactly("James Bond"), // Before: value was null
+                    () -> assertThat(friendMovies.get("Thibaut"))
+                            .containsExactly("Matrix"), // Before: value was null
+                    () -> assertThat(friendMovies.get("yul"))
+                            .containsExactly("Midway", "Matrix"), // Before has one value
+                    () -> assertThat(friendMovies.get("Cristina"))
+                            .containsExactly("The Ring")); // Before has no key in map
+        }
+
+        @DisplayName("Test Map::computeIfPresent method - ")
+        @Test
+        void test_Modern_Map_computeIfPresent_Method() {
+
+// The implementation of computeIfPresent:
+//
+//            if (map.get(key) != null) {
+//                V oldValue = map.get(key);
+//                V newValue = remappingFunction.apply(key, oldValue);
+//                if (newValue != null)
+//                    map.put(key, newValue);
+//                else
+//                    map.remove(key);
+//            }
+
+            // Given
+            friendMovies.computeIfAbsent("Raphael",
+                    n -> new ArrayList<>()).add("Star Wars");
+
+            friendMovies.put("Olivia", null);
+
+            friendMovies.computeIfAbsent("Cristina",
+                    k -> new ArrayList<>()).add("Matrix");
+
+            // When
+            friendMovies.computeIfPresent("Raphael",
+                    (k, v) -> { v.add("Midway 2019"); return v;});
+            friendMovies.computeIfPresent("Olivia",
+                    (k, v) -> {v.add("007"); return v;});
+            friendMovies.computeIfPresent("Cristina", (k, v) -> null);
+
+            // Then
+            assertThat(friendMovies.get("Raphael"))
+                    .containsExactly("Star Wars", "Midway 2019");
+            assertThat(friendMovies).containsKey("Olivia");
+            assertThat(friendMovies.get("Olivia")).isNull();
+            assertThat(friendMovies).doesNotContainKey("Cristina");
+        }
+
+        @DisplayName("Test Map::compute method - ")
+        @Test
+        void test_Map_compute_Method() {
+
+// The implementation of compute:
+//
+//            V oldValue = map.get(key);
+//            V newValue = remappingFunction.apply(key, oldValue);
+//            if (oldValue != null) {
+//                if (newValue != null)
+//                    map.put(key, newValue);
+//                else
+//                    map.remove(key);
+//            } else {
+//                if (newValue != null)
+//                    map.put(key, newValue);
+//                else
+//                    return null;
+//            }
+
+            // Given
+            friendMovies.computeIfAbsent("Raphael",
+                    k -> new ArrayList<>()).add("Star Wars");
+            friendMovies.computeIfAbsent("Olivia",
+                    k -> new ArrayList<>()).add("007");
+            friendMovies.put("yul", null);
+
+            // When
+            friendMovies.compute("Raphael",
+                    (k, v) -> { v.add("Midway 2019"); return v;});
+            friendMovies.compute("Olivia", (k, v) -> null);
+            friendMovies.compute("yul", (k, v) -> {
+                return List.of();
+            });
+
+            List<String> moviesForCristina = friendMovies.compute(
+                    "Cristina", (k, v) -> null);
+
+            // Then
+            assertThat(friendMovies.get("Raphael"))
+                    .containsExactly("Star Wars", "Midway 2019");
+            assertThat(friendMovies).doesNotContainKey("Olivia");
+            assertThat(friendMovies.get("yul")).isNotNull();
+            assertThat(friendMovies).doesNotContainKey("Cristina");
+            assertThat(moviesForCristina).isNull();
         }
 
     }//: End of class ModernMapComputePatternsTest
+
+    @DisplayName("Modern Map Remove Patterns Test - ")
+    @Nested
+    class ModernMapRemovePatternsTest {
+
+        @DisplayName("Test Map::remove(k, v) method - ")
+        @Test
+        void test_Removing_The_Entry_Only_If_Having_The_Specified_Value_Currently() {
+
+//            How to Do it Before Java 8:
+
+//            String key = "Raphael";
+//            String value = "Jack Reacher 2";
+//            if (favouriteMovies.containsKey(key) &&
+//                    Objects.equals(favouriteMovies.get(key), value)) {
+//                favouriteMovies.remove(key);
+//                return true;
+//            }
+//            else {
+//                return false;
+//            }
+
+            // Given
+            favouriteMovies = new HashMap<>();
+            favouriteMovies.computeIfAbsent("Raphael", k -> "Jack Reacher 2");
+
+            // When
+            favouriteMovies.remove("Raphael", "Jack Reacher 2");
+
+            // Then
+            assertThat(favouriteMovies).doesNotContainKey("Raphael");
+        }
+
+    } //: End of class ModernMapRemovePatternsTest
 
 }///:~
