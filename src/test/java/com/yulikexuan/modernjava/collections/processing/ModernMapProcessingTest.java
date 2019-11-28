@@ -4,6 +4,7 @@
 package com.yulikexuan.modernjava.collections.processing;
 
 
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,15 +43,19 @@ public class ModernMapProcessingTest {
 
     @BeforeEach
     void setUp() {
+
         this.ageOfFriends = Map.of(
                 "Raphael", 30,
                 "Olivia", 25,
                 "Thibaut", 26);
+
         this.favouriteMovies = Map.ofEntries(
                 entry("Raphael", "Star Wars"),
                 entry("Cristina", "Matrix"),
                 entry("Olivia", "James Bond"));
+
         friendNames = new String[] {"Raphael", "Olivia", "Thibaut"};
+
         friendMovies = new HashMap<>();
     }
 
@@ -398,18 +403,290 @@ public class ModernMapProcessingTest {
 //            else {
 //                return false;
 //            }
+//
+//            The implementation of remove:
+//            if (map.containsKey(key) && Objects.equals(map.get(key), value)) {
+//                map.remove(key);
+//                return true;
+//            } else
+//                return false;
 
             // Given
             favouriteMovies = new HashMap<>();
             favouriteMovies.computeIfAbsent("Raphael", k -> "Jack Reacher 2");
 
             // When
-            favouriteMovies.remove("Raphael", "Jack Reacher 2");
+            boolean removed = favouriteMovies.remove("Raphael", "Jack Reacher 2");
 
             // Then
-            assertThat(favouriteMovies).doesNotContainKey("Raphael");
+            assertAll("The entry of key Raphael should have been removed",
+                    () -> assertThat(favouriteMovies)
+                            .as("Key 'Raphael' should already been removed")
+                            .doesNotContainKey("Raphael"),
+                    () -> assertThat(removed).isTrue());
+        }
+
+        @Test
+        @DisplayName("Test removeIf from Map - ")
+        void test_Modern_Map_removeIf_Method() {
+
+            // Given
+            Map<String, Integer> movieBoxOffice = Maps.newHashMap();
+
+            movieBoxOffice.put("Star Wars", 1234);
+            movieBoxOffice.put("Matrix", 2134);
+            movieBoxOffice.put("James Bond", 3412);
+            movieBoxOffice.put("Midway", 4321);
+
+            // When
+            boolean removed = movieBoxOffice.entrySet().removeIf(
+                    e -> e.getValue() < 2000);
+
+            // Then
+            assertThat(movieBoxOffice).doesNotContainKey("Star Wars");
+            assertThat(removed).isTrue();
         }
 
     } //: End of class ModernMapRemovePatternsTest
+
+    @Nested
+    @DisplayName("Modern Map")
+    class ModernMapReplacementPatternsTest {
+
+        @BeforeEach
+        void setUp() {
+            favouriteMovies = new HashMap<>() { {
+                put("Raphael", "Star Wars");
+                put("Cristina", "Matrix");
+                put("Olivia", "James Bond");
+            } };
+        }
+
+        @Test
+        void test_Map_Replace_All_Method() {
+
+//            The implementation of replaceAll:
+//            for (Map.Entry<K, V> entry : map.entrySet())
+//                entry.setValue(function.apply(entry.getKey(), entry.getValue()));
+
+            // When
+            favouriteMovies.replaceAll((k, v) -> v.toUpperCase());
+            Collection<String> names = favouriteMovies.values();
+
+            // Then
+            names.stream().forEach(name -> assertThat(name).isUpperCase());
+        }
+
+        @Test
+        void test_Map_Replace_Method() {
+
+//            The implementation of replace:
+//            if (map.containsKey(key)) {
+//                return map.put(key, value);
+//            } else {
+//                return null;
+//            }
+
+            // When
+            String thePreviousValue = favouriteMovies.replace("Raphael", "Midway");
+
+            // Then
+            assertThat(favouriteMovies).containsEntry("Raphael", "Midway");
+            assertThat(thePreviousValue).isEqualTo("Star Wars");
+        }
+
+        @Test
+        void test_Map_Conditional_Replace_Methods() {
+
+//            The implementation of conditional replace:
+//            if (map.containsKey(key) && Objects.equals(map.get(key), value)) {
+//                map.put(key, newValue);
+//                return true;
+//            } else {
+//                return false;
+//            }
+
+            // When
+            boolean replaced = favouriteMovies.replace(
+                    "Raphael", "Star Wars", "Midway");
+            boolean replaced2 = favouriteMovies.replace(
+                    "Olivia", "the Simpsons", "007");
+
+            // Then
+            assertThat(favouriteMovies).containsEntry("Raphael", "Midway");
+            assertThat(favouriteMovies).doesNotContainValue("007");
+            assertThat(replaced).isTrue();
+            assertThat(replaced2).isFalse();
+        }
+
+    } //: End of class ModernMapReplacementPatternsTest
+
+    @Nested
+    @DisplayName("Modern Map::merge Test - ")
+    class ModernMapMergeTest {
+
+        private Map<String, String> family;
+        private Map<String, String> friends;
+        private Map<String, String> everyone;
+
+        @BeforeEach
+        void setUp() {
+
+//            Implementation of Map::merge(K key, V value,
+//                    BiFunction<? super V,​? super V,​? extends V> remappingFunction)
+//
+//            key should not be null
+//            value should not be null
+//            remappingFunction should not be null
+//
+//            V oldValue = map.get(key);
+//            V newValue = (oldValue == null) ? value :
+//                    remappingFunction.apply(oldValue, value);
+//            if (newValue == null)
+//                map.remove(key);
+//            else
+//                map.put(key, newValue);
+//
+
+            family = Map.ofEntries(
+                    entry("Teo", "Star Wars"),
+                    entry("Cristina", "James Bond"));
+
+            friends = Map.ofEntries(
+                    entry("Raphael", "Star Wars"),
+                    entry("Cristina", "Matrix"));
+        }
+
+        @Test
+        @DisplayName("Test Using Map::putAll for Merging - ")
+        void test_Map_Verbose_Merge_Solution() {
+
+            // Given
+            everyone = new HashMap<>(family);
+
+            // When
+            everyone.putAll(friends);
+
+            // Then
+            assertAll("Map::putAll method cannot merge two map " +
+                    "into one correctly with duplicated keys",
+                    () -> assertThat(everyone).containsEntry("Teo", "Star Wars"),
+                    () -> assertThat(everyone).containsEntry("Raphael", "Star Wars"),
+                    () -> assertThat(everyone).containsEntry("Cristina", "Matrix"),
+                    () -> assertThat(everyone).doesNotContainEntry("Cristina", "James Bond"));
+        }
+
+        private BiConsumer<String, String> movieMerge =
+                (k, v) -> everyone.merge(k, v, (v1, v2) -> v1 + ", " + v2);
+
+        @Test
+        @DisplayName("Test Map::merge with Duplicated Key - ")
+        void test_Modern_Map_merge_Method_With_Duplicated_Key() {
+
+            // Given
+            everyone = new HashMap<>(family);
+
+            // When
+            friends.forEach(movieMerge);
+
+            // Then
+            assertAll("Map::merge method can merge two map " +
+                            "into one correctly even with duplicated keys",
+                    () -> assertThat(everyone)
+                            .containsEntry("Teo", "Star Wars"),
+                    () -> assertThat(everyone)
+                            .containsEntry("Raphael", "Star Wars"),
+                    () -> assertThat(everyone)
+                            .containsEntry("Cristina", "James Bond, Matrix"));
+        }
+
+        @Test
+        @DisplayName("Test Map::merge with Unassociated Key - ")
+        void test_Modern_Map_merge_Method_With_Unassociated_Key() {
+
+            // Given
+            everyone = new HashMap<>(family);
+            Map<String, String> kids = Map.ofEntries(
+                    entry("Jerry", "the Simpsons"));
+
+            // When
+            kids.forEach(movieMerge);
+
+            // Then
+            assertAll("Map::merge method can merge two map " +
+                            "into one correctly even with unassociated key",
+                    () -> assertThat(everyone)
+                            .containsEntry("Teo", "Star Wars"),
+                    () -> assertThat(everyone)
+                            .containsEntry("Cristina", "James Bond"),
+                    () -> assertThat(everyone)
+                            .containsEntry("Jerry", "the Simpsons"));
+        }
+
+        @Test
+        @DisplayName("Test Map::merge with null Value - ")
+        void test_Modern_Map_merge_Method_With_Null_Value() {
+
+            // Given
+            everyone = new HashMap<>(family);
+            everyone.put("Jerry", null);
+            Map<String, String> kids = Map.ofEntries(
+                    entry("Jerry", "the Simpsons"));
+
+            // When
+            kids.forEach(movieMerge);
+
+            // Then
+            assertAll("Map::merge method can merge two map " +
+                            "into one correctly even with unassociated key",
+                    () -> assertThat(everyone)
+                            .containsEntry("Teo", "Star Wars"),
+                    () -> assertThat(everyone)
+                            .containsEntry("Cristina", "James Bond"),
+                    () -> assertThat(everyone)
+                            .containsEntry("Jerry", "the Simpsons"),
+                    () -> assertThat(everyone.size()).isEqualTo(3));
+        }
+
+        @Test
+        @DisplayName("Test Map::merge with null Value - ")
+        void test_Modern_Map_merge_Method_With_Null_New_Value() {
+
+            // Given
+            everyone = new HashMap<>(family);
+
+            // When
+            // (k, v) -> everyone.merge(k, v, (v1, v2) -> v1 + ", " + v2);
+            everyone.merge("Cristina", "Matrix", (v1, v2) -> null);
+
+            // Then
+            assertThat(everyone).doesNotContainKey("Cristina");
+        }
+
+        @Test
+        @DisplayName("Test how Map::merge method is used to check Initialization - ")
+        void test_Modern_Map_merge_For_Checking_Initialization() {
+
+            // Given
+            String[] movies = {"Star Wars", "James Bond", "Matrix", "Midway"};
+            Map<String, Integer> moviesToCount =  Maps.newHashMap();
+            moviesToCount.put(movies[0], null);
+            moviesToCount.put(movies[1], 1);
+
+            // When
+            Arrays.stream(movies).forEach(
+                    movie -> moviesToCount.merge(movie, 1, (k, v) -> ++v));
+
+            // Then
+            assertThat(moviesToCount).as("Each movie should " +
+                            "have been watched at least once")
+                    .contains(
+                            entry(movies[0], 1),
+                            entry(movies[1], 2),
+                            entry(movies[2], 1),
+                            entry(movies[3], 1));
+        }
+
+    } //: End of class ModernMapMergeTest
 
 }///:~
