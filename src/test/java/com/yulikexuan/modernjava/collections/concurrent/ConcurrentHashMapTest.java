@@ -4,9 +4,12 @@
 package com.yulikexuan.modernjava.collections.concurrent;
 
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,13 +19,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -159,8 +158,8 @@ public class ConcurrentHashMapTest {
     } //: End of class NullKeyValueTest
 
     @Nested
-    @DisplayName("Parallelism Threshold Test - ")
-    class ParallelismThresholdTest {
+    @DisplayName("ConcurrentHashMap::forEach with Parallelism Threshold Test - ")
+    class ParallelismThresholdForEachTest {
 
         private List<String> lines;
         private ConcurrentHashMap<String, byte[]> secretCodes;
@@ -179,16 +178,113 @@ public class ConcurrentHashMapTest {
                                     key.getBytes(StandardCharsets.UTF_8))));
         }
 
+        @DisplayName("Test parallel forEach - ")
         @Test
-        void test_For_Each_Method() {
-            this.secretCodes.forEach(10,
-                    (k, v) -> System.out.printf(
-                            "%1$s is related with %2$s by thread %3$s%n",
-                            k,
-                            Hex.encodeHexString(v),
-                            Thread.currentThread().getName()));
+        void test_Parallel_ForEach_Method() {
+
+            // Given
+            List<String> threadNames = Lists.newArrayList();
+
+            this.secretCodes.forEach(5,
+                    (k, v) ->  threadNames.add(Thread.currentThread().getName()));
+
+            // When
+            long threadNumber = threadNames.stream().distinct().count();
+
+            // Then
+            assertThat(threadNumber)
+                    .as("Should having more than one thread for " +
+                            "processing each element")
+                    .isGreaterThan(1);
+        }
+
+        @DisplayName("Test single thead forEach - ")
+        @Test
+        void test_Single_Thread_ForEach_Method() {
+
+            // Given
+            List<String> threadNames = Lists.newArrayList();
+
+            this.secretCodes.forEach(Long.MAX_VALUE,
+                    (k, v) ->  threadNames.add(Thread.currentThread().getName()));
+
+            // When
+            long threadNumber = threadNames.stream().distinct().count();
+
+            // Then
+            assertThat(threadNumber).as("Should having only one " +
+                            "thread for processing each element")
+                    .isEqualTo(1L);
+        }
+
+        @DisplayName("Test Map::forEach method with BiFunction Parameter - ")
+        @Test
+        void test_ForEach_Transformation_Method() {
+
+            // Given
+            List<String> hexSecretCodes = Lists.newArrayList();
+
+            this.secretCodes.forEach(
+                    Long.MAX_VALUE,
+                    (k, v) -> "0x" + Hex.encodeHexString(v),
+                    v -> hexSecretCodes.add(v));
+
+            // When
+            int codeCount = hexSecretCodes.size();
+            long resultCount = hexSecretCodes.stream()
+                    .map(hexCode -> NumberUtils.isCreatable(hexCode))
+                    .filter(result -> result == true)
+                    .distinct()
+                    .count();
+
+            // Then
+            assertThat(codeCount).isEqualTo(this.secretCodes.size());
+            assertThat(resultCount)
+                    .as("All hex secret codes shoulg be HEX creatable")
+                    .isEqualTo(1);
         }
 
     } //: End of class ParallelismThresholdTest
 
-}///:~
+    @Nested
+    @DisplayName("ConcurrentHashMap::reduce Test - ")
+    class ConcurrentHashMapReduceTest {
+
+        private ConcurrentHashMap<String, Integer> yearlyGrossProfits;
+        private ThreadLocalRandom random;
+
+        private int getRandomProfit() {
+            return random.nextInt(10_000, 100_000);
+        }
+
+        @BeforeEach
+        void setUp() {
+            random = ThreadLocalRandom.current();
+            yearlyGrossProfits = new ConcurrentHashMap<>();
+            yearlyGrossProfits.put("2019", getRandomProfit());
+            yearlyGrossProfits.put("2018", getRandomProfit());
+            yearlyGrossProfits.put("2017", getRandomProfit());
+            yearlyGrossProfits.put("2016", getRandomProfit());
+            yearlyGrossProfits.put("2015", getRandomProfit());
+        }
+
+        @Test
+        @DisplayName("Test ConcurrentHashMap's reduce key and value method - ")
+        void test_Reduce_Key_And_Value() {
+
+            // Given
+
+            // When
+            int totalGrossProfit = this.yearlyGrossProfits.reduceValues(
+                    Long.MAX_VALUE, Integer::sum);
+            int totalNetProfit = this.yearlyGrossProfits.reduce(Long.MAX_VALUE,
+                    (k, v) -> v / 2, Integer::sum);
+
+            // Then
+            assertThat(totalNetProfit).isCloseTo(totalGrossProfit / 2,
+                    Offset.offset(2));
+        }
+
+    }//: End of ConcurrentHashMapReduceTest
+
+}///:~ / 2

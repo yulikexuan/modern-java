@@ -1,6 +1,6 @@
-## Modern Java in Action
+# Modern Java in Action
 
-### New Chapters
+## New Chapters
 
 
 #### Chapter 8: Collection API Enhancements
