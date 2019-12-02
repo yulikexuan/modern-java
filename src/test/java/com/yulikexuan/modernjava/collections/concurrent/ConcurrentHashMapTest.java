@@ -18,9 +18,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -283,6 +281,83 @@ public class ConcurrentHashMapTest {
             // Then
             assertThat(totalNetProfit).isCloseTo(totalGrossProfit / 2,
                     Offset.offset(2));
+        }
+
+        @Test
+        @DisplayName("Test ConcurrentHashMap::reduceKeys method - ")
+        void test_Reduce_Keys() {
+
+            // Given
+            String expectedYearList = "19-18-17-16-15";
+
+            // When
+            String yearList = this.yearlyGrossProfits.reduceKeys(Long.MAX_VALUE,
+                    (y1, y2) ->  (y1.contains("-") ? y1 : y1.substring(2)) +
+                            "-" + y2.substring(2));
+
+            // Then
+            assertThat(yearList)
+                    .as("Should be short formatted year list: '%1$s'",
+                            expectedYearList)
+                    .isEqualTo(expectedYearList);
+        }
+
+        @Test
+        @DisplayName("Test ConcurrentHashMap::reduceValues method - ")
+        void test_Reduce_Values() {
+
+            // Given
+            Collection<Integer> grossProfits = this.yearlyGrossProfits.values();
+            int expectedMaxGrossProfit = grossProfits.stream()
+                    .reduce(Integer::max).get();
+            int expectedMinGrossProfit = grossProfits.stream()
+                    .reduce(Integer::min).get();
+
+            // When
+            Optional<Integer> maxGrossProfitOpt = Optional.ofNullable(
+                    this.yearlyGrossProfits.reduceValues(
+                    Long.MAX_VALUE, Integer::max));
+
+            // Then
+            assertThat(maxGrossProfitOpt.isPresent())
+                    .as("Should have the max gross profit")
+                    .isTrue();
+            assertThat(maxGrossProfitOpt.get())
+                    .as("Should be the biggest one: %1$d",
+                            expectedMaxGrossProfit)
+                    .isEqualTo(expectedMaxGrossProfit);
+        }
+
+        @Test
+        @DisplayName("Test ConcurrentHashMap::search method - ")
+        void test_Search_Method() {
+
+            // Given
+            String randomYear = this.random.nextInt(2015, 2020) + "";
+
+            String expectedYear = randomYear + " : " +
+                    this.yearlyGrossProfits.get(randomYear);
+
+            // When
+            String theRandomYearProfit = this.yearlyGrossProfits.search(
+                    Long.MAX_VALUE,
+                    (k, v) -> k.equals(randomYear) ? k + " : " + v : null);
+
+            // Then
+            assertThat(theRandomYearProfit)
+                    .as("Should be '%1$s'", expectedYear)
+                    .isEqualTo(expectedYear);
+        }
+
+        @Test
+        @DisplayName("Test the mappingCount method should return a long type number - ")
+        void test_Mapping_Count_Method() {
+
+            // Given
+            int count = this.yearlyGrossProfits.size();
+
+            // When
+            assertThat(count).isEqualTo(this.yearlyGrossProfits.mappingCount());
         }
 
     }//: End of ConcurrentHashMapReduceTest
