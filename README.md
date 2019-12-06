@@ -6,7 +6,7 @@
 #### Chapter 8: Collection API Enhancements
 
 
-#### Chapter 10: Domain-specific Languages using Lambdas
+#### _Chapter 10: Domain-specific Languages using Lambdas_ 
 
 
 #### Chapter 14: Java Module System
