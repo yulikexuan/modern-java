@@ -75,6 +75,7 @@ class ShopTest {
         // Then
         assertThatThrownBy(() -> futurePrice.get())
                 .as("Should not have any price for null product")
+                .isInstanceOf(ExecutionException.class)
                 .hasCauseExactlyInstanceOf(ProductNotFountException.class);
     }
 

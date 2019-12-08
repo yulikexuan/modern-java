@@ -183,7 +183,7 @@ public class ConcurrentHashMapTest {
             // Given
             List<String> threadNames = Lists.newArrayList();
 
-            this.secretCodes.forEach(5,
+            this.secretCodes.forEach(1,
                     (k, v) ->  threadNames.add(Thread.currentThread().getName()));
 
             // When
