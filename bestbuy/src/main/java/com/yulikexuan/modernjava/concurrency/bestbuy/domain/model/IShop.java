@@ -11,9 +11,12 @@ public interface IShop {
 
     int LONG_PROCESSING_TIME = 1000;
 
+    String getName();
+
     double getPrice(String product);
 
-    Future<Double> getPriceAsync(String product);
+//    Future<Double> getPriceAsync(String product);
+//    Future<Double> getPriceAsyncApi(String product);
 
     static void delay() {
         try {

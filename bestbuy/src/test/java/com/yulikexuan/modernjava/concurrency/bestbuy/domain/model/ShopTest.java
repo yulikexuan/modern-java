@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -33,15 +34,36 @@ class ShopTest {
     }
 
     @Test
+    @DisplayName("Test using CompletableFuture as a normal Future mannually - ")
+    void test_Converting_Sync_Method_Into_Async_One_Mannually() {
+
+        // Given
+        String product = "F6F Model";
+
+        // When & Then
+        this.testAsyncImplementations(product, shop::getPriceAsync);
+    }
+
+    @Test
     @DisplayName("Test using CompletableFuture as a normal Future - ")
     void test_Converting_Sync_Method_Into_Async_One() {
 
         // Given
         String product = "F6F Model";
 
+        // When & Then
+        this.testAsyncImplementations(product, shop::getPriceAsyncApi);
+    }
+
+    private void testAsyncImplementations(
+            String product,
+            Function<String, Future<Double>> gettingPrice) {
+
+        // Given
+
         // When
         this.start = Instant.now();
-        Future<Double> futurePrice = shop.getPriceAsync(product);
+        Future<Double> futurePrice = gettingPrice.apply(product);
         invocationTime = Duration.between(start, Instant.now()).toMillis();
 
         double price = -1;
@@ -66,11 +88,26 @@ class ShopTest {
     }
 
     @Test
+    @DisplayName("Test dealing with errors from CompletableFuture mannually- ")
+    void test_Dealing_With_Errors_From_CompletableFuture_Manually() {
+
+        // When
+        testDealingWithErrorsFromCompletableFuture(shop::getPriceAsync);
+    }
+
+    @Test
     @DisplayName("Test dealing with errors from CompletableFuture - ")
     void test_Dealing_With_Errors_From_CompletableFuture() {
 
         // When
-        Future<Double> futurePrice = shop.getPriceAsync(null);
+        testDealingWithErrorsFromCompletableFuture(shop::getPriceAsyncApi);
+    }
+
+    void testDealingWithErrorsFromCompletableFuture(
+            Function<String, Future<Double>> gettingPrice) {
+
+        // When
+        Future<Double> futurePrice = gettingPrice.apply(null);
 
         // Then
         assertThatThrownBy(() -> futurePrice.get())

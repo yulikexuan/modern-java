@@ -26,7 +26,6 @@ public class Shop implements IShop {
         return calculatePrice(product);
     }
 
-    @Override
     public Future<Double> getPriceAsync(String product) {
         CompletableFuture<Double> futurePrice = new CompletableFuture<>();
         new Thread(() -> {
@@ -44,6 +43,10 @@ public class Shop implements IShop {
             }
         }).start();
         return futurePrice;
+    }
+
+    public Future<Double> getPriceAsyncApi(final String product) {
+        return CompletableFuture.supplyAsync(() -> calculatePrice(product));
     }
 
     private double calculatePrice(String product) {
