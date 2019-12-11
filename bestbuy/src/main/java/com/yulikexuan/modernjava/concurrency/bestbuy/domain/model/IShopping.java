@@ -46,4 +46,8 @@ public interface IShopping {
 
     List<String> findPricesAsynchronouslyWithCustomExecutor(String product);
 
+    List<String> findPromotionSynchronously(final String product);
+
+    List<String> findPromotionAsync(final String product);
+
 }///:~

@@ -27,7 +27,9 @@ public class Shop implements IShop {
     }
 
     public Future<Double> getPriceAsync(String product) {
+
         CompletableFuture<Double> futurePrice = new CompletableFuture<>();
+
         new Thread(() -> {
             try {
                 /* If the price calculation completed normally, complete the
@@ -42,6 +44,7 @@ public class Shop implements IShop {
                 futurePrice.completeExceptionally(e);
             }
         }).start();
+
         return futurePrice;
     }
 

@@ -1,4 +1,4 @@
-//: com.yulikexuan.modernjava.concurrency.bestbuy.domain.model.ShoppingTest.java
+//: com.yulikexuan.modernjava.concurrency.bestbuy.domain.model.ShoppingIT.java
 
 
 package com.yulikexuan.modernjava.concurrency.bestbuy.domain.model;
@@ -17,11 +17,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class ShoppingTest {
+class ShoppingIT {
 
     static final String FAVORITE_PRODUCT_NAME = "F6F Model";
     static final String DURATION_OF_FINDING_PRICES_TEMPLATE =
             ">>>>>>> The duration of finding all prices %1$s is %2$d msec.%n";
+    static final String DURATION_OF_FINDING_PROMOTIONS_TEMPLATE =
+            ">>>>>>> The duration of finding all promotions %1$s is %2$d msec.%n";
 
     private ExecutorService executor;
     private Shopping shopping;
@@ -31,7 +33,6 @@ class ShoppingTest {
 
     @BeforeEach
     void setUp() {
-
         this.executor = Executors.newFixedThreadPool(
                 IShopping.THE_BEST_THREADS_NUMBER,
                 runnable -> {
@@ -41,8 +42,6 @@ class ShoppingTest {
                 });
 
         this.shopping = new Shopping(this.executor);
-        System.out.printf(">>>>>>> The number of Cores is %1$d%n",
-                Runtime.getRuntime().availableProcessors());
     }
 
     @AfterEach
@@ -106,7 +105,7 @@ class ShoppingTest {
 
         // Then
         assertThat(priceList.size()).isEqualTo(IShopping.SHOPS.size());
-        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 2 + 100);
+        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 4 + 100);
     }
 
     @Test
@@ -127,7 +126,7 @@ class ShoppingTest {
 
         // Then
         assertThat(priceList.size()).isEqualTo(IShopping.SHOPS.size());
-        assertThat(duration).isLessThan(2 * IShop.LONG_PROCESSING_TIME + 100);
+        assertThat(duration).isLessThan(4 * IShop.LONG_PROCESSING_TIME + 100);
     }
 
     @Test
@@ -148,7 +147,48 @@ class ShoppingTest {
 
         // Then
         assertThat(priceList.size()).isEqualTo(IShopping.SHOPS.size());
-        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME + 100);
+        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 2 + 100);
+    }
+
+    @Disabled
+    @Test
+    @DisplayName("Test the synchronous promotion pipeline - ")
+    void testSynchronusPromotionPipeline() {
+
+        // Given
+        start = Instant.now();
+
+        // When
+        List<String> promotions = this.shopping.findPromotionSynchronously(
+                FAVORITE_PRODUCT_NAME);
+
+        duration = Duration.between(start, Instant.now()).toMillis();
+
+        // Then
+        System.out.printf(DURATION_OF_FINDING_PROMOTIONS_TEMPLATE,
+                "synchronously", duration);
+        assertThat(promotions.size()).isEqualTo(IShopping.SHOPS.size());
+        System.out.println(promotions);
+    }
+
+    @Test
+    @DisplayName("Test the Asynchronous promotion pipeline - ")
+    void testAsyncPromotionPipeline() {
+
+        // Given
+        start = Instant.now();
+
+        // When
+        List<String> promotions = this.shopping.findPromotionAsync(
+                FAVORITE_PRODUCT_NAME);
+
+        duration = Duration.between(start, Instant.now()).toMillis();
+
+        // Then
+        System.out.printf(DURATION_OF_FINDING_PROMOTIONS_TEMPLATE,
+                "asynchronously", duration);
+        assertThat(promotions.size()).isEqualTo(IShopping.SHOPS.size());
+        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 3 + 100);
     }
 
 }///:~

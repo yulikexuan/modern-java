@@ -1,15 +1,16 @@
-//: com.yulikexuan.modernjava.concurrency.bestbuy.domain.model.ShopTest.java
+//: com.yulikexuan.modernjava.concurrency.bestbuy.domain.model.ShopIT.java
 
 
 package com.yulikexuan.modernjava.concurrency.bestbuy.domain.model;
 
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
-class ShopTest {
+class ShopIT {
 
     private String product;
     private Shop shop;
