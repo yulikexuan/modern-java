@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.money.CurrencyUnit;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
@@ -20,6 +21,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Shop implements IShop {
 
     private String name;
+    private CurrencyUnit currencyUnit;
 
     @Override
     public double getPrice(String product) {

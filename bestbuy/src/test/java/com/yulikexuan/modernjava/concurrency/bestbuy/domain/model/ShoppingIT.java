@@ -4,6 +4,8 @@
 package com.yulikexuan.modernjava.concurrency.bestbuy.domain.model;
 
 
+import com.yulikexuan.modernjava.concurrency.bestbuy.domain.services.ExchangeService;
+import com.yulikexuan.modernjava.concurrency.bestbuy.domain.services.IExchangeService;
 import org.junit.jupiter.api.*;
 
 import java.time.Duration;
@@ -25,6 +27,7 @@ class ShoppingIT {
     static final String DURATION_OF_FINDING_PROMOTIONS_TEMPLATE =
             ">>>>>>> The duration of finding all promotions %1$s is %2$d msec.%n";
 
+    private IExchangeService exchangeService;
     private ExecutorService executor;
     private Shopping shopping;
 
@@ -33,6 +36,7 @@ class ShoppingIT {
 
     @BeforeEach
     void setUp() {
+        this.exchangeService = new ExchangeService();
         this.executor = Executors.newFixedThreadPool(
                 IShopping.THE_BEST_THREADS_NUMBER,
                 runnable -> {
@@ -41,7 +45,7 @@ class ShoppingIT {
                     return thread;
                 });
 
-        this.shopping = new Shopping(this.executor);
+        this.shopping = new Shopping(this.executor, this.exchangeService);
     }
 
     @AfterEach
@@ -188,7 +192,27 @@ class ShoppingIT {
         System.out.printf(DURATION_OF_FINDING_PROMOTIONS_TEMPLATE,
                 "asynchronously", duration);
         assertThat(promotions.size()).isEqualTo(IShopping.SHOPS.size());
-        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 3 + 100);
+        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 3 + 200);
+    }
+
+    @Test
+    @DisplayName("Test compose two combined CompletableFutures - ")
+    void testComposeTwoCombinedCompletableFuture() {
+
+        // Given
+        start = Instant.now();
+
+        // When
+        List<String> promotions = shopping.findPromotionQuoteAsync(
+                FAVORITE_PRODUCT_NAME);
+
+        duration = Duration.between(start, Instant.now()).toMillis();
+
+        // Then
+        System.out.printf(DURATION_OF_FINDING_PROMOTIONS_TEMPLATE,
+                "by composing two combined Futures", duration);
+        assertThat(promotions.size()).isEqualTo(IShopping.SHOPS.size());
+        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 2 + 200);
     }
 
 }///:~

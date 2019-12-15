@@ -6,7 +6,8 @@ package com.yulikexuan.modernjava.concurrency.bestbuy.domain.model;
 
 import lombok.*;
 
-import java.util.Optional;
+import javax.money.CurrencyUnit;
+import javax.money.Monetary;
 
 
 @Getter
@@ -18,18 +19,21 @@ public class Quote {
     private final String shopName;
     private final double price;
     private final Discount.Code discountCode;
+    private final CurrencyUnit currencyUnit;
 
     public static Quote parse(String quoteString) {
 
         String shopName = null;
         double price = 0;
         Discount.Code discountCode = null;
+        CurrencyUnit currencyUnit = null;
 
         try {
             String[] split = quoteString.split(":");
             shopName = split[0];
             price = Double.parseDouble(split[1]);
             discountCode = Discount.Code.valueOf(split[2]);
+            currencyUnit = Monetary.getCurrency(split[3]);
         } catch (Exception e) {
             return null;
         }

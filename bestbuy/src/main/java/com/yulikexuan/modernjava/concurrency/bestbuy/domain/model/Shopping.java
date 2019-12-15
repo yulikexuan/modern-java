@@ -5,13 +5,14 @@ package com.yulikexuan.modernjava.concurrency.bestbuy.domain.model;
 
 
 import com.google.common.collect.ImmutableList;
+import com.yulikexuan.modernjava.concurrency.bestbuy.domain.services.IExchangeService;
 
+import javax.money.Monetary;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 
 /*
@@ -55,11 +56,13 @@ import java.util.stream.Collectors;
  */
 public class Shopping implements IShopping {
 
+    private final IExchangeService exchangeService;
     private final Executor executor;
     private final ThreadLocalRandom random;
 
-    public Shopping(Executor executor) {
+    public Shopping(Executor executor, IExchangeService exchangeService) {
         this.executor = executor;
+        this.exchangeService = exchangeService;
         this.random = ThreadLocalRandom.current();
     }
 
@@ -124,6 +127,7 @@ public class Shopping implements IShopping {
                 .map(shop -> getPriceSynchronously(shop, product))
                 .map(Quote::parse)
                 .map(Discount::applyDiscount)
+                .map(Quote::toString)
                 .collect(ImmutableList.toImmutableList());
     }
 
@@ -132,11 +136,47 @@ public class Shopping implements IShopping {
 
         List<CompletableFuture<String>> promotionFutures = SHOPS.stream()
                 .map(shop -> getPriceAsyncWithCustomExecutor(shop, product))
+                // Transforming each CompletableFuture<String> in the stream
+                // into a corresponding CompletableFuture<Quote>
                 .map(future -> future.thenApply(Quote::parse))
+                // Take the Quote and pass it to the Discount service to obtain
+                // the final discounted remotely by composing another
+                // CompletableFuture in order pipelining more than one
+                // asynchronous operations, passing the first result of the first
+                // operation to the second operation when it becomes available
                 .map(future -> future.thenCompose(
                         quote -> CompletableFuture.supplyAsync(
                                 () -> Discount.applyDiscount(quote),
                                 this.executor)))
+                // How to get the currency unit from quote here?
+                // Use "USD" for now
+                .map(future -> future.thenCombine(
+                        CompletableFuture.supplyAsync(
+                                () -> exchangeService.getRate(
+                                        Monetary.getCurrency("USD"),
+                                        Monetary.getCurrency("CAD")),
+                                this.executor),
+                        (quote, rate) -> Quote.builder()
+                                .shopName(quote.getShopName())
+                                .currencyUnit(quote.getCurrencyUnit())
+                                .price(quote.getPrice() * rate)
+                                .discountCode(quote.getDiscountCode())
+                                .build().toString())
+                )
+                .collect(ImmutableList.toImmutableList());
+
+        return promotionFutures.stream()
+                .map(CompletableFuture::join)
+                .collect(ImmutableList.toImmutableList());
+    }
+
+    @Override
+    public List<String> findPromotionQuoteAsync(String product) {
+
+        List<CompletableFuture<String>> promotionFutures = SHOPS.stream()
+                .map(shop -> getQuoteAsyncWithCustomExecutor(shop, product))
+                .map(this::applyDiscountAndExchangeRate)
+                .map(future -> future.thenApply(Quote::toString))
                 .collect(ImmutableList.toImmutableList());
 
         return promotionFutures.stream()
@@ -149,8 +189,23 @@ public class Shopping implements IShopping {
         Discount.Code[] allCodes = Discount.Code.values();
         Discount.Code discountCode = allCodes[this.random.current()
                 .nextInt(0, allCodes.length)];
-        return String.format("%s:%.2f:%s", shop.getName(),
-                shop.getPrice(product), discountCode);
+        return String.format("%s:%.2f:%s:%s", shop.getName(),
+                shop.getPrice(product), discountCode,
+                shop.getCurrencyUnit().getCurrencyCode());
+    }
+
+    private Quote getQuoteSync(IShop shop, String product) {
+
+        double price = shop.getPrice(product);
+        Discount.Code[] allCodes = Discount.Code.values();
+        Discount.Code discountCode = allCodes[this.random.current()
+                .nextInt(0, allCodes.length)];
+
+        return Quote.builder().shopName(shop.getName())
+                .price(price)
+                .discountCode(discountCode)
+                .currencyUnit(shop.getCurrencyUnit())
+                .build();
     }
 
     private CompletableFuture<String> getPriceAsynchronously(
@@ -174,6 +229,35 @@ public class Shopping implements IShopping {
         return CompletableFuture.supplyAsync(
                 () -> getPriceSynchronously(shop, product),
                 this.executor);
+    }
+
+    private CompletableFuture<Quote> getQuoteAsyncWithCustomExecutor(
+            IShop shop, String product) {
+
+        return CompletableFuture.supplyAsync(
+                () -> getQuoteSync(shop, product), this.executor);
+    }
+
+    private CompletableFuture<Quote> applyDiscountAndExchangeRate(
+            CompletableFuture<Quote> future) {
+
+        return future.thenCompose(quote1 -> CompletableFuture.supplyAsync(
+                () -> Discount.applyDiscount(quote1), this.executor)
+                        // Define one timeout that expires in 1200 milliseconds
+                        // but completes the Future with a predetermined value
+                        // instead of causing a failure
+                        .completeOnTimeout(quote1, 1200,
+                                TimeUnit.MILLISECONDS)
+                        .thenCombine(CompletableFuture.supplyAsync(
+                                () -> exchangeService.getRate(
+                                        quote1.getCurrencyUnit(),
+                                        Monetary.getCurrency("CAD")),
+                                this.executor).completeOnTimeout(1.00,
+                                1200, TimeUnit.MILLISECONDS),
+                                IExchangeService::applyRate))
+                // Define a timeout that makes the whole computation fail if it
+                // takes more than 3 seconds
+                .orTimeout(DEFAULT_TIME_OUT_IN_SECOND, TimeUnit.SECONDS);
     }
 
 }///:~

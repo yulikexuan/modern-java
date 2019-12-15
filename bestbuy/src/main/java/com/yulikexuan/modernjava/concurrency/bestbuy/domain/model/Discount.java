@@ -8,7 +8,7 @@ import org.apache.commons.math3.util.Precision;
 
 public class Discount {
 
-    static final String PRICE_TEMPLATE = "%1$s price is $%2$.2f [%3$s]";
+    static final String PRICE_TEMPLATE = "%1$s price is %2$s %3$.2f [%4$s]";
 
     public enum Code {
 
@@ -30,15 +30,17 @@ public class Discount {
 
     } //: End of Discount.Code
 
-    public static String applyDiscount(final Quote quote) {
+    public static Quote applyDiscount(final Quote quote) {
 
         if (quote == null) {
             return null;
         }
 
-        return String.format(PRICE_TEMPLATE, quote.getShopName(),
-                Discount.apply(quote.getPrice(), quote.getDiscountCode()),
-                quote.getDiscountCode().toString());
+        return Quote.builder()
+                .shopName(quote.getShopName())
+                .currencyUnit(quote.getCurrencyUnit())
+                .price(Discount.apply(quote.getPrice(), quote.getDiscountCode()))
+                .discountCode(quote.getDiscountCode()).build();
     }
 
     private static double apply(double price, Code code) {
