@@ -88,7 +88,7 @@ class ShoppingIT {
         // Then
         assertThat(priceList.size()).isEqualTo(IShopping.SHOPS.size());
         assertThat(duration).isGreaterThan(
-                IShop.LONG_PROCESSING_TIME * IShopping.SHOPS.size());
+                IShop.MAXIMUM_PROCESSING_TIME * IShopping.SHOPS.size());
     }
 
     @Test
@@ -109,7 +109,7 @@ class ShoppingIT {
 
         // Then
         assertThat(priceList.size()).isEqualTo(IShopping.SHOPS.size());
-        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 4 + 100);
+        assertThat(duration).isLessThan(IShop.MAXIMUM_PROCESSING_TIME * 4 + 100);
     }
 
     @Test
@@ -130,7 +130,7 @@ class ShoppingIT {
 
         // Then
         assertThat(priceList.size()).isEqualTo(IShopping.SHOPS.size());
-        assertThat(duration).isLessThan(4 * IShop.LONG_PROCESSING_TIME + 100);
+        assertThat(duration).isLessThan(4 * IShop.MAXIMUM_PROCESSING_TIME + 100);
     }
 
     @Test
@@ -151,7 +151,7 @@ class ShoppingIT {
 
         // Then
         assertThat(priceList.size()).isEqualTo(IShopping.SHOPS.size());
-        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 2 + 100);
+        assertThat(duration).isLessThan(IShop.MAXIMUM_PROCESSING_TIME * 2 + 100);
     }
 
     @Disabled
@@ -192,7 +192,7 @@ class ShoppingIT {
         System.out.printf(DURATION_OF_FINDING_PROMOTIONS_TEMPLATE,
                 "asynchronously", duration);
         assertThat(promotions.size()).isEqualTo(IShopping.SHOPS.size());
-        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 3 + 200);
+        assertThat(duration).isLessThan(IShop.MAXIMUM_PROCESSING_TIME * 3 + 200);
     }
 
     @Test
@@ -212,7 +212,7 @@ class ShoppingIT {
         System.out.printf(DURATION_OF_FINDING_PROMOTIONS_TEMPLATE,
                 "by composing two combined Futures", duration);
         assertThat(promotions.size()).isEqualTo(IShopping.SHOPS.size());
-        assertThat(duration).isLessThan(IShop.LONG_PROCESSING_TIME * 2 + 200);
+        assertThat(duration).isLessThan(IShop.MAXIMUM_PROCESSING_TIME * 2 + 200);
     }
 
 }///:~

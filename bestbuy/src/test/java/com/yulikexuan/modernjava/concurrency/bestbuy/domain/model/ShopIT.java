@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
+import static com.yulikexuan.modernjava.concurrency.bestbuy.domain.model.IShop.MINIMUM_PROCESSING_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -87,7 +88,7 @@ class ShopIT {
             assertThat(retrievalTime)
                     .as("The retrieval time should be greater than " +
                             "the processing time.")
-                    .isGreaterThanOrEqualTo(IShop.LONG_PROCESSING_TIME);
+                    .isBetween(MINIMUM_PROCESSING_TIME, IShop.MAXIMUM_PROCESSING_TIME + MINIMUM_PROCESSING_TIME);
             assertThat(retrievalTime).isGreaterThan(invocationTime);
             assertThat(invocationTime).isLessThan(3);
         }
