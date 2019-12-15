@@ -215,4 +215,21 @@ class ShoppingIT {
         assertThat(duration).isLessThan(IShop.MAXIMUM_PROCESSING_TIME * 2 + 200);
     }
 
+    @Test
+    void testPrintPromotionsReactively() {
+
+        // Given
+        start = Instant.now();
+
+        // When
+        shopping.printPromotionQuoteReactively(FAVORITE_PRODUCT_NAME);
+        duration = Duration.between(start, Instant.now()).toMillis();
+
+        // Then
+        System.out.printf("%n" + DURATION_OF_FINDING_PROMOTIONS_TEMPLATE + "%n",
+                "by composing two combined Futures reactively", duration);
+
+        assertThat(duration).isLessThan(IShop.MAXIMUM_PROCESSING_TIME * 2 + 200);
+    }
+
 }///:~

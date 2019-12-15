@@ -8,11 +8,14 @@ import com.google.common.collect.ImmutableList;
 import com.yulikexuan.modernjava.concurrency.bestbuy.domain.services.IExchangeService;
 
 import javax.money.Monetary;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 
 /*
@@ -182,6 +185,35 @@ public class Shopping implements IShopping {
         return promotionFutures.stream()
                 .map(CompletableFuture::join)
                 .collect(ImmutableList.toImmutableList());
+    }
+
+    /*
+     * The allOf factory method takes as input an array of CompletableFutures
+     * and returns a CompletableFuture<Void> that’s completed only when all the
+     * CompletableFutures passed have completed
+     *
+     * Invoking join on the CompletableFuture returned by the allOf method
+     * provides an easy way to wait for the completion of all the
+     * CompletableFutures in the original stream
+     */
+    @Override
+    public void printPromotionQuoteReactively(String product) {
+        Instant start = Instant.now();
+        CompletableFuture[] futures = SHOPS.stream()
+                .map(shop -> getQuoteAsyncWithCustomExecutor(shop, product))
+                .map(this::applyDiscountAndExchangeRate)
+                // .map(future -> future.thenApply(Quote::toString))
+                .map(future -> future.thenAccept(
+                        quote -> System.out.printf(
+                                "----> %s %s price CAD %.2f [%d msec]%n",
+                                quote.getShopName(),
+                                quote.getDiscountCode().equals("NONE") ?
+                                        "" : quote.getDiscountCode(),
+                                quote.getPrice(),
+                                Duration.between(start,
+                                        Instant.now()).toMillis())))
+                .toArray(size -> new CompletableFuture[size]);
+        CompletableFuture.allOf(futures).join();
     }
 
     private String getPriceSynchronously(IShop shop, String product) {

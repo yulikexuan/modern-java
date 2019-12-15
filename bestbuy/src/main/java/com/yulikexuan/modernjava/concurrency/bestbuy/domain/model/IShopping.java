@@ -10,24 +10,26 @@ import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 
 public interface IShopping {
 
     String[] SHOP_NAMES = {
-            "BestPrice",
-            "LetsSaveBig",
-            "MyFavoriteShop",
-            "BuyItAll",
-            "Amazon",
-            "Costsco",
-            "Walmart",
-            "BestBuy",
-            "FutureShop",
-            "WIX",
-            "Volusion",
-            "Squarespace"
+            " 1 - BestPrice",
+            " 2 - LetsSaveBig",
+            " 3 - MyFavoriteShop",
+            " 4 - BuyItAll",
+            " 5 - Amazon",
+            " 6 - Costsco",
+            " 7 - Walmart",
+            " 8 - BestBuy",
+            " 9 - FutureShop",
+            "10 - WIX",
+            "11 - Volusion",
+            "12 - Squarespace"
     };
 
     CurrencyUnit[] CURRENCY_UNITS = {
@@ -68,5 +70,7 @@ public interface IShopping {
     List<String> findPromotionAsync(final String product);
 
     List<String> findPromotionQuoteAsync(final String product);
+
+    void printPromotionQuoteReactively(final String product);
 
 }///:~
