@@ -6,6 +6,7 @@ package com.yulikexuan.modernjava.csv;
 
 import com.yulikexuan.modernjava.io.FileIO;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -15,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 
+@Disabled
 class CsvUtilTest {
 
     private FileIO fileIO;

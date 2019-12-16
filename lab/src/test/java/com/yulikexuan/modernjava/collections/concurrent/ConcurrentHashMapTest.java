@@ -183,7 +183,7 @@ public class ConcurrentHashMapTest {
             // Given
             List<String> threadNames = Lists.newArrayList();
 
-            this.secretCodes.forEach(5,
+            this.secretCodes.forEach(1,
                     (k, v) ->  threadNames.add(Thread.currentThread().getName()));
 
             // When
@@ -193,7 +193,7 @@ public class ConcurrentHashMapTest {
             assertThat(threadNumber)
                     .as("Should having more than one thread for " +
                             "processing each element")
-                    .isGreaterThan(1);
+                    .isGreaterThan(1L);
         }
 
         @DisplayName("Test single thead forEach - ")
