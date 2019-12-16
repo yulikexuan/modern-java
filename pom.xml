@@ -220,6 +220,7 @@
     
         <module>lab</module>
         <module>bestbuy</module>
+        <module>temperature-reporting</module>
     
     </modules>
 
