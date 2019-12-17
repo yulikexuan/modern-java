@@ -4,12 +4,9 @@
 package com.yulikexuan.modernjava.concurrency.tempreporting.domain.model;
 
 
-import java.util.concurrent.ThreadLocalRandom;
-
-
 public interface ITempInfo {
 
-    ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
+    String REPORT_TEMPLATE = "-------> %-20s : %4d (F)";
 
     int getTemp();
     String getTown();

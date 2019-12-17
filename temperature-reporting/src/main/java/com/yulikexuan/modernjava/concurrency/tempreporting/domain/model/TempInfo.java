@@ -18,15 +18,7 @@ public class TempInfo implements ITempInfo {
 
     @Override
     public String toString() {
-        return this.town + " : " + temp;
-    }
-
-    public static ITempInfo fetch(final String town) {
-        int temp = RANDOM.nextInt(10);
-        if ((town == null) || (temp == 0)) {
-            throw new RuntimeException("XXX Error! XXX");
-        }
-        return TempInfo.builder().town(town).temp(temp).build();
+        return String.format(REPORT_TEMPLATE, this.town, temp);
     }
 
 }///:~
