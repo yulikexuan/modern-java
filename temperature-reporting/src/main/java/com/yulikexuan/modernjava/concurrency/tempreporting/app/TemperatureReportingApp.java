@@ -4,7 +4,7 @@
 package com.yulikexuan.modernjava.concurrency.tempreporting.app;
 
 
-import com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TemperatureReport;
+import com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.CelsiusTemperatureReport;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan("com.yulikexuan.modernjava.concurrency.tempreporting")
 public class TemperatureReportingApp {
 
-
     public static void main(String... args) {
 
         ApplicationContext context = new AnnotationConfigApplicationContext(
@@ -25,7 +24,8 @@ public class TemperatureReportingApp {
 
         System.out.printf("%n>>>>>>> Starts to report temperature for %s%n", town);
 
-        context.getBean(TemperatureReport.class).reportTemperatureForTown(town);
+        context.getBean(CelsiusTemperatureReport.class)
+                .reportTemperatureForTown(town);
     }
 
 }///:~

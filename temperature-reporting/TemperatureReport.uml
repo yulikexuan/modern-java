@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TemperatureReport</OriginalElement>
+  <nodes>
+    <node x="579.6266666666668" y="126.0">java.util.concurrent.Flow.Subscriber</node>
+    <node x="563.0" y="361.0">java.util.concurrent.Flow.Publisher</node>
+    <node x="717.13" y="0.0">java.util.concurrent.Flow.Subscription</node>
+    <node x="654.9266666666666" y="634.0">com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TemperatureReport</node>
+    <node x="838.5" y="307.0">com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TempSubscriber</node>
+    <node x="0.0" y="296.0">com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TempSubscription</node>
+    <node x="558.5" y="530.0">com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.ITemperatureReport</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="java.util.concurrent.Flow.Subscriber" target="java.util.concurrent.Flow.Subscription">
+      <point x="0.0" y="-60.0" />
+      <point x="686.6266666666668" y="106.0" />
+      <point x="771.88" y="106.0" />
+      <point x="-18.25" y="38.0" />
+    </edge>
+    <edge source="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TemperatureReport" target="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TempSubscription">
+      <point x="-119.19999999999993" y="-81.0" />
+      <point x="684.7266666666667" y="614.0" />
+      <point x="271.5" y="614.0" />
+      <point x="0.0" y="92.0" />
+    </edge>
+    <edge source="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TempSubscription" target="java.util.concurrent.Flow.Subscription">
+      <point x="-181.0" y="-92.0" />
+      <point x="90.5" y="276.0" />
+      <point x="206.36666666666667" y="276.0" />
+      <point x="206.36666666666667" y="96.0" />
+      <point x="735.38" y="96.0" />
+      <point x="-54.75" y="38.0" />
+    </edge>
+    <edge source="java.util.concurrent.Flow.Publisher" target="java.util.concurrent.Flow.Subscriber">
+      <point x="0.0" y="-27.0" />
+      <point x="688.0" y="276.0" />
+      <point x="686.6266666666668" y="276.0" />
+      <point x="0.0" y="60.0" />
+    </edge>
+    <edge source="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.ITemperatureReport" target="java.util.concurrent.Flow.Publisher">
+      <point x="0.0" y="-27.0" />
+      <point x="0.0" y="27.0" />
+    </edge>
+    <edge source="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TempSubscriber" target="java.util.concurrent.Flow.Subscriber">
+      <point x="-71.33333333333331" y="-81.0" />
+      <point x="874.1666666666667" y="266.0" />
+      <point x="772.2266666666667" y="266.0" />
+      <point x="85.60000000000002" y="60.0" />
+    </edge>
+    <edge source="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TempSubscriber" target="java.util.concurrent.Flow.Subscription">
+      <point x="0.0" y="-81.0" />
+      <point x="945.5" y="276.0" />
+      <point x="975.6666666666666" y="276.0" />
+      <point x="975.6666666666666" y="106.0" />
+      <point x="808.38" y="106.0" />
+      <point x="18.25" y="38.0" />
+    </edge>
+    <edge source="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TempSubscription" target="java.util.concurrent.Flow.Subscriber">
+      <point x="0.0" y="-92.0" />
+      <point x="271.5" y="266.0" />
+      <point x="601.0266666666666" y="266.0" />
+      <point x="-85.60000000000002" y="60.0" />
+    </edge>
+    <edge source="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TemperatureReport" target="java.util.concurrent.Flow.Subscriber">
+      <point x="5.6843418860808015E-14" y="-81.0" />
+      <point x="803.9266666666667" y="614.0" />
+      <point x="828.0" y="614.0" />
+      <point x="828.0" y="276.0" />
+      <point x="729.4266666666667" y="276.0" />
+      <point x="42.799999999999955" y="60.0" />
+    </edge>
+    <edge source="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TemperatureReport" target="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.ITemperatureReport">
+      <point x="-59.599999999999966" y="-81.0" />
+      <point x="744.3266666666667" y="604.0" />
+      <point x="688.0" y="604.0" />
+      <point x="0.0" y="27.0" />
+    </edge>
+    <edge source="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TemperatureReport" target="com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TempSubscriber">
+      <point x="59.60000000000008" y="-81.0" />
+      <point x="863.5266666666668" y="604.0" />
+      <point x="933.3166666666667" y="604.0" />
+      <point x="933.3166666666667" y="505.0" />
+      <point x="892.0" y="505.0" />
+      <point x="-53.5" y="81.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="526.5" y="398.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Methods</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

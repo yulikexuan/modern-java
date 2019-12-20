@@ -1,4 +1,4 @@
-//: com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TemperatureReport.java
+//: com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.CelsiusTemperatureReport.java
 
 
 package com.yulikexuan.modernjava.concurrency.tempreporting.domain.model;
@@ -8,18 +8,21 @@ import com.yulikexuan.modernjava.concurrency.tempreporting.domain.services.ITemp
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static java.util.concurrent.Flow.Processor;
 import static java.util.concurrent.Flow.Subscriber;
 
 
-@Component
-public class TemperatureReport implements ITemperatureReport {
+@Component()
+public class CelsiusTemperatureReport implements ITemperatureReport {
 
-    private String town;
     private final ITempInfoService tempInfoService;
     private final TempSubscriber subscriber;
 
+    private String town;
+    private Processor<ITempInfo, ITempInfo> processor;
+
     @Autowired
-    public TemperatureReport(ITempInfoService tempInfoService,
+    public CelsiusTemperatureReport(ITempInfoService tempInfoService,
                              TempSubscriber subscriber) {
         this.tempInfoService = tempInfoService;
         this.subscriber = subscriber;
@@ -28,14 +31,16 @@ public class TemperatureReport implements ITemperatureReport {
     @Override
     public void reportTemperatureForTown(String town) {
         this.town = town;
+        this.processor = new TempProcessor();
         this.subscribe(this.subscriber);
     }
 
     @Override
     public void subscribe(Subscriber<? super ITempInfo> subscriber) {
+        this.processor.subscribe(subscriber);
         TempSubscription tempSubscription = TempSubscription.newSubscription(
-                town, subscriber, tempInfoService);
-        subscriber.onSubscribe(tempSubscription);
+                town, processor, tempInfoService);
+        this.processor.onSubscribe(tempSubscription);
     }
 
 }///:~

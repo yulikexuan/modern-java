@@ -6,6 +6,8 @@ package com.yulikexuan.modernjava.concurrency.tempreporting.domain.model;
 
 import com.yulikexuan.modernjava.concurrency.tempreporting.domain.services.ITempInfoService;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.LongStream;
 
 import static java.util.concurrent.Flow.Subscriber;
@@ -13,6 +15,9 @@ import static java.util.concurrent.Flow.Subscription;
 
 
 public class TempSubscription implements Subscription {
+
+    private static final ExecutorService EXECUTOR =
+            Executors.newSingleThreadExecutor();
 
     private final String town;
     private final Subscriber<? super ITempInfo> subscriber;
@@ -36,18 +41,25 @@ public class TempSubscription implements Subscription {
 
     @Override
     public void request(long n) {
-        LongStream.range(0L, n)
-                .forEach(l -> {
-                    try {
-                        // Method invoked with a Subscription's next item
-                        this.subscriber.onNext(this.tempInfoService.fetch(town));
-                    } catch (Exception e) {
-                        // If Subscriber::onNext throws an exception,
-                        // resulting behavior is not guaranteed
-                        // but may cause the Subscription to be cancelled
-                        this.subscriber.onError(e);
-                    }
-                });
+
+        // In order to avoid overflowing the stack, use a different thread to
+        // send new elements to Subscriber::onNext
+        EXECUTOR.submit(
+                () -> LongStream.range(0L, n)
+                        .forEach(l -> {
+                            try {
+                                // Method invoked with a Subscription's next item
+                                // In Flow.Subscriber::onNext, call Flow.Subscription
+                                // again, then will generate java.lang.StackOverflowError
+                                this.subscriber.onNext(this.tempInfoService.fetch(town));
+                            } catch (Exception e) {
+                                // If Subscriber::onNext throws an exception,
+                                // resulting behavior is not guaranteed
+                                // but may cause the Subscription to be cancelled
+                                this.subscriber.onError(e);
+                            }
+                        })
+        );
     }
 
     /*
