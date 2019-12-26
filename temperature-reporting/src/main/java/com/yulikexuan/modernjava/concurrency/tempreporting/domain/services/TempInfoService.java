@@ -5,6 +5,7 @@ package com.yulikexuan.modernjava.concurrency.tempreporting.domain.services;
 
 
 import com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.ITempInfo;
+import com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.InvalidTemperatureException;
 import com.yulikexuan.modernjava.concurrency.tempreporting.domain.model.TempInfo;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +20,16 @@ public class TempInfoService implements ITempInfoService {
     @Override
     public ITempInfo fetch(final String town) {
 
-        int temp = RANDOM.nextInt(23, 41); // -5C ~ 5C
+        int temp = RANDOM.nextInt(23, 50); // -5C ~ 10C
+        long interval = RANDOM.nextLong(500, 1500);
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(interval);
         } catch (InterruptedException e) {
+        }
+
+        if (temp > 46) { // 8c
+            throw new InvalidTemperatureException("Error: Abnormal Temperature!");
         }
 
         return TempInfo.builder().town(town).temp(temp).build();
