@@ -13,7 +13,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>12</maven.compiler.source>
+        <maven.compiler.source>13</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
     </properties>
@@ -142,6 +142,9 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
+                <configuration>
+                    <release>13</release> <!-- This was the problem. -->
+                </configuration>
             </plugin>
 
             <plugin>
