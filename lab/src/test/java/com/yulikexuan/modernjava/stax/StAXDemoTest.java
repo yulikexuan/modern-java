@@ -5,17 +5,10 @@ package com.yulikexuan.modernjava.stax;
 
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import javax.xml.stream.*;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,17 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StAXDemoTest {
 
-    private static XMLInputFactory xmlInputFactory;
-    private static boolean inputFileExists = false;
-    private static Path inputFilePath;
+    static final String RECIPE_XML = "<?xml version=\"1.0\" ?><h:html xmlns:h=\"http://www.w3.org/1999/xhtml\" xmlns:t=\"http://www.tecsys.com\"><h:head><h:title>Recipe</h:title></h:head><h:body><t:recipe><t:title>Grilled Cheese Sandwich</t:title><t:ingredients><h:ul><h:li><t:ingredient qty=\"2\">bread slice</t:ingredient></h:li></h:ul></t:ingredients></t:recipe></h:body></h:html>";
+
+    private static Path outputFilePath;
 
     @BeforeAll
-    static void beforeAll() throws URISyntaxException {
-        xmlInputFactory = XMLInputFactory.newFactory();
-        inputFilePath = StAXDemo.getInputFilePath();
-        inputFileExists = Files.exists(inputFilePath);
+    static void beforeAll() throws URISyntaxException, IOException {
+        outputFilePath = StAXDemo.getOutputFilePath();
     }
 
     @BeforeEach
@@ -42,15 +34,17 @@ class StAXDemoTest {
     }
 
     @Test
+    @Order(2)
     @DisplayName("Test XML Stream Reader of StAX - ")
     void test_Xml_Stream_Reader() {
 
-        assumeTrue(inputFileExists);
+        assumeTrue(Files.exists(outputFilePath));
 
         // Given
+        XMLInputFactory xmlInputFactory = XMLInputFactory.newFactory();
         XMLStreamReader xmlStreamReader = null;
         StringBuilder xmlOutputBuilder = new StringBuilder();
-        try (FileReader fileReader = new FileReader(inputFilePath.toFile())) {
+        try (FileReader fileReader = new FileReader(outputFilePath.toFile())) {
             xmlStreamReader = xmlInputFactory.createXMLStreamReader(fileReader);
             while (xmlStreamReader.hasNext()) {
                 switch (xmlStreamReader.next()) {
@@ -94,21 +88,140 @@ class StAXDemoTest {
         System.out.println(outputXml);
 
         // When
-        int appearanceRoot = StringUtils.countMatches(outputXml,
-                "Qname = breakfast_menu");
-        int appearanceFood = StringUtils.countMatches(outputXml,"Qname = food");
-        int appearanceName = StringUtils.countMatches(outputXml,"Qname = name");
+        int rootAppearance = StringUtils.countMatches(outputXml,
+                "Qname = {http://www.w3.org/1999/xhtml}html");
+        int ingredientElementsAppearance = StringUtils.countMatches(outputXml,
+                "Qname = {http://www.tecsys.com}ingredient");
+        int recipeAppearance = StringUtils.countMatches(outputXml,
+                "Qname = {http://www.tecsys.com}recipe");
 
         // Then
-        assertThat(appearanceRoot).isEqualTo(2);
-        assertThat(appearanceFood).isEqualTo(2 * StAXDemo.NUMBER_OF_EMEMENTS);
-        assertThat(appearanceName).isEqualTo(2 * StAXDemo.NUMBER_OF_EMEMENTS);
+        assertThat(rootAppearance).isEqualTo(2);
+        assertThat(ingredientElementsAppearance).isEqualTo(4);
+        assertThat(recipeAppearance).isEqualTo(2);
+    }
+
+    private void writeRecipeXml(XMLStreamWriter xmlStreamWriter) throws XMLStreamException {
+        // Start Document: <?xml version="1.0" ?>
+        xmlStreamWriter.writeStartDocument();
+
+        // Start <h:html>
+        xmlStreamWriter.setPrefix("h", StAXDemo.NAMESPACE_1);
+        xmlStreamWriter.writeStartElement(StAXDemo.NAMESPACE_1,
+                "html");
+        xmlStreamWriter.writeNamespace("h", StAXDemo.NAMESPACE_1);
+        xmlStreamWriter.writeNamespace("t", StAXDemo.NAMESPACE_2);
+
+        // Start <h:head>
+        xmlStreamWriter.writeStartElement(StAXDemo.NAMESPACE_1,
+                "head");
+        // Start <h:title>
+        xmlStreamWriter.writeStartElement(StAXDemo.NAMESPACE_1,
+                "title");
+        xmlStreamWriter.writeCharacters("Recipe");
+        xmlStreamWriter.writeEndElement(); // End of <h:title>
+        xmlStreamWriter.writeEndElement(); // End of <h:header>
+
+        // Start of <h:body>
+        xmlStreamWriter.writeStartElement(StAXDemo.NAMESPACE_1,
+                "body");
+
+        // Start of <t:recipe>
+        xmlStreamWriter.setPrefix("t", StAXDemo.NAMESPACE_2);
+        xmlStreamWriter.writeStartElement(StAXDemo.NAMESPACE_2,
+                "recipe");
+
+        // Start of <t:title>
+        xmlStreamWriter.writeStartElement(StAXDemo.NAMESPACE_2,
+                "title");
+        xmlStreamWriter.writeCharacters("Grilled Cheese Sandwich");
+        xmlStreamWriter.writeEndElement(); // End of <t:title>
+
+        // Start of <t:ingredients>
+        xmlStreamWriter.writeStartElement(StAXDemo.NAMESPACE_2,
+                "ingredients");
+
+        // Start of <h:ul><h:li>
+        xmlStreamWriter.setPrefix("h", StAXDemo.NAMESPACE_1);
+        xmlStreamWriter.writeStartElement(StAXDemo.NAMESPACE_1, "ul");
+        xmlStreamWriter.writeStartElement(StAXDemo.NAMESPACE_1, "li");
+
+        xmlStreamWriter.setPrefix("t", StAXDemo.NAMESPACE_2);
+        xmlStreamWriter.writeStartElement(StAXDemo.NAMESPACE_2,
+                "ingredient");
+        xmlStreamWriter.writeAttribute("qty", "2");
+        xmlStreamWriter.writeCharacters("bread slice");
+        xmlStreamWriter.writeEndElement(); // End of <t:ingredient>
+
+        xmlStreamWriter.setPrefix("h", StAXDemo.NAMESPACE_1);
+        xmlStreamWriter.writeEndElement(); // End of <h:li>
+        xmlStreamWriter.writeEndElement(); // End of <h:ul>
+
+        xmlStreamWriter.setPrefix("t", StAXDemo.NAMESPACE_2);
+        xmlStreamWriter.writeEndElement(); // Enf of <t:ingredients>
+        xmlStreamWriter.writeEndElement(); // End of <t:recipe>
+        xmlStreamWriter.writeEndElement(); // End of <h:body>
+        xmlStreamWriter.writeEndElement(); // End of <h:html>
+
+        // End of Document
+        xmlStreamWriter.writeEndDocument();
+
+        xmlStreamWriter.flush();
+        xmlStreamWriter.close();
     }
 
     @Test
-    @DisplayName("Test XML Stream Writer of StAX - ")
-    void test_XML_Stream_Writer() {
+    @Order(1)
+    @DisplayName("Test XML Stream Writer of StAX with FileWriter - ")
+    void test_XML_Stream_Writer_With_File_Writer() {
 
+        // Given
+        XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newFactory();
+
+        try (FileWriter fileWriter = new FileWriter(outputFilePath.toFile())) {
+
+            XMLStreamWriter xmlStreamWriter =
+                    xmlOutputFactory.createXMLStreamWriter(fileWriter);
+
+            writeRecipeXml(xmlStreamWriter);
+
+        } catch (IOException | XMLStreamException e) {
+            e.printStackTrace();
+        }
+
+        // When & Then
+        assertThat(Files.exists(outputFilePath))
+                .as("recipe.xml should have been created.")
+                .isTrue();
     }
+
+    @Test
+    @Order(3)
+    @DisplayName("Test XML Stream Writer of StAX with StringWriter - ")
+    void test_XML_Stream_Writer_With_String_Writer() {
+
+        // Given
+        XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newFactory();
+
+        String recipeXml = null;
+
+        try (StringWriter stringWriter = new StringWriter()) {
+
+            XMLStreamWriter xmlStreamWriter =
+                    xmlOutputFactory.createXMLStreamWriter(stringWriter);
+
+            writeRecipeXml(xmlStreamWriter);
+            stringWriter.flush();
+            recipeXml = stringWriter.toString();
+
+        } catch (IOException | XMLStreamException e) {
+            e.printStackTrace();
+        }
+
+        // When & Then
+        assertThat(recipeXml).isEqualTo(RECIPE_XML);
+    }
+
+
 
 }///:~
