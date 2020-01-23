@@ -4,6 +4,7 @@
 package com.yulikexuan.modernjava.stax;
 
 
+import com.sun.xml.txw2.output.IndentingXMLStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
 
@@ -20,9 +21,11 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StAXDemoTest {
 
+    static final String LINE_SEPARATOR = System.getProperty("line.separator");
     static final String RECIPE_XML = "<?xml version=\"1.0\" ?><h:html xmlns:h=\"http://www.w3.org/1999/xhtml\" xmlns:t=\"http://www.tecsys.com\"><h:head><h:title>Recipe</h:title></h:head><h:body><t:recipe><t:title>Grilled Cheese Sandwich</t:title><t:ingredients><h:ul><h:li><t:ingredient qty=\"2\">bread slice</t:ingredient></h:li></h:ul></t:ingredients></t:recipe></h:body></h:html>";
 
     private static Path outputFilePath;
+
 
     @BeforeAll
     static void beforeAll() throws URISyntaxException, IOException {
@@ -178,11 +181,13 @@ class StAXDemoTest {
         // Given
         XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newFactory();
 
-        try (FileWriter fileWriter = new FileWriter(outputFilePath.toFile())) {
+        try (Writer fileWriter = new BufferedWriter(
+                new FileWriter(outputFilePath.toFile()))) {
 
-            XMLStreamWriter xmlStreamWriter =
-                    xmlOutputFactory.createXMLStreamWriter(fileWriter);
-
+            IndentingXMLStreamWriter xmlStreamWriter =
+                    new IndentingXMLStreamWriter(
+                            xmlOutputFactory.createXMLStreamWriter(fileWriter));
+            xmlStreamWriter.setIndentStep("    ");
             writeRecipeXml(xmlStreamWriter);
 
         } catch (IOException | XMLStreamException e) {
