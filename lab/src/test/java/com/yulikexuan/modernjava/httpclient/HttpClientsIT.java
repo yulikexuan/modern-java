@@ -4,6 +4,7 @@
 package com.yulikexuan.modernjava.httpclient;
 
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.Charsets;
 import org.junit.jupiter.api.*;
 
@@ -19,6 +20,8 @@ import java.nio.file.*;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import static java.net.http.HttpClient.Version.HTTP_2;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -371,5 +374,56 @@ class HttpClientsIT {
         }
 
     }//: End of class ResponseHandlingTest
+
+    @Nested
+    @DisplayName("Asynchronous Request Test -")
+    class AsynchronousRequestTest {
+
+        String imagePathStr = Paths.get("src", "main", "resources")
+                .toString();
+
+        final Function<HttpRequest, CompletableFuture<?>> sendingImageRequestFunc =
+                httpRequest -> {
+                    String[] pathElems = httpRequest.uri().getPath()
+                            .split("/");
+                    String fileName = "Image." + pathElems[pathElems.length - 1];
+                    Path httpbinImagePath = Paths.get(imagePathStr, fileName);
+                    return httpClient.sendAsync(httpRequest,
+                            HttpResponse.BodyHandlers.ofFile(httpbinImagePath));
+                };
+
+        @Test
+        void test_Sending_Multi_Request_To_Different_URL_Asynchronously() {
+
+            // Given
+            List<URI> uriList = List.of(
+                    URI.create(HTTPBIN_URI_ADDRESS + "/image/jpeg"),
+                    URI.create(HTTPBIN_URI_ADDRESS + "/image/png"),
+                    URI.create(HTTPBIN_URI_ADDRESS + "/image/svg"));
+
+            List<HttpRequest> requestList = uriList.stream()
+                    .map(HttpRequest::newBuilder)
+                    .map(requestBuilder -> requestBuilder.build())
+                    .collect(ImmutableList.toImmutableList());
+
+            // When
+            // allOf: Returns a new CompletableFuture that is completed when
+            //        all of the given CompletableFutures complete
+            CompletableFuture.allOf(requestList.stream()
+                            .map(sendingImageRequestFunc)
+                            .toArray(CompletableFuture<?>[]::new))
+                    //.thenRun(() -> System.out.println("Completed!"))
+                    .join();
+
+            // Then
+            assertThat(Files.exists(
+                    Paths.get(imagePathStr, "Image.jpeg"))).isTrue();
+            assertThat(Files.exists(
+                    Paths.get(imagePathStr, "Image.png"))).isTrue();
+            assertThat(Files.exists(
+                    Paths.get(imagePathStr, "Image.svg"))).isTrue();
+        }
+
+    }//: End of class AsynchronousRequestTest
 
 }///:~
