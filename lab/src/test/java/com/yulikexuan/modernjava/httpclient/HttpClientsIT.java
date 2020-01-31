@@ -5,7 +5,6 @@ package com.yulikexuan.modernjava.httpclient;
 
 
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.io.Charsets;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
@@ -16,16 +15,23 @@ import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static java.net.http.HttpClient.Version.HTTP_2;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 
 @DisplayName("Java 12 Http Client Test - ")
@@ -406,24 +412,170 @@ class HttpClientsIT {
                     .map(requestBuilder -> requestBuilder.build())
                     .collect(ImmutableList.toImmutableList());
 
-            // When
+            // When & Then
             // allOf: Returns a new CompletableFuture that is completed when
             //        all of the given CompletableFutures complete
             CompletableFuture.allOf(requestList.stream()
                             .map(sendingImageRequestFunc)
                             .toArray(CompletableFuture<?>[]::new))
-                    //.thenRun(() -> System.out.println("Completed!"))
+                    .thenRun(() -> assertAll(
+                            "Three different images should be downloaded.",
+                            () -> {
+                                assertThat(Files.exists(Paths.get(imagePathStr,
+                                        "Image.jpeg"))).isTrue();
+                                assertThat(Files.exists(Paths.get(imagePathStr,
+                                        "Image.png"))).isTrue();
+                                assertThat(Files.exists(Paths.get(imagePathStr,
+                                        "Image.svg"))).isTrue();
+                            }))
                     .join();
-
-            // Then
-            assertThat(Files.exists(
-                    Paths.get(imagePathStr, "Image.jpeg"))).isTrue();
-            assertThat(Files.exists(
-                    Paths.get(imagePathStr, "Image.png"))).isTrue();
-            assertThat(Files.exists(
-                    Paths.get(imagePathStr, "Image.svg"))).isTrue();
         }
 
     }//: End of class AsynchronousRequestTest
+
+    @Nested
+    @DisplayName("Handling Server Push Test - ")
+    class ServerPushTest {
+
+        @BeforeEach
+        void setUp() {
+        }
+
+        @Test
+        @DisplayName("Test Server Push with implementing PushPromiseHandler - ")
+        void test_Server_Push_With_Creating_PushPromiseHandler_Manually()
+                throws InterruptedException {
+
+            // Given
+            HttpResponse.PushPromiseHandler<String> pushPromiseHandler =
+                    new HttpResponse.PushPromiseHandler<>() {
+                        @Override
+                        public void applyPushPromise(
+                                HttpRequest initiatingRequest,
+                                HttpRequest pushPromiseRequest,
+                                Function<HttpResponse.BodyHandler<String>,
+                                        CompletableFuture<HttpResponse<String>>>
+                                        acceptor) {
+
+                            System.out.printf(
+                                    "Received push promise request URI: " +
+                                            "%s%n  Push promise initiating " +
+                                            "request URI: %s%n%n",
+                                    pushPromiseRequest.uri(),
+                                    initiatingRequest.uri());
+
+                            acceptor.apply(HttpResponse.BodyHandlers.ofString())
+                                    .thenAccept(response -> {
+                                        System.out.printf("%n>>>>>>> " +
+                                                "Push promise responses received:");
+                                        System.out.printf("%nProcessed push " +
+                                                        "promise request URI: %s%n  " +
+                                                        "Pushed response status code: %d%n",
+                                                pushPromiseRequest.uri(),
+                                                response.statusCode());
+                                    });
+
+                        }// End of applyPushPromise
+                    };
+
+            HttpClient httpClient = HttpClient.newBuilder()
+                    // Required
+                    .followRedirects(HttpClient.Redirect.ALWAYS)
+                    .build();
+
+            HttpRequest httpRequest = HttpRequest
+                    .newBuilder(URI.create("http://www.angular.io"))
+                    .build();
+
+            // When
+            httpClient.sendAsync(httpRequest,
+                            HttpResponse.BodyHandlers.ofString(),
+                            pushPromiseHandler)
+                    .thenAccept(response -> {
+                        System.out.printf("Initiating request URI: " +
+                                        "%s%nResponse's request URI: " +
+                                        "%s%nResponse status code: %d%n",
+                                httpRequest.uri(),
+                                response.request().uri(),
+                                response.statusCode());
+                    }).join();
+
+            Thread.sleep(3000);
+        }
+
+    }//: End of class ServerPushTest
+
+    /*
+     * Rules to accept and reject push promises:
+     *     - A push request is rejected/cancelled if there is already an entry
+     *       in the concurrent map whose key is equal to the received push
+     *       promise request
+     *     - A push request is rejected/cancelled if it does not have the same
+     *       origin as its initiating request
+     *     - Otherwise, a push request is accepted
+     */
+    @Test
+    @DisplayName("Test accumulating push promises - ")
+    void test_Accumulating_Push_Promises() {
+
+        // GIVEN
+        var httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create("https://angular.io"))
+                .build();
+
+        var pushPromiseMap = new ConcurrentHashMap<HttpRequest,
+                CompletableFuture<HttpResponse<String>>>();
+
+        var pushPromiseHandler = HttpResponse.PushPromiseHandler.of(
+                pushPromiseRequest -> {
+                    System.out.printf("Received push promise request URI: %s%n" +
+                            "Initiating requset URI: %s%n%n",
+                            pushPromiseRequest.uri(),
+                            httpRequest.uri());
+                    return HttpResponse.BodyHandlers.ofString();
+                }, pushPromiseMap);
+
+        // Send the request asynchronously allowing server push
+        HttpResponse<String> response = httpClient.sendAsync(
+                        httpRequest,
+                        HttpResponse.BodyHandlers.ofString(),
+                        pushPromiseHandler)
+                .join();
+
+        System.out.printf("Initiating request URI: %s%nResponse's request URI: " +
+                "%s%nResponse status code: %d%n",
+                httpRequest.uri(),
+                response.request().uri(),
+                response.statusCode());
+
+        CompletableFuture<?>[] allPushPromises = pushPromiseMap.values()
+                .toArray(CompletableFuture<?>[]::new);
+
+        // Wait for all push promise response bodies be available
+        CompletableFuture.allOf(allPushPromises).join();
+
+        // Then
+
+        Consumer<HttpResponse<String>> assertion =
+                pushPromiseResponse -> assertAll(
+                        "Assert push promise response: ",
+                        () -> {
+                            String urlString = pushPromiseResponse.request()
+                                    .uri().toString();
+                            int statusCode = pushPromiseResponse.statusCode();
+                            System.out.printf(
+                                    "%nProcessed push promise request " +
+                                            "URI: %s%nPushed response " +
+                                            "status code: %d%n",
+                                    urlString, statusCode);
+                            assertThat(statusCode).isEqualTo(200);
+                            assertThat(urlString).startsWith(
+                                    "https://angular.io/generated");
+                        });
+
+        pushPromiseMap.values().stream()
+                .map(CompletableFuture::join)
+                .forEach(assertion);
+    }
 
 }///:~
