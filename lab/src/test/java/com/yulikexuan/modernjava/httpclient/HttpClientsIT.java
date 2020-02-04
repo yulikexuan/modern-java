@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
+import java.net.Authenticator;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -500,82 +501,141 @@ class HttpClientsIT {
                                 response.statusCode());
                     }).join();
 
-            Thread.sleep(3000);
+            Thread.sleep(3000); // Bad practice
+        }
+
+        /*
+         * Rules to accept and reject push promises:
+         *     - A push request is rejected/cancelled if there is already an entry
+         *       in the concurrent map whose key is equal to the received push
+         *       promise request
+         *     - A push request is rejected/cancelled if it does not have the same
+         *       origin as its initiating request
+         *     - Otherwise, a push request is accepted
+         */
+        @Test
+        @DisplayName("Test accumulating push promises - ")
+        void test_Accumulating_Push_Promises() {
+
+            // GIVEN
+            var httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("https://angular.io"))
+                    .build();
+
+            var pushPromiseMap = new ConcurrentHashMap<HttpRequest,
+                    CompletableFuture<HttpResponse<String>>>();
+
+            var pushPromiseHandler = HttpResponse.PushPromiseHandler.of(
+                    pushPromiseRequest -> {
+                        System.out.printf("Received push promise request URI: %s%n" +
+                                        "Initiating requset URI: %s%n%n",
+                                pushPromiseRequest.uri(),
+                                httpRequest.uri());
+                        return HttpResponse.BodyHandlers.ofString();
+                    }, pushPromiseMap);
+
+            // Send the request asynchronously allowing server push
+            HttpResponse<String> response = httpClient.sendAsync(
+                    httpRequest,
+                    HttpResponse.BodyHandlers.ofString(),
+                    pushPromiseHandler)
+                    .join();
+
+            System.out.printf("Initiating request URI: %s%nResponse's request URI: " +
+                            "%s%nResponse status code: %d%n",
+                    httpRequest.uri(),
+                    response.request().uri(),
+                    response.statusCode());
+
+            CompletableFuture<?>[] allPushPromises = pushPromiseMap.values()
+                    .toArray(CompletableFuture<?>[]::new);
+
+            // Wait for all push promise response bodies be available
+            CompletableFuture.allOf(allPushPromises).join();
+
+            // Then
+
+            Consumer<HttpResponse<String>> assertion =
+                    pushPromiseResponse -> assertAll(
+                            "Assert push promise response: ",
+                            () -> {
+                                String urlString = pushPromiseResponse.request()
+                                        .uri().toString();
+                                int statusCode = pushPromiseResponse.statusCode();
+                                System.out.printf(
+                                        "%nProcessed push promise request " +
+                                                "URI: %s%nPushed response " +
+                                                "status code: %d%n",
+                                        urlString, statusCode);
+                                assertThat(statusCode).isEqualTo(200);
+                                assertThat(urlString).startsWith(
+                                        "https://angular.io/generated");
+                            });
+
+            pushPromiseMap.values().stream()
+                    .map(CompletableFuture::join)
+                    .forEach(assertion);
         }
 
     }//: End of class ServerPushTest
 
-    /*
-     * Rules to accept and reject push promises:
-     *     - A push request is rejected/cancelled if there is already an entry
-     *       in the concurrent map whose key is equal to the received push
-     *       promise request
-     *     - A push request is rejected/cancelled if it does not have the same
-     *       origin as its initiating request
-     *     - Otherwise, a push request is accepted
-     */
-    @Test
-    @DisplayName("Test accumulating push promises - ")
-    void test_Accumulating_Push_Promises() {
+    @Nested
+    @DisplayName("Http Basic Authentication Test - ")
+    class HttpBasicAuthenticationTest {
 
-        // GIVEN
-        var httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create("https://angular.io"))
-                .build();
+        private String basicAuthUrlPattern =
+                "https://httpbin.org/basic-auth/%s/%s";
 
-        var pushPromiseMap = new ConcurrentHashMap<HttpRequest,
-                CompletableFuture<HttpResponse<String>>>();
+        private String username;
+        private String password;
+        private HttpClient httpClient;
+        private HttpRequest httpRequest;
 
-        var pushPromiseHandler = HttpResponse.PushPromiseHandler.of(
-                pushPromiseRequest -> {
-                    System.out.printf("Received push promise request URI: %s%n" +
-                            "Initiating requset URI: %s%n%n",
-                            pushPromiseRequest.uri(),
-                            httpRequest.uri());
-                    return HttpResponse.BodyHandlers.ofString();
-                }, pushPromiseMap);
+        @BeforeEach
+        void setUp() {
+            this.username = "yu.li";
+            this.password = "sharan";
+            BasicAuthenticator basicAuthenticator = (BasicAuthenticator.of(
+                    this.username, this.password));
+            Authenticator.setDefault(basicAuthenticator);
+            this.httpClient = HttpClient.newBuilder()
+                    .authenticator(Authenticator.getDefault())
+                    .build();
+            URI uri = URI.create(String.format(this.basicAuthUrlPattern,
+                    this.username, this.password));
+            this.httpRequest = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .build();
+        }
 
-        // Send the request asynchronously allowing server push
-        HttpResponse<String> response = httpClient.sendAsync(
-                        httpRequest,
-                        HttpResponse.BodyHandlers.ofString(),
-                        pushPromiseHandler)
-                .join();
+        @Test
+        void test_Basic_Authentication() {
 
-        System.out.printf("Initiating request URI: %s%nResponse's request URI: " +
-                "%s%nResponse status code: %d%n",
-                httpRequest.uri(),
-                response.request().uri(),
-                response.statusCode());
+            // Given
 
-        CompletableFuture<?>[] allPushPromises = pushPromiseMap.values()
-                .toArray(CompletableFuture<?>[]::new);
+            // When
+            HttpResponse<String> response = this.httpClient.sendAsync(
+                    this.httpRequest, HttpResponse.BodyHandlers.ofString())
+                    .join();
 
-        // Wait for all push promise response bodies be available
-        CompletableFuture.allOf(allPushPromises).join();
+            // Then
+            System.out.println("Response Status: " + response.statusCode());
+            System.out.println("Response Body: \n" + response.body());
 
-        // Then
+            response.previousResponse()
+                    .ifPresent(preResponse -> {
+                        System.out.println("Previous response Status: " +
+                                preResponse.statusCode());
+                        System.out.println("Previous response body: \n" +
+                                preResponse.body());
+                        System.out.println("Previous response headers: " );
+                        preResponse.headers()
+                                .map()
+                                .entrySet()
+                                .forEach(System.out::println);
+                    });
+        }
 
-        Consumer<HttpResponse<String>> assertion =
-                pushPromiseResponse -> assertAll(
-                        "Assert push promise response: ",
-                        () -> {
-                            String urlString = pushPromiseResponse.request()
-                                    .uri().toString();
-                            int statusCode = pushPromiseResponse.statusCode();
-                            System.out.printf(
-                                    "%nProcessed push promise request " +
-                                            "URI: %s%nPushed response " +
-                                            "status code: %d%n",
-                                    urlString, statusCode);
-                            assertThat(statusCode).isEqualTo(200);
-                            assertThat(urlString).startsWith(
-                                    "https://angular.io/generated");
-                        });
-
-        pushPromiseMap.values().stream()
-                .map(CompletableFuture::join)
-                .forEach(assertion);
-    }
+    }//: End of class HttpBasicAuthentication
 
 }///:~
