@@ -4,10 +4,13 @@
 package com.yulikexuan.modernjava.httpclient;
 
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 
 
+@Slf4j
 public class BasicAuthenticator extends Authenticator {
 
     private final String username;
@@ -24,9 +27,11 @@ public class BasicAuthenticator extends Authenticator {
 
     @Override
     protected PasswordAuthentication getPasswordAuthentication() {
-        System.out.println(this.getRequestingURL() +
-                " is asking for authentication: " +
+        log.info("{}>>>>>>> {} is asking for authentication: {}",
+                System.lineSeparator(),
+                this.getRequestingURL(),
                 this.getRequestingPrompt());
+
         return new PasswordAuthentication(this.username, this.password);
     }
 

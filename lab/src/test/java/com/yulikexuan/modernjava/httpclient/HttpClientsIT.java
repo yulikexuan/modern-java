@@ -5,6 +5,8 @@ package com.yulikexuan.modernjava.httpclient;
 
 
 import com.google.common.collect.ImmutableList;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
@@ -619,20 +621,27 @@ class HttpClientsIT {
                     .join();
 
             // Then
-            System.out.println("Response Status: " + response.statusCode());
-            System.out.println("Response Body: \n" + response.body());
+            int sc = response.statusCode();
+            String responseBody = response.body();
+            DocumentContext jsonContext = JsonPath.parse(responseBody);
+            boolean authenticated = jsonContext.read("$.authenticated");
+            String user = jsonContext.read("$.user");
+
+            assertAll("The user should have been authenticated", () -> {
+                assertThat(sc).isEqualTo(200);
+                assertThat(authenticated).isTrue();
+                assertThat(user).isEqualTo(username);
+            });
 
             response.previousResponse()
                     .ifPresent(preResponse -> {
-                        System.out.println("Previous response Status: " +
-                                preResponse.statusCode());
-                        System.out.println("Previous response body: \n" +
-                                preResponse.body());
-                        System.out.println("Previous response headers: " );
-                        preResponse.headers()
-                                .map()
-                                .entrySet()
-                                .forEach(System.out::println);
+                        assertThat(preResponse.statusCode())
+                                .as("Should be Unauthorized Code 401")
+                                .isEqualTo(401);
+                        assertThat(preResponse.body()).isNull();
+                        assertThat(preResponse.headers().map()
+                                .get("www-authenticate"))
+                                .contains("Basic realm=\"Fake Realm\"");
                     });
         }
 
