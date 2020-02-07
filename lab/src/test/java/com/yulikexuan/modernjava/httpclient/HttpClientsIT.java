@@ -13,10 +13,8 @@ import java.io.IOException;
 import java.net.Authenticator;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpHeaders;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.*;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,14 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static java.net.http.HttpClient.Version.HTTP_2;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 
 @DisplayName("Java 12 Http Client Test - ")
@@ -646,5 +643,70 @@ class HttpClientsIT {
         }
 
     }//: End of class HttpBasicAuthentication
+
+    @Nested
+    @DisplayName("WebSocket Test - ")
+    class WebSocketTest {
+
+        /*
+         * The server is an echo server
+         * Whatever you send to the server, you receive the same message back
+         */
+        static final String SOCKET_ENDPOINT_LOCATION =
+                "ws://demos.kaazing.com/echo";
+
+        private URI socketUri;
+
+        @BeforeEach
+        void setUp() {
+            this.socketUri = URI.create(SOCKET_ENDPOINT_LOCATION);
+        }
+
+        @Test
+        void Test_Sending_Message_To_A_Peer() {
+
+            // Given
+            HttpClient httpClient = HttpClient.newHttpClient();
+            WebSocketEchoListener echoListener = WebSocketEchoListener.create();
+            WebSocket webSocket = httpClient.newWebSocketBuilder()
+                    .connectTimeout(Duration.ofSeconds(6))
+                    .buildAsync(this.socketUri, echoListener)
+                    .join();
+
+            // When & Then
+            var helloMsg = "Hello, there.";
+            webSocket.sendText(helloMsg, true)
+                    .thenRun(() -> System.out.printf(
+                                    "%n>>>>>>> WebSocket Sent: '%s'%n",
+                            helloMsg))
+                    .join();
+
+            String pingMsg = "Just checking ...";
+            webSocket.sendPing(ByteBuffer.wrap(pingMsg.getBytes()))
+                    .thenRun(() -> System.out.printf(
+                            "%n>>>>>>> WebSocket Sent Ping: '%s'%n", pingMsg))
+                    .join();
+
+            webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "Done")
+                    .thenRun(() -> System.out.printf(
+                            "%n>>>>>>> WebSocket Sent Close%n%n"))
+                    .join();
+
+            echoListener.closeStatus()
+                    .thenAccept(System.out::println)
+                    /*
+                     * exceptionally method returns a new CompletionStage that,
+                     * when this stage completes exceptionally, is executed with
+                     * this stage's exception as the argument to the supplied
+                     * function.
+                     * Otherwise, if this stage completes normally, then the
+                     * returned stage also completes normally with the same
+                     * value
+                     */
+                    .exceptionally(e -> {e.printStackTrace();return null;})
+                    .join();
+        }
+
+    }//: End of class WebSocketTest
 
 }///:~
