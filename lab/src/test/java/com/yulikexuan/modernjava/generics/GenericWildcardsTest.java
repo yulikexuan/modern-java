@@ -5,6 +5,7 @@ package com.yulikexuan.modernjava.generics;
 
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -25,6 +26,7 @@ class GenericWildcardsTest {
     void setUp() {
     }
 
+    @Disabled
     @Test
     void test_Producer_Extends() {
 

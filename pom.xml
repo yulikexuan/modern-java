@@ -13,6 +13,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <checker.framework.version>3.1.1</checker.framework.version>
         <maven.compiler.source>13</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
@@ -20,6 +21,24 @@
 
     <dependencies>
 
+        <!-- Checker Framework -->
+<!--        <dependency>-->
+<!--            <groupId>org.checkerframework</groupId>-->
+<!--            <artifactId>checker-qual</artifactId>-->
+<!--            <version>${checker.framework.version}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.checkerframework</groupId>-->
+<!--            <artifactId>checker</artifactId>-->
+<!--            <version>${checker.framework.version}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.checkerframework</groupId>-->
+<!--            <artifactId>jdk8</artifactId>-->
+<!--            <version>${checker.framework.version}</version>-->
+<!--        </dependency>-->
+
+        <!-- Other Utils -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -149,7 +168,7 @@
 
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M4</version>
+                <version>3.0.0-M3</version>
                 <configuration>
                     <testFailureIgnore>false</testFailureIgnore>
                 </configuration>

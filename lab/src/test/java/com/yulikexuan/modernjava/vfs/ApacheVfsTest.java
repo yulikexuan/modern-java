@@ -40,6 +40,28 @@ public class ApacheVfsTest {
     }
 
     @Test
+    void test_Paths_For_Prefix() throws FileSystemException {
+
+        // Given
+        String absPathStr = "/TecsysDev/javaguru/projects" +
+                "/modern-java/lab/src/test/resources/fileTest.txt";
+
+        Path path = Paths.get(absPathStr);
+
+        URI uri = URI.create(absPathStr);
+        System.out.println(uri);
+
+        try (FileSystemManager defaultFileSystemManager = VFS.getManager();
+             FileObject fileObject = defaultFileSystemManager
+                     .resolveFile("file:///" + absPathStr);) {
+            // When
+//            fileObject.createFile();
+
+            assertThat(fileObject.exists()).isFalse();
+        }
+    }
+
+    @Test
     void test_If_Local_File_Exists() throws FileSystemException {
 
         // Given

@@ -28,6 +28,7 @@ class PathMatchersTest {
 
         // Given
         Path filePath = Paths.get("/com/java/One.java");
+        System.out.println(filePath.toAbsolutePath());
 
         // When & Then
         assertAll(
@@ -38,6 +39,9 @@ class PathMatchersTest {
                         filePath, "glob:*.java")).isFalse(),
                 () -> assertThat(PathMatchers.matches(filePath,
                         "glob:**/*.java"))
+                        .isTrue(),
+                () -> assertThat(PathMatchers.matches(filePath,
+                        "glob:**/one.java"))
                         .isTrue(),
                 () -> assertThat(PathMatchers.matches(filePath, "glob:*"))
                         .isFalse(),
