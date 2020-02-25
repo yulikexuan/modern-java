@@ -11,7 +11,7 @@ public interface ExecutorServiceConfiguration {
     int NUMBER_OF_THREADS = 4;
     int NUMBER_OF_INCREMENTS = 100;
     int SIZE_OF_THREAD_POOL = 8;
-    int TERMINATE_TIMEOUT_MILLISECOND = 800;
+    int TERMINATE_TIMEOUT_MILLISECOND = 3000;
 
     static void terminateExecutorServece(ExecutorService executorService) {
         executorService.shutdown();

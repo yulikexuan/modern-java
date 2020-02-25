@@ -171,6 +171,8 @@
                 <version>3.0.0-M3</version>
                 <configuration>
                     <testFailureIgnore>false</testFailureIgnore>
+                    <reuseForks>false</reuseForks>
+                    <forkCount>4</forkCount>
                 </configuration>
             </plugin>
 

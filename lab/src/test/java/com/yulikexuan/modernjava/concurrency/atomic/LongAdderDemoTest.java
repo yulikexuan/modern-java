@@ -12,12 +12,11 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import static com.yulikexuan.modernjava.concurrency.ExecutorServiceConfiguration.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static com.yulikexuan.modernjava.concurrency.ExecutorServiceConfiguration.*;
 
 
 class LongAdderDemoTest {
@@ -35,15 +34,7 @@ class LongAdderDemoTest {
 
     @AfterEach
     void tearDown() {
-        this.executorService.shutdown();
-        try {
-            if (!this.executorService.awaitTermination(
-                    TERMINATE_TIMEOUT_MILLISECOND, TimeUnit.MILLISECONDS)) {
-                this.executorService.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            this.executorService.shutdownNow();
-        }
+        terminateExecutorServece(executorService);
     }
 
     @Test
@@ -56,7 +47,7 @@ class LongAdderDemoTest {
                 action -> this.executorService.submit(action));
 
         // Then
-        assertAll("Validate accumulating result: ", () -> {
+        assertAll("Validate adding result: ", () -> {
                     assertThat(LongAdderDemo.sumThenReset()).isEqualTo(
                             NUMBER_OF_INCREMENTS * NUMBER_OF_THREADS);
                     assertThat(LongAdderDemo.sum()).isEqualTo(0); });
