@@ -1,7 +1,7 @@
-//: com.yulikexuan.modernjava.concurrency.NonSleepingThreadExample.java
+//: com.yulikexuan.modernjava.concurrency.executors.NonSleepingThreadExample.java
 
 
-package com.yulikexuan.modernjava.concurrency;
+package com.yulikexuan.modernjava.concurrency.executors;
 
 
 import lombok.extern.slf4j.Slf4j;

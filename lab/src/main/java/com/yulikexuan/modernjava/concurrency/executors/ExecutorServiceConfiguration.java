@@ -1,7 +1,6 @@
-//: com.yulikexuan.modernjava.concurrency.ExecutorServiceConfiguration.java
+//: com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceConfiguration.java
 
-
-package com.yulikexuan.modernjava.concurrency;
+package com.yulikexuan.modernjava.concurrency.executors;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;

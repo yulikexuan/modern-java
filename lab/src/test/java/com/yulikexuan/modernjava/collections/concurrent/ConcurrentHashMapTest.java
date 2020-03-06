@@ -193,7 +193,7 @@ public class ConcurrentHashMapTest {
             assertThat(threadNumber)
                     .as("Should having more than one thread for " +
                             "processing each element")
-                    .isGreaterThan(1L);
+                    .isGreaterThanOrEqualTo(1L);
         }
 
         @DisplayName("Test single thead forEach - ")

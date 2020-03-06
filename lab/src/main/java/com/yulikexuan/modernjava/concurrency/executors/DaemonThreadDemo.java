@@ -1,7 +1,7 @@
-//: com.yulikexuan.modernjava.concurrency.DaemonThreadDemo.java
+//: com.yulikexuan.modernjava.concurrency.executors.DaemonThreadDemo.java
 
 
-package com.yulikexuan.modernjava.concurrency;
+package com.yulikexuan.modernjava.concurrency.executors;
 
 
 import com.google.common.util.concurrent.MoreExecutors;

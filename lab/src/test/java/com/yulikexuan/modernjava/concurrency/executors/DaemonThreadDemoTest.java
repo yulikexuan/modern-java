@@ -1,10 +1,10 @@
-//: com.yulikexuan.modernjava.concurrency.DaemonThreadDemoTest.java
+//: com.yulikexuan.modernjava.concurrency.executors.DaemonThreadDemoTest.java
 
 
-package com.yulikexuan.modernjava.concurrency;
+package com.yulikexuan.modernjava.concurrency.executors;
 
 
-import org.junit.jupiter.api.AfterEach;
+import com.yulikexuan.modernjava.concurrency.executors.DaemonThreadDemo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
