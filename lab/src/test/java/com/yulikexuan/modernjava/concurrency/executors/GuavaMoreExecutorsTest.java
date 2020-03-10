@@ -4,14 +4,18 @@
 package com.yulikexuan.modernjava.concurrency.executors;
 
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.*;
 
 import java.time.Duration;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.List;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -137,6 +141,32 @@ public class GuavaMoreExecutorsTest {
                         System.out.println(echo);
                     }
                 });
+    }
+
+    @Test
+    void test_Listening_Task_Submissions() throws Exception {
+
+        // Given
+        this.executorService = Executors.newFixedThreadPool(
+                ExecutorServiceConfiguration.NUMBER_OF_THREADS);
+
+        ListeningExecutorService listeningExecutorService =
+                MoreExecutors.listeningDecorator(this.executorService);
+
+        Callable<String> codeGenerator =
+                () -> RandomStringUtils.randomAlphanumeric(4);
+
+        ListenableFuture<String> future1 =
+                listeningExecutorService.submit(codeGenerator);
+        ListenableFuture<String> future2 =
+                listeningExecutorService.submit(codeGenerator);
+
+        // When
+        String code = Futures.allAsList(future1, future2).get().stream()
+                .collect(Collectors.joining("-"));
+
+        // Then
+        assertThat(code.length()).isEqualTo(9);
     }
 
 }///:~
