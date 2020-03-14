@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -24,7 +25,10 @@ public class AsyncCalculation {
     private static ThreadLocalRandom random = ThreadLocalRandom.current();
 
     public static Runnable getAsyncCalculation(
-            CompletableFuture<Long> completableFuture) {
+            final CompletableFuture<Long> completableFuture) {
+
+        Objects.requireNonNull(completableFuture, "Needs a " +
+                "CompletableFuture instance to calculate asynchronously.");
 
         return () -> {
             final long result = random.nextLong(1000, 1100);
