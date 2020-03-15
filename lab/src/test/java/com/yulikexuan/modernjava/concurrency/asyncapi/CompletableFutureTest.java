@@ -4,12 +4,20 @@
 package com.yulikexuan.modernjava.concurrency.asyncapi;
 
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
 
 import java.time.Duration;
-import java.util.concurrent.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -92,14 +100,13 @@ public class CompletableFutureTest {
                     () -> {
                         try {
                             Thread.sleep(500);
-                            System.out.println(">>>>>>> Hello Asynchronous Programming!");
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     });
 
             // When & Then
-            assertTimeout(Duration.ofMillis(510), () -> completableFuture.join());
+            assertTimeout(Duration.ofMillis(600), () -> completableFuture.join());
         }
 
         /*
@@ -137,6 +144,15 @@ public class CompletableFutureTest {
     @DisplayName("Test Processing Results of Asynchronous Computations - ")
     class ProcessingResultsOfAsyncComputationsTest {
 
+        private long theFirstFutureThreadId;
+        private long theSecondFutureThreadId;
+
+        private boolean isRunning;
+
+        void setUp() {
+            this.isRunning = false;
+        }
+
         /*
          * CompletionStage::thenApply Returns a new CompletionStage that,
          * when this stage completes normally, is executed with this stage's result
@@ -149,19 +165,25 @@ public class CompletableFutureTest {
          * argument to the supplied functionn
          */
         @Test
-        void test_Processing_Results_With_thenApplyAsync_Function() {
+        void test_Processing_Results_With_thenApply_Function() {
 
             // Given
             CompletableFuture<String> secretKeyFuture =
-                    CompletableFuture.supplyAsync(() ->
-                            RandomStringUtils.randomAlphanumeric(10))
-                            .thenApplyAsync(key -> {
-                                sleep(200);
-                                return StringUtils.upperCase(key);
-                            });
+                    CompletableFuture.supplyAsync(() -> {
+                            theFirstFutureThreadId =
+                                    Thread.currentThread().getId();
+                            return RandomStringUtils.randomAlphanumeric(10);
+                    });
+
+            CompletableFuture<String> finalKeyFuture =
+                    secretKeyFuture.thenApply(key -> {
+                            theSecondFutureThreadId =
+                                    Thread.currentThread().getId();
+                            sleep(200);
+                            return StringUtils.upperCase(key);
+                    });
 
             // When
-            System.out.println(">>>>>>> Secret key is coming soon ......");
             /*
              * The CompletableFuture.join() method is similar to the get method,
              * but it throws an unchecked exception in case the Future does not
@@ -171,11 +193,32 @@ public class CompletableFutureTest {
              */
             String fullSecretKey = secretKeyFuture.join();
 
-            System.out.println(fullSecretKey);
-
             // Then
             assertThat(fullSecretKey.length()).isEqualTo(10);
             assertThat(StringUtils.isAlphanumeric(fullSecretKey)).isTrue();
+        }
+
+        @Test
+        void test_Processing_Results_With_thenApplyAsync_Function() {
+            // Given
+            CompletableFuture<String> secretKeyFuture =
+                    CompletableFuture.supplyAsync(() -> {
+                        theFirstFutureThreadId =
+                                Thread.currentThread().getId();
+                        return RandomStringUtils.randomAlphanumeric(10);
+                    });
+
+            CompletableFuture<String> finalKeyFuture =
+                    secretKeyFuture.thenApplyAsync(key -> {
+                        theSecondFutureThreadId =
+                                Thread.currentThread().getId();
+                        sleep(200);
+                        return StringUtils.upperCase(key);
+                    });
+
+            // When & Then
+            assertThat(this.theFirstFutureThreadId).isNotEqualTo(
+                    this.theSecondFutureThreadId);
         }
 
         @Test
@@ -187,11 +230,7 @@ public class CompletableFutureTest {
                             () -> RandomStringUtils.randomAlphanumeric(10))
                             .thenAcceptAsync(key -> {
                                 sleep(200);
-                                System.out.println(">>>>>>> " +
-                                        StringUtils.upperCase(key));
                             });
-
-            System.out.println(">>>>>>> Secret key is coming soon ......");
 
             // When
             secretKeyPrintFuture.join();
@@ -204,11 +243,13 @@ public class CompletableFutureTest {
             CompletableFuture<Void> secretKeyPrintFuture =
                     CompletableFuture.supplyAsync(
                             () -> RandomStringUtils.randomAlphanumeric(10))
-                            .thenRun(() -> System.out.println(
-                                    ">>>>>>> Key generated!"));
+                            .thenRun(() -> this.isRunning = true);
 
             // When
             secretKeyPrintFuture.join();
+
+            // Then
+            assertThat(this.isRunning).isTrue();
         }
 
     }//: End of class ProcessingResultsOfAsyncComputationsTest
@@ -217,7 +258,156 @@ public class CompletableFutureTest {
     @DisplayName("Test Processing Results of Asynchronous Computations - ")
     class CombiningFuturesTest {
 
+        private long theMainThreadId;
+        private long theFirstFutureThreadId;
+        private long theSecondFutureThreadId;
+        private long theFinalThreadId;
 
+        /*
+         * CompletableFuture::thenCompose is like Stream::flatMap
+         */
+        @Test
+        void test_FlatMap_Method_For_Stream() {
+
+            // Given
+            String[] testData = {
+                    "The difference between thenApply and thenCompose.",
+                    "CompletableFuture is the core of asynchronous programming."
+            };
+
+            // When
+            List<String> units = Stream.of(testData)
+                    .map(data -> data.split(""))
+                    .flatMap(Arrays::stream)
+                    .distinct()
+                    .collect(ImmutableList.toImmutableList());
+
+            // Then
+        }
+
+        /*
+         * The method CompletableFuture::thenCompose takes a function that
+         * returns a CompletableFuture instance
+         *
+         * The argument of this function is the result of the previous
+         * computation step allowing to use this value inside the next
+         * CompletableFuture‘s lambda
+         *
+         * The thenCompose method together with thenApply implement basic
+         * building blocks of the monadic pattern
+         *
+         * They closely relate to the map and flatMap methods of Stream and
+         * Optional classes also available in Java 8
+         *
+         * Both methods receive a function and apply it to the computation
+         * result, but the thenCompose (flatMap) method receives a function
+         * that returns another object of CompletableFuture
+         *
+         * This functional structure allows composing the instances of these
+         * classes as building blocks
+         */
+        @Test
+        void test_Combining_Futures_With_thenCompose() {
+
+            // Given
+            this.theMainThreadId = Thread.currentThread().getId();
+
+            CompletableFuture<String> completableFuture_1 =
+                    CompletableFuture.supplyAsync(() -> {
+                            this.theFirstFutureThreadId =
+                                    Thread.currentThread().getId();
+                            return "Hello";
+                    });
+
+            Function<String, CompletableFuture<String>> composeFunc =
+                    data -> CompletableFuture.supplyAsync(() -> {
+                            this.theSecondFutureThreadId =
+                                    Thread.currentThread().getId();
+                            return data + " Asynchronous Programming!";
+                    });
+
+            CompletableFuture<String> completableFuture_2 =
+                    completableFuture_1.thenCompose(composeFunc);
+
+            // When
+            String result = completableFuture_2.join();
+
+            // Then
+            assertThat(result).isEqualTo("Hello Asynchronous Programming!");
+            assertThat(this.theFirstFutureThreadId).isNotEqualTo(
+                    this.theMainThreadId);
+            assertThat(this.theSecondFutureThreadId).isNotEqualTo(
+                    this.theMainThreadId);
+        }
+
+        @Test
+        void test_Combining_Two_Independent_Futures_With_thenCombine() {
+
+            // Given
+            this.theMainThreadId = Thread.currentThread().getId();
+
+            CompletableFuture<String> completableFuture_1 =
+                    CompletableFuture.supplyAsync(() -> {
+                        this.theFirstFutureThreadId =
+                                Thread.currentThread().getId();
+                        return "Hello";
+                    });
+
+            CompletableFuture<String> completableFuture_2 =
+                    CompletableFuture.supplyAsync(() -> {
+                        this.theSecondFutureThreadId =
+                                Thread.currentThread().getId();
+                        return " Asynchronous Programming!";
+                    });
+
+            CompletableFuture<String> completableFuture_3 =
+                    completableFuture_1.thenCombine(completableFuture_2,
+                            (s1, s2) -> {
+                                    this.theFinalThreadId =
+                                            Thread.currentThread().getId();
+                                    return String.join("", s1, s2);
+                            });
+
+            // When
+            String result = completableFuture_3.join();
+
+            // Then
+            assertThat(this.theMainThreadId).isEqualTo(this.theFinalThreadId);
+        }
+
+        @Test
+        void test_Combining_Two_Independent_Futures_With_thenAcceptBoth() {
+
+            // Given
+            this.theMainThreadId = Thread.currentThread().getId();
+
+            CompletableFuture<String> completableFuture_1 =
+                    CompletableFuture.supplyAsync(() -> {
+                        this.theFirstFutureThreadId =
+                                Thread.currentThread().getId();
+                        return "Hello";
+                    });
+
+            CompletableFuture<String> completableFuture_2 =
+                    CompletableFuture.supplyAsync(() -> {
+                        this.theSecondFutureThreadId =
+                                Thread.currentThread().getId();
+                        return " Asynchronous Programming!";
+                    });
+
+            CompletableFuture<Void> completableFuture_3 =
+                    completableFuture_1.thenAcceptBoth(completableFuture_2,
+                            (s1, s2) -> {
+                                this.theFinalThreadId =
+                                        Thread.currentThread().getId();
+                            });
+
+            // When
+            completableFuture_3.join();
+
+            // Then
+            assertThat(this.theMainThreadId).isEqualTo(this.theFinalThreadId);
+        }
 
     }//: End of class CombiningFuturesTest
 
