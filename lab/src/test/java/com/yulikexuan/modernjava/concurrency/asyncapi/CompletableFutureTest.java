@@ -12,6 +12,7 @@ import org.junit.jupiter.api.*;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -410,5 +411,45 @@ public class CompletableFutureTest {
         }
 
     }//: End of class CombiningFuturesTest
+
+    @Nested
+    @DisplayName("Handling Errors Tests - ")
+    class HandlingErrorsTest {
+
+        private Throwable innerException;
+
+        @Test
+        void test_Handling_Error_With_Handle_Method() {
+
+            // Given
+            String name = null;
+
+            CompletableFuture<String> completableFuture =
+                    CompletableFuture.supplyAsync(() -> {
+                        if (Objects.isNull(name)) {
+                            throw new RuntimeException("Computation Error!");
+                        }
+                        return "Hello, " + name;
+                    });
+
+            CompletableFuture<String> exceptioanlFuture =
+                    completableFuture.handle((greeting, error) -> {
+                            innerException = error;
+                            return Objects.isNull(greeting) ?
+                                    "Hello, Stranger!" : greeting;
+                    });
+
+            // When
+            String finalGreeting = exceptioanlFuture.join();
+
+            // Then
+            assertThat(finalGreeting).isEqualTo("Hello, Stranger!");
+
+            assertThat(this.innerException)
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("Computation Error!");
+        }
+
+    }//: End of class HandlingErrorsTest
 
 }///:~
