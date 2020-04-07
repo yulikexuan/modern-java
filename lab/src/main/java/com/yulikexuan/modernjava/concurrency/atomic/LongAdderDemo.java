@@ -4,7 +4,7 @@
 package com.yulikexuan.modernjava.concurrency.atomic;
 
 
-import static com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceConfiguration.NUMBER_OF_INCREMENTS;
+import static com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceConfig.NUMBER_OF_INCREMENTS;
 
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.IntStream;

@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
-import static com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceConfiguration.*;
+import static com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceConfig.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 

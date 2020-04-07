@@ -5,18 +5,19 @@ package com.yulikexuan.modernjava.concurrency.asyncapi;
 
 
 import com.google.common.collect.ImmutableList;
+import com.yulikexuan.modernjava.annotations.Person;
+import com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceConfig;
+import com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceFactory;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.junit.jupiter.api.*;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -25,15 +26,67 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 
-@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+/*
+ * 1.  CompletableFuture is a CompletionStage
+ *       - A CompletionStage is a model that carries a task
+ *           - A task can be an instance of Runnable, Consumer, or Function
+ *           - The task is an element of a chain
+ *       - CompletionStage elements are linked together in different ways along
+ *         the chain
+ *       - An "upstream" element is a CompletionStage that is executed before
+ *         the element we are considering
+ *       - Consequently, a "downstream" element is a CompletionStage that is
+ *         executed after the element we are considering
+ *       - The execution of a CompletionStage is triggered upon the completion
+ *         of one or more upstream  CompletionStages
+ *       - Those CompletionStages might return values, and these values can be
+ *         fed to this CompletionStage
+ *       - The completion of this CompletionStage can also produce a result and
+ *         trigger other downstream CompletionStages
+ *       - So a CompletionStage is an element of a chain
+ *       - The CompletionStage interface has an implementation called
+ *         CompletableFuture
+ *       - CompletableFuture is also an implementation of the Future interface
+ *       - CompletionStage does not extend Future
+ *
+ * 2.  A task has a state
+ *       - It might be running
+ *       - It might be completed normally and might have produced a result
+ *       - It might be completed exceptionally and might have produced an
+ *         exception
+ *
+ * 3.  CompletableFuture is also a Future
+ *       - Future has 5 methods in 3 categories
+ *           - cancel()
+ *           - isCanceled() & isDone()
+ *           - get() & get(timeout, timeunit)
+ *       - CompletableFuture adds 6 Future-like methods
+ *           - join()
+ *           - getNow(valueIfAbsent) Does not force the CompletableFuture to
+ *             complete
+ *           - complete(value) Completes the CompletableFuture if it has not
+ *             been completed, and it sets its value to the passed value
+ *               - If the CompletableFuture has already completed, its return value
+ *                 is not changed
+ *           - obtrudeValue(value) Change the value of the CompletableFuture,
+ *             even if it has already completed
+ *               - Should be used with care and only in error recovery situations
+ *           - completeExceptionally(throwable) Throws an unchecked exception
+ *             if the CompletableFuture has not completed
+ *           - obtrudeException(Throwable ex) Forces the CompletableFuture to
+ *             change its state
+ *
+ *
+ */
 @DisplayName("CompletableFuture Test - ")
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class CompletableFutureTest {
 
     @BeforeEach
     void setUp() {
     }
 
-    private void sleep(long milliseconds) {
+    private void takeMilliSecs(long milliseconds) {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException e) {
@@ -180,7 +233,7 @@ public class CompletableFutureTest {
                     secretKeyFuture.thenApply(key -> {
                             theSecondFutureThreadId =
                                     Thread.currentThread().getId();
-                            sleep(200);
+                            takeMilliSecs(200);
                             return StringUtils.upperCase(key);
                     });
 
@@ -213,7 +266,7 @@ public class CompletableFutureTest {
                     secretKeyFuture.thenApplyAsync(key -> {
                         theSecondFutureThreadId =
                                 Thread.currentThread().getId();
-                        sleep(200);
+                        takeMilliSecs(200);
                         return StringUtils.upperCase(key);
                     });
 
@@ -230,7 +283,7 @@ public class CompletableFutureTest {
                     CompletableFuture.supplyAsync(
                             () -> RandomStringUtils.randomAlphanumeric(10))
                             .thenAcceptAsync(key -> {
-                                sleep(200);
+                                takeMilliSecs(200);
                             });
 
             // When
@@ -451,5 +504,109 @@ public class CompletableFutureTest {
         }
 
     }//: End of class HandlingErrorsTest
+
+    @Nested
+    @DisplayName("JDK 9+ Features Test - ")
+    class Jdk9PlusTest {
+
+        static final int CODE_SIZE = 10;
+        static final long DELAYED_MS = 1000;
+
+        private String getRandomString() {
+            return RandomStringUtils.randomAlphanumeric(10);
+        }
+
+        private String getRandomStringWithDelay() {
+            try {
+                Thread.sleep(DELAYED_MS / 2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return RandomStringUtils.randomAlphanumeric(10);
+        }
+
+        @Test
+        void test_Given_Supplier_And_Delayed_Executor_When_completeAsync_Then_Executing_After_Delay() {
+
+            // Given
+            CompletableFuture<String> completableFuture = new CompletableFuture();
+
+            completableFuture.completeAsync(() -> getRandomString(),
+                    CompletableFuture.delayedExecutor(DELAYED_MS,
+                            TimeUnit.MILLISECONDS));
+
+            // When
+            long start = System.nanoTime();
+            String processedString = completableFuture.join();
+
+            Duration duration = Duration.ofMillis(
+                    (System.nanoTime() - start) / 1000_000);
+
+            // Then
+            assertThat(processedString).hasSize(CODE_SIZE);
+            assertThat(duration.toMillis()).isBetween(DELAYED_MS, DELAYED_MS + 10);
+        }
+
+        @Test
+        void test_Given_Input_Value_With_Timeout_Then_Complete_On_Timeout() {
+
+            // Given
+            CompletableFuture<String> completableFuture = new CompletableFuture<>();
+
+            StopWatch stopWatch = StopWatch.createStarted();
+
+            completableFuture.completeOnTimeout(getRandomStringWithDelay(),
+                    DELAYED_MS / 2, TimeUnit.MILLISECONDS);
+
+            // When
+            String code = completableFuture.join();
+
+            stopWatch.stop();
+
+            // Then
+            assertThat(code).hasSize(CODE_SIZE);
+            assertThat(stopWatch.getTime(TimeUnit.MILLISECONDS)).isBetween(
+                    DELAYED_MS, DELAYED_MS + 10);
+        }
+
+    }//: End of class Jdk9PlusTest
+
+    @Nested
+    @DisplayName("Oracle Tutorial Tests - ")
+    class OracleTutorial {
+
+        static final long QUERY_TIME_MILLI = 200;
+
+        @BeforeEach
+        void setUp() {
+        }
+
+        private List<Person> getAllPersons() {
+            takeMilliSecs(QUERY_TIME_MILLI);
+            return List.of(Person.of("Bill Gates", 72),
+                    Person.of("Trump", 76),
+                    Person.of("Miles", 51));
+        }
+
+        @Test
+        void test_The_First_Simple_Chaining_Pattern() throws Exception {
+
+            // Given
+            ExecutorService executorService = ExecutorServiceFactory
+                    .createFixedPoolSizeExecutor(1);
+
+            CompletableFuture<List<Person>> completableFuture =
+                    CompletableFuture.supplyAsync(this::getAllPersons,
+                            executorService);
+
+            // When
+            completableFuture.thenAccept(System.out::println);
+
+            // Then
+            ExecutorServiceConfig.terminateExecutorServeceAfter(executorService,
+                    Duration.ofMillis(QUERY_TIME_MILLI * 2));
+        }
+
+    }//: End of class OracleTutorial
 
 }///:~

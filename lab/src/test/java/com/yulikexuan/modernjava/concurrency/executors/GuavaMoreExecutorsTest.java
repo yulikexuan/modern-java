@@ -34,7 +34,7 @@ public class GuavaMoreExecutorsTest {
 
     @AfterEach
     void tearDown() {
-        ExecutorServiceConfiguration.terminateExecutorServece(executorService);
+        ExecutorServiceConfig.terminateExecutorServece(executorService);
     }
 
     /*
@@ -124,7 +124,7 @@ public class GuavaMoreExecutorsTest {
         // Given
         ThreadPoolExecutor executor =
                 (ThreadPoolExecutor) Executors.newFixedThreadPool(
-                        ExecutorServiceConfiguration.NUMBER_OF_THREADS);
+                        ExecutorServiceConfig.NUMBER_OF_THREADS);
 
         executorService = MoreExecutors.getExitingExecutorService(
                 executor, Duration.ofSeconds(4));
@@ -150,7 +150,7 @@ public class GuavaMoreExecutorsTest {
 
         // Given
         this.executorService = Executors.newFixedThreadPool(
-                ExecutorServiceConfiguration.NUMBER_OF_THREADS);
+                ExecutorServiceConfig.NUMBER_OF_THREADS);
 
         ListeningExecutorService listeningExecutorService =
                 MoreExecutors.listeningDecorator(this.executorService);

@@ -34,7 +34,7 @@ public class ExecutorServiceTest {
 
     @AfterEach
     void tearDown() {
-        ExecutorServiceConfiguration.terminateExecutorServece(executorService);
+        ExecutorServiceConfig.terminateExecutorServece(executorService);
     }
 
     /*
@@ -195,7 +195,7 @@ public class ExecutorServiceTest {
 
         // Given
         this.executorService = Executors.newScheduledThreadPool(
-                ExecutorServiceConfiguration.NUMBER_OF_THREADS);
+                ExecutorServiceConfig.NUMBER_OF_THREADS);
 
         ThreadPoolExecutor  threadPoolExecutor =
                 (ThreadPoolExecutor)this.executorService;
@@ -208,7 +208,7 @@ public class ExecutorServiceTest {
 
         // Then
         assertThat(corePoolSize).isEqualTo(
-                ExecutorServiceConfiguration.NUMBER_OF_THREADS);
+                ExecutorServiceConfig.NUMBER_OF_THREADS);
         assertThat(maxPoolSize).isEqualTo(Integer.MAX_VALUE);
         assertThat(keepAliveTime).isEqualTo(10L);
     }
@@ -219,7 +219,7 @@ public class ExecutorServiceTest {
 
         // Given
         this.executorService = Executors.newScheduledThreadPool(
-                ExecutorServiceConfiguration.NUMBER_OF_THREADS);
+                ExecutorServiceConfig.NUMBER_OF_THREADS);
 
         final CompletableFuture<Long> completableFuture =
                 new CompletableFuture<>();

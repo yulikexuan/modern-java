@@ -6,7 +6,7 @@ package com.yulikexuan.modernjava.concurrency.atomic;
 
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.stream.IntStream;
-import static com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceConfiguration.*;
+import static com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceConfig.*;
 
 
 public class LongAccumulatorDemo {

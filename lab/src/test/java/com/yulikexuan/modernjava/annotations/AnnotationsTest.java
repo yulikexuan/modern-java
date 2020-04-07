@@ -4,7 +4,6 @@
 package com.yulikexuan.modernjava.annotations;
 
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,8 +19,8 @@ public class AnnotationsTest {
 
     @BeforeEach
     void setUp() {
-        this.person = Person.of(NAME);
-        this.person2 = Person.of(null);
+        this.person = Person.of(NAME, 36);
+        this.person2 = Person.of(null, 0);
     }
 
     /*
