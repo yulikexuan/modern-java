@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
-import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
@@ -667,6 +666,7 @@ public class CompletableFutureTest {
             void setUp() throws Exception {
 
                 this.random = ThreadLocalRandom.current();
+
                 this.executor = CompletableFuture.delayedExecutor(
                         DELAY, TimeUnit.MILLISECONDS,
                         ExecutorServiceFactory.createFixedPoolSizeExecutor(SIZE));

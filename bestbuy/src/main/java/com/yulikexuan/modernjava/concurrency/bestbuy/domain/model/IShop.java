@@ -10,6 +10,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public interface IShop {
 
+    public static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
+
     long MINIMUM_PROCESSING_TIME = 300L;
     long MAXIMUM_PROCESSING_TIME = 1000L;
 

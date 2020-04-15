@@ -59,8 +59,7 @@ public class Shop implements IShop {
             throw new ProductNotFountException();
         }
         IShop.delay();
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        return random.nextDouble() * product.charAt(0) + product.charAt(1);
+        return RANDOM.nextDouble() * product.charAt(0) + product.charAt(1);
     }
 
 }///:~
