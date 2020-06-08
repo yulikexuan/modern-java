@@ -896,6 +896,8 @@ public class CompletableFutureTest {
 
         void setUp() {
             this.isRunning = false;
+            this.theFirstFutureThreadId = 0;
+            this.theSecondFutureThreadId = 0;
         }
 
         /*
@@ -945,6 +947,7 @@ public class CompletableFutureTest {
 
         @Test
         void test_Processing_Results_With_thenApplyAsync_Function() {
+
             // Given
             CompletableFuture<String> secretKeyFuture =
                     CompletableFuture.supplyAsync(() -> {
@@ -962,8 +965,8 @@ public class CompletableFutureTest {
                     });
 
             // When & Then
-            assertThat(this.theFirstFutureThreadId).isNotEqualTo(
-                    this.theSecondFutureThreadId);
+            await().untilAsserted(() -> assertThat(
+                    this.theSecondFutureThreadId).isGreaterThan(0));
         }
 
         @Test
@@ -1148,7 +1151,8 @@ public class CompletableFutureTest {
                             });
 
             // When
-            completableFuture_3.join();
+            await().untilAsserted(() -> assertThat(this.theFinalThreadId)
+                    .isGreaterThan(0L));
 
             // Then
             assertThat(this.theMainThreadId).isEqualTo(this.theFinalThreadId);
@@ -1257,7 +1261,7 @@ public class CompletableFutureTest {
             // Then
             assertThat(code).hasSize(CODE_SIZE);
             assertThat(stopWatch.getTime(TimeUnit.MILLISECONDS)).isBetween(
-                    DELAYED_MS, DELAYED_MS + 20);
+                    DELAYED_MS, DELAYED_MS + 100);
         }
 
     }//: End of class Jdk9PlusTest

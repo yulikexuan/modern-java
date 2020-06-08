@@ -188,7 +188,7 @@ public class SpliteratorTest {
 
             // Then
             stopWatch.stop();
-            assertThat(stopWatch.getTime()).isLessThan(100L);
+            assertThat(stopWatch.getTime()).isLessThan(500L);
             assertThat(wordCounter.getCounter()).isEqualTo(EXPECTED_NUM_OF_WORDS);
         }
 
