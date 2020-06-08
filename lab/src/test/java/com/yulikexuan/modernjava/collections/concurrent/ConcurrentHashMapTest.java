@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.BiConsumer;
@@ -361,5 +363,53 @@ public class ConcurrentHashMapTest {
         }
 
     }//: End of ConcurrentHashMapReduceTest
+
+    @Nested
+    @DisplayName("KetSet Element Removing Test - ")
+    class ConcurrentKeySetTest {
+
+        public static final int COUNT = 50;
+
+        private Map<String, Duration> names;
+
+        private String key;
+        private byte[] value;
+
+        @BeforeEach
+        void setUp() {
+            this.names = new ConcurrentHashMap<>();
+            this.names.put(RandomStringUtils.randomAlphabetic(COUNT),
+                    Duration.ofMillis(1000));
+            this.names.put(RandomStringUtils.randomAlphanumeric(COUNT),
+                    Duration.ofMillis(2000));
+            this.names.put(RandomStringUtils.randomAlphabetic(COUNT),
+                    Duration.ofMillis(3000));
+            this.names.put(RandomStringUtils.randomAlphanumeric(COUNT),
+                    Duration.ofMillis(4000));
+            this.names.put(RandomStringUtils.randomAlphabetic(COUNT),
+                    Duration.ofMillis(5000));
+        }
+
+        @Test
+        void test_Removing_Element_From_KeySet_Of_Map() {
+
+            // Given
+            Set<String> nameSet = this.names.keySet();
+
+            // When
+            nameSet.stream()
+                    .map(n -> {
+                        if (n.matches(".*\\d.*")) {
+                            System.out.println(n);
+                            this.names.remove(n);
+                        }
+                        return n;
+                    }).collect(Collectors.toList());
+
+            // Then
+            assertThat(this.names.size()).isEqualTo(3);
+        }
+
+    } //: End of class ConcurrentKeySetTest
 
 }///:~ / 2

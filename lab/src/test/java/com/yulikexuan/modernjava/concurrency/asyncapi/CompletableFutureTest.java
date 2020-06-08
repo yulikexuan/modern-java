@@ -8,11 +8,14 @@ import com.google.common.collect.ImmutableList;
 import com.yulikexuan.modernjava.annotations.Person;
 import com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceConfig;
 import com.yulikexuan.modernjava.concurrency.executors.ExecutorServiceFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -29,6 +32,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
@@ -227,6 +231,7 @@ import static org.mockito.Mockito.times;
  *
  *
  */
+@Slf4j
 @DisplayName("CompletableFuture Test - ")
 @ExtendWith(MockitoExtension.class)
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -358,17 +363,27 @@ public class CompletableFutureTest {
 
         }//: End of class OneToOnePatternTest
 
+        /*
+         * Different ways of Handling Exceptions in CompletableFutures
+         *   - CompletionStage::handle
+         *   - CompletionStage::exceptionally   (Suggested)
+         *   - CompletionStage::whenComplete    (Suggested)
+         */
         @Nested
         @DisplayName("Test Completing a Computation Exceptionally - ")
         class CompletableExceptionalFutureTest {
 
             private ExecutorService executor;
             private String expectedResultMsg;
+            private Executor delayedExecutor;
+            private String finalResultWhenComplete;
 
             @BeforeEach
             void setUp() {
                 this.expectedResultMsg = "Message upon cancel! ";
                 this.executor = Executors.newSingleThreadExecutor();
+                this.delayedExecutor = CompletableFuture.delayedExecutor(
+                        100, TimeUnit.MILLISECONDS, this.executor);
             }
 
             @AfterEach
@@ -378,47 +393,84 @@ public class CompletableFutureTest {
             }
 
             private String decodeMessage(String msg) {
-                throw new RuntimeException("Completed exceptionally.");
+                throw new RuntimeException(String.format(
+                        "Failed to decode message %s", msg));
             }
 
-            @Test
-            void test_Given_CompoletableFuture_Completing_Exceptionally_Then_Verify()
-                    throws Exception {
+            private String decodeMessageWell(String msg) {
+                if (StringUtils.isAllBlank(msg)) {
+                    throw new RuntimeException("Failed to decode blank message.");
+                }
+                return StringUtils.capitalize(msg);
+            }
+
+            /*
+             * Using
+             */
+            @ParameterizedTest
+            @ValueSource(strings = {"", "  ", "The quick brown fox jumps over a lazy dog."})
+            void test_Given_CompoletableFuture_Completing_Exceptionally_Then_Using_Handle_Method_To_Handle(
+                    String testMessage) throws Exception {
 
                 // Given
                 CompletableFuture<String> exceptionalFuture = CompletableFuture
-                        .completedFuture("message")
-                        .thenApplyAsync(this::decodeMessage, CompletableFuture
-                                .delayedExecutor(100, TimeUnit.MILLISECONDS,
-                                        this.executor))
-                        .handle((msg, exception) -> (exception != null) ?
-                                this.expectedResultMsg : msg);
+                        .completedFuture(testMessage)
+                        .thenApplyAsync(this::decodeMessageWell, this.delayedExecutor)
+                        .handle((msg, exception) -> {
+                            if (exception != null) {
+                                log.error(">>>>>>> Decoding Exception - {}",
+                                        exception.getMessage());
+                                return exception.getMessage();
+                            } else {
+                                return msg;
+                            }
+                        });
 
                 // When
-                String result = exceptionalFuture.join();
+                String decodedMsg = exceptionalFuture.join();
 
                 // Then
-                assertThat(result).isEqualTo(this.expectedResultMsg);
+                assertThat(decodedMsg).isNotNull();
             }
 
-            @Test
-            void test_Cancelling_CompletableFuture() {
+            @ParameterizedTest
+            @ValueSource(strings = {"", "  ", "The quick brown fox jumps over a lazy dog."})
+            void test_Given_CompoletableFuture_Completing_Exceptionally_Then_Using_Exceptionally_Method_To_Handle(
+                    String testMessage) {
 
                 // Given
                 CompletableFuture<String> completableFuture = CompletableFuture
-                        .completedFuture("message")
-                        .thenApplyAsync(this::decodeMessage, CompletableFuture
-                                .delayedExecutor(100, TimeUnit.MILLISECONDS,
-                                        this.executor));
-
-                CompletableFuture<String> cancelableFuture = completableFuture
-                        .exceptionally(e -> this.expectedResultMsg);
+                        .completedFuture(testMessage)
+                        .thenApplyAsync(this::decodeMessageWell, this.delayedExecutor)
+                        .exceptionally(Throwable::getMessage);
 
                 // When
-                String decodedMsg = cancelableFuture.join();
+                String decodedMsg = completableFuture.join();
 
                 // Then
-                assertThat(decodedMsg).isEqualTo(this.expectedResultMsg);
+                assertThat(decodedMsg).isNotNull();
+            }
+
+            @ParameterizedTest
+            @ValueSource(strings = {"", "  ", "The quick brown fox jumps over a lazy dog."})
+            void test_Given_CompletableFuture_May_Complete_Exceptionally_Then_Using_whenComplete_To_Handle(
+                    String testMessage) {
+
+                // Given
+                CompletableFuture<String> completableFuture = CompletableFuture
+                        .completedFuture(testMessage)
+                        .thenApplyAsync(this::decodeMessageWell, this.delayedExecutor)
+                        .whenComplete((result, throwable) -> {
+                            this.finalResultWhenComplete =
+                                    Objects.isNull(throwable) ?
+                                            result : throwable.getMessage();
+                        });
+
+                // When
+                await().untilAsserted(() -> assertThat(this.finalResultWhenComplete).isNotNull());
+
+                // Then
+               log.info(this.finalResultWhenComplete);
             }
 
         }//: End of class CompletableExceptionalFutureTest
