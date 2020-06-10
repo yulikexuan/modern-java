@@ -33,7 +33,7 @@ public class Calzone extends Pizza {
         }
 
         @Override
-        Pizza build() {
+        Calzone build() {
             return new Calzone(this.toppings, sauceInside);
         }
 

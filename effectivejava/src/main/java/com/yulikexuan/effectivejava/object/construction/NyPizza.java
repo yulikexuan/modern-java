@@ -38,7 +38,7 @@ public class NyPizza extends Pizza {
         }
 
         @Override
-        public Pizza build() {
+        public NyPizza build() {
             return new NyPizza(this.toppings, this.size);
         }
 

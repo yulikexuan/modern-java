@@ -239,7 +239,7 @@ public class ExecutorServiceTest {
         assertThat(finalResult).isBetween(AsyncCalculation.FLOOR,
                 AsyncCalculation.CEILLING);
         assertThat(duration).isBetween(AsyncCalculation.CALC_DURATION,
-                AsyncCalculation.CALC_DURATION + 200);
+                AsyncCalculation.CALC_DURATION + 300);
     }
 
 }///:~
