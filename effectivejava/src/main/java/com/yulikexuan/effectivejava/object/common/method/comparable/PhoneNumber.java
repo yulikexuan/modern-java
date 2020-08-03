@@ -92,9 +92,9 @@ public class PhoneNumber implements Cloneable, Comparable<PhoneNumber>{
 
     // Comparable with comparator construction methods (page 70)
     private static final Comparator<PhoneNumber> COMPARATOR =
-            comparingInt(pn -> pn.areaCode)
-                    .thenComparingInt(pn -> pn.prefix)
-                    .thenComparingInt(pn -> pn.lineNum);
+            comparingInt((PhoneNumber pn) -> pn.areaCode)
+                    .thenComparingInt((PhoneNumber pn) -> pn.prefix)
+                    .thenComparingInt((PhoneNumber pn) -> pn.lineNum);
 
     private static PhoneNumber randomPhoneNumber() {
         Random rnd = ThreadLocalRandom.current();
