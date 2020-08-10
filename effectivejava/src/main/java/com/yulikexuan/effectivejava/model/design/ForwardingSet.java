@@ -15,13 +15,28 @@ import java.util.Set;
 
 /*
  * Reusable Forwarding Class
+ *
+ * Instead of extending an existing class, give the new class a private field
+ * that references an instance of the existing class
+ *   - This design is called composition because the existing class becomes a
+ *     component of the new one
+ *
+ * Each instance method in the new class invokes the corresponding method on
+ * the contained instance of the existing class and returns the results
+ *   - This is known as forwarding, and the methods in the new class are known
+ *     as forwarding methods
+ *
+ * The resulting class will have no dependencies on the implementation details
+ * of the existing class
+ *   - Even adding new methods to the existing class will have no impact on the
+ *     new class
  */
 @Slf4j
 public class ForwardingSet<E> implements Set<E> {
 
     private final Set<E> set;
 
-    private ForwardingSet(Set<E> set) {
+    ForwardingSet(Set<E> set) {
         this.set = set;
     }
 
