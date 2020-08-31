@@ -19,7 +19,6 @@ public class PreferListsToArraysTest {
 
     private String stringElement;
 
-
     @BeforeEach
     void setUp() {
         this.stringElement = RandomStringUtils.randomAlphanumeric(30);
@@ -60,6 +59,20 @@ public class PreferListsToArraysTest {
 
         // Then
         assertThat(objList).containsExactly(this.stringElement);
+    }
+
+    @Test
+    void test_Array_Type_Check_Happens_On_Runtime() {
+
+        // Given
+        Object[] objArray;
+        Integer[] numbers = {0, 1, 2, 3, 4, 5, 6, 7};
+
+        objArray = numbers;
+
+        // When
+        assertThatThrownBy(() -> objArray[0] = "0").isInstanceOf(
+                ArrayStoreException.class);
     }
 
 }///:~
