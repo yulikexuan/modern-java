@@ -8,13 +8,12 @@
 
     <groupId>com.yulikexuan.jdk</groupId>
     <artifactId>modern-java</artifactId>
-    <version>2019.04</version>
+    <version>2020.03</version>
     <packaging>pom</packaging>
 
     <properties>
         <java.version>14</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <checker.framework.version>3.1.1</checker.framework.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <junit.jupiter.version>5.6.2</junit.jupiter.version>
@@ -32,7 +31,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.26</version>
+            <version>1.7.30</version>
         </dependency>
 
         <dependency>
@@ -51,7 +50,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.10</version>
+            <version>3.11</version>
         </dependency>
 
         <dependency>
@@ -63,7 +62,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.7</version>
+            <version>1.8</version>
         </dependency>
 
         <dependency>
@@ -75,7 +74,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.13</version>
+            <version>1.15</version>
         </dependency>
 
         <dependency>
@@ -112,7 +111,7 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
-            <version>3.3.3</version>
+            <version>3.5.7</version>
         </dependency>
 
         <dependency>
@@ -125,7 +124,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.16.0</version>
+            <version>3.17.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -139,7 +138,7 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>15.0</version>
+            <version>20.0.0</version>
             <scope>compile</scope>
         </dependency>
 
@@ -161,7 +160,7 @@
 
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M4</version>
+                <version>3.0.0-M5</version>
                 <configuration>
                     <testFailureIgnore>false</testFailureIgnore>
                     <reuseForks>false</reuseForks>
@@ -182,7 +181,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M4</version>
+                <version>3.0.0-M5</version>
                 <configuration>
                     <includes>
                         <include>**/*IT.java</include>
@@ -208,13 +207,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.0</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.8.2</version>
+                <version>3.9.1</version>
             </plugin>
 
         </plugins>
@@ -241,6 +240,7 @@
         <module>effectivejava</module>
         <module>bestbuy</module>
         <module>temperature-reporting</module>
+        <module>kotlinlab</module>
     
     </modules>
 
