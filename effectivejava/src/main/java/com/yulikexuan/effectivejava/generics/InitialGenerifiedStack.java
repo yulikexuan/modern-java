@@ -4,6 +4,8 @@
 package com.yulikexuan.effectivejava.generics;
 
 
+import lombok.NonNull;
+
 import java.util.Arrays;
 import java.util.EmptyStackException;
 
@@ -50,6 +52,11 @@ public class InitialGenerifiedStack<E> {
     void push(E e) {
         this.ensureCapacity();
         this.elements[size++] = e;
+    }
+
+    // pushAll staticfactory without wildcard type - deficient!
+    public void pushAll(@NonNull Iterable<? extends E> src) {
+        src.forEach(this::push);
     }
 
     E pop() {
