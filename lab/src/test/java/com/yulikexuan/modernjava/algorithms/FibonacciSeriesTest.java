@@ -7,6 +7,8 @@ package com.yulikexuan.modernjava.algorithms;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 class FibonacciSeriesTest {
 
@@ -24,7 +26,7 @@ class FibonacciSeriesTest {
         long fibonacci7th = FibonacciSeries.recursiveCalaulate(index);
 
         // Then
-        System.out.println(fibonacci7th);
+        assertThat(fibonacci7th).isEqualTo(13);
     }
 
 }///:~

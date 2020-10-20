@@ -18,7 +18,7 @@ public class Chooser<T> {
 
     private final List<T> choiceList;
 
-    Chooser(Collection<T> choices) {
+    Chooser(Collection<? extends T> choices) {
         this.choiceList = Lists.newArrayList(choices);
         this.random = ThreadLocalRandom.current();
     }
