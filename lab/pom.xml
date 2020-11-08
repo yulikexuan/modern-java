@@ -16,6 +16,14 @@
     <artifactId>lab</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <spring.framework.version>5.3.0</spring.framework.version>
+        <quartz.version>2.3.2</quartz.version>
+        <commons-vfs2.version>2.7.0</commons-vfs2.version>
+        <json-path.version>2.4.0</json-path.version>
+        <txw2.version>2.4.0-b180830.0438</txw2.version>
+    </properties>
+
     <dependencies>
 
         <dependency>
@@ -46,43 +54,43 @@
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
-            <version>2.3.2</version>
+            <version>${quartz.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-vfs2</artifactId>
-            <version>2.6.0</version>
+            <version>${commons-vfs2.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
-            <version>2.4.0</version>
+            <version>${json-path.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>txw2</artifactId>
-            <version>2.4.0-b180830.0438</version>
+            <version>${txw2.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>5.2.8.RELEASE</version>
+            <version>${spring.framework.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
-            <version>5.2.8.RELEASE</version>
+            <version>${spring.framework.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>5.2.2.RELEASE</version>
+            <version>${spring.framework.version}</version>
             <scope>compile</scope>
         </dependency>
 
