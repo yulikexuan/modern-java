@@ -7,42 +7,41 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.yulikexuan.jdk</groupId>
-        <artifactId>modern-java</artifactId>
-        <version>2020.03</version>
-        <relativePath>../pom.xml</relativePath>
+        <groupId>com.yulikexuan</groupId>
+        <artifactId>core-java-bom</artifactId>
+        <version>2020.04.12</version>
+        <relativePath />
     </parent>
     
     <artifactId>kotlinlab</artifactId>
     <packaging>jar</packaging>
-    
+
     <properties>
-        <java.version>1.8</java.version>
-        <kotlin.version>1.4.0</kotlin.version>
+        <kotlin.version>1.4.10</kotlin.version>
     </properties>
-    
+
     <dependencies>
-    
+
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
-        
+
     </dependencies>
-    
+
     <build>
 
         <plugins>
 
             <plugin>
-            
+
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>${kotlin.version}</version>
-                
+
                 <executions>
-                
+
                     <execution>
                         <id>compile</id>
                         <goals>
@@ -55,7 +54,7 @@
                             </sourceDirs>
                         </configuration>
                     </execution>
-                    
+
                     <execution>
                         <id>test-compile</id>
                         <goals>
@@ -68,29 +67,29 @@
                             </sourceDirs>
                         </configuration>
                     </execution>
-                    
+
                 </executions>
-                
+
             </plugin>
-            
+
             <plugin>
-            
+
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                
+
                 <executions>
-                
+
                     <!-- the default executions are disabled using phase none -->
                     <execution>
                         <id>default-compile</id>
                         <phase>none</phase>
                     </execution>
-                    
+
                     <execution>
                         <id>default-testCompile</id>
                         <phase>none</phase>
                     </execution>
-                    
+
                     <execution>
                         <id>java-compile</id>
                         <phase>compile</phase>
@@ -98,7 +97,7 @@
                             <goal>compile</goal>
                         </goals>
                     </execution>
-                    
+
                     <execution>
                         <id>java-test-compile</id>
                         <phase>test-compile</phase>
@@ -106,15 +105,14 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
-                    
+
                 </executions>
-                
+
             </plugin>
 
 
         </plugins>
 
     </build>
-
 
 </project>

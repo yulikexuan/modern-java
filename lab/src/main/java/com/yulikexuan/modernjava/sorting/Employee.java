@@ -5,7 +5,6 @@ package com.yulikexuan.modernjava.sorting;
 
 
 import lombok.*;
-import org.jetbrains.annotations.NotNull;
 
 
 @Getter
@@ -20,7 +19,7 @@ public class Employee implements Comparable<Employee> {
     private final int salary;
 
     @Override
-    public int compareTo(@NotNull Employee o) {
+    public int compareTo(@NonNull Employee o) {
         return this.name.compareTo(o.getName());
     }
 

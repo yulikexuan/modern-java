@@ -9,7 +9,6 @@ import com.yulikexuan.modernjava.concurrency.queues.Consumer;
 import com.yulikexuan.modernjava.concurrency.queues.Producer;
 import org.junit.jupiter.api.*;
 
-import java.time.Duration;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,7 +33,7 @@ public class BlockQueueTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        ExecutorServiceConfig.terminateExecutorServece(this.executorService);
+        ExecutorServiceConfig.terminateExecutorService(this.executorService);
     }
 
     @Test

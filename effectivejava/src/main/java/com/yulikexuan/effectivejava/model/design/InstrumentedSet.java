@@ -4,7 +4,7 @@
 package com.yulikexuan.effectivejava.model.design;
 
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -30,7 +30,7 @@ public class InstrumentedSet<E> extends ForwardingSet<E> {
     }
 
     @Override
-    public boolean addAll(@NotNull Collection<? extends E> c) {
+    public boolean addAll(@NonNull Collection<? extends E> c) {
         this.addingCount += Objects.requireNonNull(c).size();
         return super.addAll(c);
     }

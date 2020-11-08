@@ -91,7 +91,7 @@ public class LiskovTest {
     }
 
     @Test
-    void test_Given_Square_When_Validating_Liskov_Principle_Then_Passed() {
+    void test_Given_Square_When_Validating_Liskov_Principle() {
         this.testLiskov(this.square, () -> {
             assertThat(this.square.getArea())
                     .as(">>> The actual area should not be %d",

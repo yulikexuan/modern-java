@@ -35,7 +35,7 @@ class LongAccumulatorDemoTest {
 
     @AfterEach
     void tearDown() {
-        terminateExecutorServece(executorService);
+        terminateExecutorService(executorService);
     }
 
     @Test

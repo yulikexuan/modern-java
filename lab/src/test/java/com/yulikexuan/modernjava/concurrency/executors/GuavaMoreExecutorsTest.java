@@ -34,7 +34,7 @@ public class GuavaMoreExecutorsTest {
 
     @AfterEach
     void tearDown() {
-        ExecutorServiceConfig.terminateExecutorServece(executorService);
+        ExecutorServiceConfig.terminateExecutorService(executorService);
     }
 
     /*

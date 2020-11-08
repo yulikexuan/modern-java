@@ -4,8 +4,8 @@
 package com.yulikexuan.effectivejava.model.design;
 
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -59,21 +59,21 @@ public class ForwardingSet<E> implements Set<E> {
         return this.set.contains(o);
     }
 
-    @NotNull
+    @NonNull
     @Override
     public Iterator<E> iterator() {
         return this.set.iterator();
     }
 
-    @NotNull
+    @NonNull
     @Override
     public Object[] toArray() {
         return this.set.toArray();
     }
 
-    @NotNull
+    @NonNull
     @Override
-    public <E> E[] toArray(@NotNull E[] a) {
+    public <E> E[] toArray(@NonNull E[] a) {
         return this.set.toArray(a);
     }
 
@@ -88,22 +88,22 @@ public class ForwardingSet<E> implements Set<E> {
     }
 
     @Override
-    public boolean containsAll(@NotNull Collection<?> c) {
+    public boolean containsAll(@NonNull Collection<?> c) {
         return this.set.containsAll(c);
     }
 
     @Override
-    public boolean addAll(@NotNull Collection<? extends E> c) {
+    public boolean addAll(@NonNull Collection<? extends E> c) {
         return this.set.addAll(c);
     }
 
     @Override
-    public boolean retainAll(@NotNull Collection<?> c) {
+    public boolean retainAll(@NonNull Collection<?> c) {
         return this.set.retainAll(c);
     }
 
     @Override
-    public boolean removeAll(@NotNull Collection<?> c) {
+    public boolean removeAll(@NonNull Collection<?> c) {
         return this.set.removeAll(c);
     }
 

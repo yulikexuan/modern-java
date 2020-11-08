@@ -17,10 +17,10 @@ public interface ExecutorServiceConfig {
             ExecutorService executorService, Duration duration) throws Exception {
 
         executorService.awaitTermination(duration.toMillis(), TimeUnit.MILLISECONDS);
-        terminateExecutorServece(executorService);
+        terminateExecutorService(executorService);
     }
 
-    static void terminateExecutorServece(ExecutorService executorService) {
+    static void terminateExecutorService(ExecutorService executorService) {
         executorService.shutdown();
         try {
             if (!executorService.awaitTermination(

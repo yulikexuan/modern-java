@@ -7,13 +7,34 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.yulikexuan.jdk</groupId>
-        <artifactId>modern-java</artifactId>
-        <version>2020.03</version>
-        <relativePath>../pom.xml</relativePath>
+        <groupId>com.yulikexuan</groupId>
+        <artifactId>core-java-bom</artifactId>
+        <version>2020.04.12</version>
+        <relativePath />
     </parent>
 
     <artifactId>bestbuy</artifactId>
     <packaging>jar</packaging>
+
+    <properties>
+        <commons-math3.version>3.6.1</commons-math3.version>
+        <moneta.version>1.1</moneta.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.javamoney</groupId>
+            <artifactId>moneta</artifactId>
+            <version>${moneta.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>${commons-math3.version}</version>
+        </dependency>
+
+    </dependencies>
 
 </project>
