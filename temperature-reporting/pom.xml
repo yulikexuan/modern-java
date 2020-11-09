@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.yulikexuan</groupId>
         <artifactId>core-java-bom</artifactId>
-        <version>2020.04.12</version>
+        <version>2020.04-SNAPSHOT</version>
         <relativePath />
     </parent>
 
