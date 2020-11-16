@@ -34,6 +34,13 @@ public enum VersatileOperation {
         }
     };
 
+    /*
+     * To collect into a Map that contains multiple values by key
+     * (Map<MyKey, Set<MyObject>>), use Collectors.groupingBy()
+     *
+     * To collect into a Map that contains a single value by key
+     * (Map<MyKey, MyObject>), use Collectors.toMap()
+     */
     private static final Map<String, VersatileOperation> STRING_ENUM_MAP =
             Stream.of(VersatileOperation.values())
                     .collect(ImmutableMap.toImmutableMap(
