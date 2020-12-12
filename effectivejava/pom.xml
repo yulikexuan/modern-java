@@ -16,4 +16,14 @@
     <artifactId>effectivejava</artifactId>
     <packaging>jar</packaging>
 
+    <dependencies>
+
+        <dependency>
+            <groupId>org.mutabilitydetector</groupId>
+            <artifactId>MutabilityDetector</artifactId>
+            <version>0.10.4</version>
+        </dependency>
+
+    </dependencies>
+
 </project>
