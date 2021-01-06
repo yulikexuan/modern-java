@@ -4,11 +4,9 @@
 package com.yulikexuan.modernjava.sorting;
 
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Ints;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.map.LinkedMap;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;

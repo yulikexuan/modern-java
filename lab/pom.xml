@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.yulikexuan</groupId>
         <artifactId>core-java-bom</artifactId>
-        <version>2020.04-SNAPSHOT</version>
+        <version>2021.01-SNAPSHOT</version>
         <relativePath />
     </parent>
     
@@ -27,18 +27,8 @@
     <dependencies>
 
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
         </dependency>
 
         <dependency>

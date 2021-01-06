@@ -14,6 +14,7 @@
     <modules>
         <module>lab</module>
         <module>effectivejava</module>
+        <module>concurrency</module>
         <module>bestbuy</module>
         <module>temperature-reporting</module>
         <module>kotlinlab</module>

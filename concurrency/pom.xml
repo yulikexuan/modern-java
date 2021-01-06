@@ -13,15 +13,16 @@
         <relativePath />
     </parent>
     
-    <artifactId>effectivejava</artifactId>
+    <artifactId>concurrency</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
 
         <dependency>
-            <groupId>org.mutabilitydetector</groupId>
-            <artifactId>MutabilityDetector</artifactId>
-            <version>0.10.4</version>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

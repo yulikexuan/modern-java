@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 @DisplayName("Test Lazily Loading PowerSetFactory - ")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -35,8 +37,7 @@ class PowerSetFactoryTest {
         Set<String> subSet = powerSet.get(index);
 
         // Then
-        System.out.println(subSet);
-        powerSet.add(0, Sets.newHashSet("d"));
+        assertThat(subSet).isNotNull();
     }
 
 }///:~
