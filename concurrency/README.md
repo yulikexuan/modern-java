@@ -63,3 +63,64 @@
       - Guarded objects include those that are encapsulated within other 
         thread-safe objects and published objects that are known to be guarded 
         by a specific lock
+
+
+## Invariant
+
+> An invariant is any logical rule that must be obeyed throughout the execution 
+> of your program that can be communicated to a human, but not to your compiler 
+> INVARIANTS ARE BAD
+
+This definition can be cleaved out conditions into two groups 
+  - those the compiler can be trusted with enforcing
+  - and those that must be documented, discussed, commented, or otherwise 
+    communicated to contributors in order for them to interact with the codebase 
+    without introducing bugs 
+
+
+## Patterns for Structuring Thread-Safe Classes
+
+### The Design of Thread-Safe Classes
+
+1. The design process for a thread-safe class should include these three basic elements
+   - Identify the variables that form the object’s state 
+   - Identify the invariants that constrain the state variables 
+   - Establish a policy for managing concurrent access to the object’s state 
+
+
+2. Gathering synchronization requirements
+   > You cannot ensure thread safety without understanding an object’s invariants 
+   > and postconditions. Constraints on the valid values or state transitions for 
+   > state variables can create atomicity and encapsulation requirements.
+
+
+3. State-Dependent Operations
+
+   - To create operations that wait for a precondition to become true before 
+     proceeding, it is often easier to use existing library classes, such as 
+     blocking queues or semaphores, to provide the desired state-dependent 
+     behavior
+
+
+4. State ownership
+
+   - When defining which variables form an object’s state, we want to consider 
+     only the data that object owns. Ownership is not embodied explicitly in 
+     the language, but is instead an element of class design
+
+
+### Instance Confinement
+
+1. Encapsulating data within an object confines access to the data to the 
+   object’s methods, making it easier to ensure that the data is always accessed 
+   with the appropriate lock held
+   - If an object is intended to be confined to a specific scope, then letting 
+     it escape from that scope is a bug
+   - Confined objects can also escape by publishing other objects such as 
+     iterators or inner class instances that may indirectly publish the 
+     confined objects
+
+
+2. Confinement makes it easier to build thread-safe classes because a class that 
+   confines its state can be analyzed for thread safety without having to 
+   examine the whole program
