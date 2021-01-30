@@ -124,3 +124,22 @@ This definition can be cleaved out conditions into two groups
 2. Confinement makes it easier to build thread-safe classes because a class that 
    confines its state can be analyzed for thread safety without having to 
    examine the whole program
+
+
+#### The Java Monitor Pattern
+
+  > An object following the Java monitor pattern encapsulates all its mutable 
+  > state and guards it with the object’s own intrinsic lock
+
+
+### Delegating thread safety
+
+  > If a class is composed of multiple independent thread-safe state variables 
+  > and has no operations that have any invalid state transitions, then it can 
+  > delegate thread safety to the underlying state variables
+ 
+  > If a state variable is 
+  > thread-safe, 
+  > does not participate in any invariants that constrain its value, 
+  > and has no prohibited state transitions for any of its operations, 
+  > then it can safely be published
