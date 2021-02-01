@@ -143,3 +143,9 @@ This definition can be cleaved out conditions into two groups
   > does not participate in any invariants that constrain its value, 
   > and has no prohibited state transitions for any of its operations, 
   > then it can safely be published
+
+
+### Adding Functionality to Existing Thread-Safe Classes
+
+
+
