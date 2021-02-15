@@ -1,0 +1,33 @@
+//: com.yulikexuan.concurrency.buildingblocks.synchronizers.LaunderThrowable.java
+
+package com.yulikexuan.concurrency.buildingblocks.synchronizers;
+
+
+import org.apache.commons.lang3.time.StopWatch;
+
+import java.util.concurrent.CountDownLatch;
+
+/**
+ * StaticUtilities
+ *
+ * @author Brian Goetz and Tim Peierls
+ */
+public class LaunderThrowable {
+
+    /**
+     * Coerce an unchecked Throwable to a RuntimeException
+     * <p/>
+     * If the Throwable is an Error, throw it; if it is a
+     * RuntimeException return it, otherwise throw IllegalStateException
+     */
+    public static RuntimeException launderThrowable(Throwable t) {
+        if (t instanceof RuntimeException) {
+            return (RuntimeException) t;
+        } else if (t instanceof Error) {
+            throw (Error) t;
+        } else {
+            throw new IllegalStateException("Not unchecked", t);
+        }
+    }
+
+}///:~
