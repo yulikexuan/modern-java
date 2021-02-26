@@ -6,6 +6,9 @@
   - [Errata](https://jcip.net/errata.html)
 
 
+# Part I Fundamentals
+
+
 ## The Cheat Sheet of the Concurrency Fundamentals
 
 1.  The less mutable state, the easier it is to ensure thread safety
@@ -184,3 +187,43 @@ This definition can be cleaved out conditions into two groups
 
 
 ### Building Blocks
+
+
+# Part II Structuring Concurrent Applications
+
+
+## Chapter 6 Task Execution
+
+
+### 6.1 Executing Tasks in Threads
+
+### 6.2 Separating the specification of Execution Policy from Task Submission
+
+#### Execution Policy (What, Where, When, How)
+
+- In what thread will tasks be executed?
+
+- In what order should tasks be executed (FIFO, LIFO, priority order)?
+
+- How many tasks may execute concurrently?
+
+- How many tasks may be queued pending execution?
+
+- If a task has to be rejected because the system is overloaded, which task 
+  should be selected as the victim, and how should the application be notified?
+
+- What actions should be taken before or after executing a task?
+
+
+### 6.3 Finding Exploitable Parallelism
+
+1. A further problem with dividing heterogeneous tasks among multiple workers 
+   is that the tasks may have disparate sizes
+
+2. If you divide tasks A and B between two workers but A takes ten times as 
+   long as B, you’ve only speeded up the total process by 9%
+
+3. Finally, dividing a task among multiple workers always involves some amount 
+   of coordination overhead; for the division to be worthwhile, this overhead 
+   must be more than compensated by productivity improvements due to parallelism
+
