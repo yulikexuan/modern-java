@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 @Disabled
 @Slf4j
-@DisplayName("Test FutureRendererTest - ")
+@DisplayName("Test FutureRenderer - ")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class FutureRendererTest {
 
