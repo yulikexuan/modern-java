@@ -21,6 +21,7 @@ public class LaunderThrowable {
      * RuntimeException return it, otherwise throw IllegalStateException
      */
     public static RuntimeException launderThrowable(Throwable t) {
+
         if (t instanceof RuntimeException) {
             return (RuntimeException) t;
         } else if (t instanceof Error) {
