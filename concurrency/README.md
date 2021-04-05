@@ -895,3 +895,517 @@ public void run() {
 
 > Daemon threads are not a good substitute for properly managing the lifecycle 
 > of services within an application
+
+
+## Chapter 8 Applying Thread Pools
+
+### 8.1 Implicit Couplings between Tasks and Execution Policies
+
+#### Overview
+> Not all tasks are compatible with all Execution Policies
+
+- Types of tasks that require specific execution policies include
+    - Dependent Tasks
+    - Tasks that exploit thread confinement
+        - Single-threaded executors make stronger promises about concurrency 
+          than do arbitrary thread pools. They guarantee that tasks are not 
+          executed concurrently
+    - Response-Time-Sensitive Tasks
+    - Tasks that use ``` ThreadLocal ```
+        - ``` ThreadLocal ``` makes sense to use in pool threads only if the 
+          thread-local value has a lifetime that is bounded by that of a task
+        - ``` ThreadLocal ``` should not be used in pool threads to communicate 
+          values between tasks
+
+
+> Thread pools work best when tasks are homogeneous and independent
+
+> Mixing long-running and short-running tasks risks “clogging” the pool unless 
+> it is very large
+
+> Submitting tasks that depend on other tasks risks deadlock unless the pool is 
+> unbounded and large enough that tasks are never queued or rejected
+
+> Tasks that exploit thread confinement require sequential execution
+
+> Document the requirements above so that future maintainers do not undermine 
+> safety or liveness by substituting an incompatible execution policy
+
+
+#### 8.1.1 Thread Starvation Deadlock
+
+- What is ___thread starvation deadlock___
+     - If tasks that depend on other tasks execute in a thread pool, they can 
+       deadlock
+     -  In a single-threaded executor, a task that submits another task to the 
+        same  executor and waits for its result will ___always deadlock___
+     - In larger thread pools, if all threads are executing tasks that are 
+       blocked waiting for other tasks still on the work queue
+
+
+> Whenever submitting to an Executor tasks that are not independent, be aware of 
+> the possibility of thread starvation deadlock, and document any pool sizing or 
+> configuration constraints in the code or configuration file where the Executor 
+> is configured
+
+
+#### 8.1.2 Long-running tasks
+
+- Thread pools can have responsiveness problems if tasks can block for extended 
+  periods of time, even if deadlock is not a possibility
+
+
+### 8.2 Sizing thread pools
+
+
+#### Overview
+
+> The ideal size for a thread pool depends on the types of tasks that will be 
+> submitted and the characteristics of the deployment system
+
+
+> Thread pool sizes should be provided by a configuration mechanism or computed 
+> dynamically by consulting ``` Runtime.availableProcessors ```
+
+- To size a thread pool properly, need to understand 
+    - the computing environment 
+    - the resource budget 
+    - the nature of the tasks
+
+
+> If having different categories of tasks with very different behaviors, 
+> consider using multiple thread pools so each can be tuned according to its 
+> workload
+
+
+- How many processors does the deployment system have?
+
+
+- How much memory?
+
+
+- Do tasks perform mostly computation, I/O, or some combination?
+
+
+- Do they require a scarce resource, such as a JDBC connection?
+
+
+#### Compute-Intensive Tasks
+
+- An Ncpu-processor system usually achieves optimum utilization with a 
+  thread pool of ___Ncpu + 1___ threads
+    - Even Compute-Intensive Threads occasionally take a page fault or pause for 
+      some other reason, so an “extra” runnable thread prevents CPU cycles from 
+      going unused when this happens  
+
+
+#### For Tasks that also include I/O or other Blocking Operations
+
+- Needs a larger pool since not all of the threads will be schedulable at all 
+  times
+
+
+- In order to size the pool properly, you must estimate the ratio of waiting 
+  time to compute time for your tasks 
+
+
+- Alternatively, the size of the thread pool can be tuned by running the 
+  application using several different pool sizes under a benchmark load and 
+  observing the level of CPU utilization
+
+![Thread Pool Size Calculation](Thread_Pool_Size_Calculation.png 
+"Thread Pool Size Calculation")
+
+
+- Other Resources that can contribute to sizing constraints
+    - Memory 
+    - File handles 
+    - Socket handles 
+    - Database Connections
+    - Add up how much of that resource each task requires and divide that into 
+      the total quantity available, the result will be an upper bound on the 
+      pool size
+
+
+> When tasks require a pooled resource such as database connections, 
+> thread pool size and resource pool size affect each other
+
+>If each task requires a connection, the effective size of the thread pool is 
+> limited by the connection pool size
+
+> When the only consumers of connections are pool tasks, the effective size of 
+> the connection pool is limited by the thread pool size
+
+
+### 8.3 Configuring ``` ThreadPoolExecutor ```
+
+#### The most general constructor of ``` ThreadPoolExecutor ```
+
+``` 
+public ThreadPoolExecutor(
+        int corePoolSize,
+        int maximumPoolSize,
+        long keepAliveTime,
+        TimeUnit unit,
+        BlockingQueue<Runnable> workQueue,
+        ThreadFactory threadFactory,
+        RejectedExecutionHandler handler) { ... }
+```
+
+#### 8.3.1 Thread creation and teardown
+
+- The ___core pool size___, ___maximum pool size___, and ___keep-alive time___ 
+  govern thread ___creation___ and ___teardown___
+
+
+- ``` corePoolSize ```, the core size is the target size
+    - The implementation attempts to maintain the pool at this size even when 
+      there are no tasks to execute and will not create more threads than this 
+      unless the work queue is full
+    - When a ThreadPoolExecutor is initially created, the core threads are not 
+      started immediately but instead as tasks are submitted, unless you call 
+      ``` prestartAllCoreThreads ```
+
+
+- ``` maximumPoolSize ```, the maximum pool size is the upper bound on how many 
+  pool threads can be active at once 
+
+
+- ``` keepAliveTime ```, a thread that has been idle for longer than the 
+  ``` keepAliveTime ``` becomes a candidate for reaping and can be terminated 
+  if the current pool size exceeds the core size
+
+
+- ``` allowCoreThreadTimeOut ``` allows you to request that all pool threads be 
+  able to time out; enable this feature with a core size of zero if you want a 
+  bounded thread pool with a bounded work queue but still have all the threads 
+  torn down when there is no work to do
+
+
+#### 8.3.2 Managing Queued Tasks
+
+- Bounded thread pools limit the number of tasks that can be executed concurrently
+
+
+- With tasks that depend on other tasks, bounded thread pools or queues can 
+  cause thread starvation deadlock; instead, use an unbounded pool configuration 
+  like newCachedThreadPool
+
+
+#### 8.3.3 Saturation Policies
+
+> ``` AbortPolicy ```, ``` CallerRunsPolicy ```, ``` DiscardPolicy ```, and 
+> ``` DiscardOldestPolicy ```
+
+- The saturation policy for a ThreadPoolExecutor can be modified by calling
+  ``` 
+  // ThreadPoolExecutor::setRejectedExecutionHandler
+  public void setRejectedExecutionHandler(RejectedExecutionHandler handler) 
+  ```
+
+- The saturation policy is also used when a task is submitted to an Executor 
+  that has been shut down
+
+
+- The default policy: ``` AbortPolicy ``` causes execute to throw the unchecked 
+  ``` RejectedExecutionException ```
+
+
+- The ``` DiscardPolicy ``` silently discards the newly submitted task if it 
+  cannot be  queued for execution 
+
+
+- the ``` DiscardOldestPolicy ``` discards the task that would otherwise be 
+  executed next and tries to resubmit the new task
+
+
+- The ``` CallerRunsPolicy ``` implements a form of throttling that neither 
+  discards tasks nor throws an exception, but instead tries to slow down the 
+  flow of new tasks by pushing some of the work back to the caller
+  ``` 
+  public static class ThreadPoolExecutor.CallerRunsPolicy extends Object 
+        implements RejectedExecutionHandler
+  ```
+
+    - A handler for rejected tasks that runs the rejected task directly in the 
+      calling thread of the execute method, unless the executor has been shut 
+      down, in which case the task is discarded 
+    - Since this would probably take some time, the main thread cannot submit 
+      any more tasks for at least a little while and giving the worker threads 
+      some time to catch up on the backlog 
+    - Enabling more graceful degradation under load
+
+
+- How to ___make ``` execute ``` block___ when the work queue is full
+    - Using a ``` Semaphore ``` to bound the task injection rate as shown in 
+      ``` BoundedExecutor ```
+    - In such an approach, use an ___unbounded queue___ 
+        - There’s no reason to bound both the queue size and the injection rate
+    - Set the bound on the semaphore to be equal to the pool size plus the 
+      number of queued tasks you want to allow
+        - Since the semaphore is bounding the number of tasks both currently 
+          executing and awaiting execution
+
+    ``` 
+    public class BoundedExecutor {
+        private final ExecutorService executor;
+        private final Semaphore semaphore;
+        public void submitTask(final Runnable command) 
+                throws InterruptedException {
+            this.semaphore.acquire();
+            try {
+                this.executor.execute(() -> {
+                    try {
+                        command.run();
+                    } finally {
+                        semaphore.release();
+                    }
+                });
+            } catch (RejectedExecutionException ree) {
+                semaphore.release();
+            }
+        }
+    }
+    ```
+
+![Working of Semaphore](Working-of-Semaphore-in-Java.png
+"Working of Semaphore")
+
+
+#### 8.3.4 Thread Factories
+
+- Specifying a thread factory allows to customize the configuration of pool threads
+
+
+- ``` ThreadFactory ``` has a single method, ``` newThread ```, that is called 
+  whenever a thread pool needs to create a new thread 
+
+
+- Reasons to use a custom thread factory
+    - To specify an ``` UncaughtExceptionHandler ``` for pool threads
+    - To instantiate an instance of a custom ``` Thread ``` class, such as one 
+      that performs debug logging
+    - To modify the priority
+    - To set the daemon status
+    - To give pool threads more meaningful names to simplify interpreting thread 
+      dumps and error logs
+    - To take advantage of ___security policies___ to grant permissions to 
+      particular codebases
+        - To use the ``` privilegedThreadFactory ``` factory method in Executors 
+          to construct your thread factory
+        - It creates pool threads that have the same permissions, 
+          ``` AccessControlContext ```, and ``` contextClassLoader ``` as
+          the thread creating the ``` privilegedThreadFactory ```
+        - Otherwise, threads created by the thread pool inherit permissions from 
+          whatever client happens to be calling ``` execute ``` or ``` submit ``` 
+          at the time a new thread is needed, which could cause confusing 
+          security-related exceptions
+
+
+#### 8.3.5 Customizing ThreadPoolExecutor after Construction
+
+- The options passed to the ThreadPoolExecutor constructors can also be modified 
+  after construction via setters
+    - core thread pool size 
+    - maximum thread pool size 
+    - keep-alive time 
+    - thread factory 
+    - rejected execution handler
+
+- If the Executor is created through one of the factory methods in ``` Executors ```
+  (except ``` newSingleThreadExecutor ``` method), you can cast the result to 
+  ``` ThreadPoolExecutor ``` to access the setters
+  ``` 
+    ExecutorService exec = Executors.newCachedThreadPool();
+    if (exec instanceof ThreadPoolExecutor) {
+        ((ThreadPoolExecutor) exec).setCorePoolSize(10);
+    } else {
+        throw new AssertionError("Oops, bad assumption");
+    }
+  ```
+
+
+- ``` Executors::unconfigurableExecutorService ```,  a factory method, takes an 
+  existing ``` ExecutorService ``` and wraps it with one exposing only the 
+  methods of ``` ExecutorService ``` so it cannot be further configured
+  
+
+- ``` Executors::newSingleThreadExecutor ``` returns an ``` ExecutorService ``` wrapped 
+  in ``` unconfigurableExecutorService ```, rather than a raw ThreadPoolExecutor
+    - A single-threaded executor is actually implemented as a thread pool with 
+      one thread, it also promises not to execute tasks concurrently
+
+
+- To prevent the execution policy from being modified, wrap the 
+  ``` ExecutorService ``` with an ``` unconfigurableExecutorService ``` 
+  ``` 
+  public static ExecutorService unconfigurableExecutorService(
+          ExecutorService executor)
+  ```
+
+
+### 8.4 Extending ``` ThreadPoolExecutor ```
+
+#### Overview
+
+- ``` ThreadPoolExecutor ``` was designed for extension and providing several 
+  “hooks” for subclasses to override to extend the behavior of 
+  ``` ThreadPoolExecutor ``` : 
+    - ``` beforeExecute ``` and ``` afterExecute ``` 
+        - are called in the thread that executes the task
+        - can be used for adding logging, timing, monitoring, or statistics 
+          gathering
+        - ``` afterExecute ``` is called whether the task completes by returning 
+          normally from run or by throwing an Exception
+        - If the task completes with an ``` Error ```, ``` afterExecute ``` is 
+          not called
+        - If beforeExecute throws a ``` RuntimeException ```, the task is not 
+          executed and ``` afterExecute ``` is not called
+    - ``` terminated ```  
+        - The ``` terminated ``` hook is called when the thread pool completes 
+          the shutdown process, after all tasks have finished and all worker 
+          threads have shut down 
+        - Used to release resources allocated by the ``` Executor ``` during its 
+          lifecycle, perform notification or logging, or finalize statistics 
+          gathering
+
+
+``` 
+protected void beforeExecute(Thread t, Runnable r)
+```
+- Parameters 
+    - Thread t - the thread that will run task r
+    - Runnable r - the task that will be executed
+- Method invoked prior to executing the given Runnable in the given thread
+- This method is invoked by thread t that will execute task r, and may be 
+  used to re-initialize ThreadLocals, or to perform logging 
+- This implementation does nothing, but may be customized in subclasses
+- Note: To properly nest multiple overridings, subclasses should generally 
+  invoke ``` super.beforeExecute ``` ___at the end___ of this method 
+
+
+``` 
+protected void afterExecute(Runnable r, Throwable t)
+```
+- Parameters:
+    - Runnable r - the runnable that has completed
+    - Throwable t - the exception that caused termination, or ``` null ``` if 
+      execution completed normally
+- Method invoked upon completion of execution of the given ``` Runnable ```
+- This method is invoked by the thread that executed the task
+- If non-null, the ``` Throwable ``` is the uncaught RuntimeException or 
+  ``` Error ``` that caused execution to terminate abruptly
+- This implementation does nothing, but may be customized in subclasses
+    - Note: To properly nest multiple overridings, subclasses should generally 
+      invoke ``` super.afterExecute ``` at the beginning of this method 
+- Note: 
+    - When actions are enclosed in tasks (such as ``` FutureTask ```) either 
+      explicitly or via methods such as ``` submit ```, these task objects 
+      catch and maintain computational exceptions, and so they do not cause 
+      abrupt termination, and the internal exceptions are not passed to this 
+      method
+    - To trap both kinds of failures in this method
+    ``` 
+    protected void afterExecute(Runnable r, Throwable t) {
+        super.afterExecute(r, t);
+        if (t == null && r instanceof Future<?> && ((Future<?>)r).isDone()) {
+            try {
+                Object result = ((Future<?>) r).get();
+            } catch (CancellationException ce) {
+                t = ce;
+            } catch (ExecutionException ee) {
+                t = ee.getCause();
+            } catch (InterruptedException ie) {
+                // ignore/reset
+                Thread.currentThread().interrupt();
+            }
+        }
+        if (t != null)
+            System.out.println(t);
+        }
+    }
+    ```
+
+``` 
+protected void terminated()
+```
+- Method invoked when the ``` Executor ``` has terminated
+- Default implementation does nothing
+- Note: To properly nest multiple overridings, subclasses should generally 
+  invoke ``` super.terminated ``` within this method 
+
+
+#### 8.4.1 Example: adding statistics to a thread pool
+
+
+### 8.5 Parallelizing Recursive Algorithms
+
+#### Overview
+
+> Sequential loop iterations are suitable for parallelization when each 
+> iteration is independent of the others and the work done in each iteration of 
+> the loop body is significant enough to offset the cost of managing a new task
+
+
+- Loops, whose iterations are independent, being frequently good candidates for 
+  parallelization if the loop body
+  contain 
+    - nontrivial computation 
+    - perform potentially blocking I/O 
+
+
+#### Loop Parallelization for Recursive Designs
+
+- The easier case is when each iteration does not require the results of the 
+  recursive iterations it invokes
+    - the traversal is still sequential: only the calls to compute are executed 
+      in parallel
+
+
+#### 8.5.1 Example: A Puzzle Framework
+
+- Result-Bearing Latch 
+    - The requirement: 
+        - In order to stop searching when we find a solution, we need a way to 
+          determine whether any thread has found a solution yet
+        - If we want to accept the first solution found, we also need to update the 
+          solution only if no other task has already found one
+    - It's often easier and less error-prone to use existing library classes 
+      rather than low-level language mechanisms
+    - ``` ValueLatch ``` below uses a ``` CountDownLatch ``` to provide the 
+      needed latching behavior, and uses locking to ensure that the solution is 
+      set only once
+
+``` 
+package com.yulikexuan.concurrency.threadpool.recursive;
+
+import javax.annotation.concurrent.GuardedBy;
+import java.util.concurrent.CountDownLatch;
+
+public class ValueLatch<T> {
+
+    @GuardedBy("this")
+    private T value = null;
+
+    private final CountDownLatch doneLatch = new CountDownLatch(1);
+
+    public boolean isSet() {
+        return (doneLatch.getCount() == 0);
+    }
+
+    public synchronized void setValue(T newValue) {
+        if (!isSet()) {
+            value = newValue;
+            doneLatch.countDown();
+        }
+    }
+
+    public T getValue() throws InterruptedException {
+        doneLatch.await();
+        synchronized (this) {
+            return value;
+        }
+    }
+
+}
+```
