@@ -2050,3 +2050,40 @@ boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 
 
 #### 12.1.5 Using Callbacks
+
+> Callbacks to client-provided code can be helpful in constructing test cases; 
+> callbacks are often made at known points in an object’s lifecycle that are 
+> good opportunities to assert invariants
+
+
+#### 12.1.6 Generating More Interleavings
+
+> A useful trick for increasing the number of interleavings, and therefore more 
+> effectively exploring the state space of your programs, is to use 
+> ``` Thread.yield ``` to encourage more context switches during operations that 
+> access shared state
+
+> The effectiveness of this technique is platform-specific, since the JVM is 
+> free to treat Thread.yield as a no-op [JLS 17.9]; using a short but nonzero 
+> sleep would be slower but more reliable 
+
+``` 
+public synchronized void transferCredits(Account from, Account to, int amount) {
+    from.setBalance(from.getBalance() - amount);
+    if (random.nextInt(1000) > THRESHOLD) {
+        Thread.yield();
+    }
+    to.setBalance(to.getBalance() + amount);
+}
+```
+
+- By sometimes yielding in the middle of an operation, you may activate 
+  timing-sensitive bugs in code that does not use adequate synchronization to 
+  access state
+    - The inconvenience of adding these calls for testing and removing them for 
+      production can be reduced by adding them using aspect-oriented programming 
+      (AOP) tools
+
+
+### 12.2 Testing for Performance
+
