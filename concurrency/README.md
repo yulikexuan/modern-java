@@ -188,6 +188,7 @@ This definition can be cleaved out conditions into two groups
 
 ### Building Blocks
 
+[CyclicBarrier vs CountDownLatch](https://www.baeldung.com/java-cyclicbarrier-countdownlatch)
 
 # Part II Structuring Concurrent Applications
 
@@ -1947,3 +1948,105 @@ boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 
 
 ### 12.1 Testing for Correctness
+
+#### 12.1.1 Basic Unit Tests
+
+> Including a set of sequential tests in your test suite is often helpful, 
+> since they can disclose when a problem is not related to concurrency issues 
+> before you start looking for data races
+
+#### 12.1.2 Testing blocking operations
+
+- If a method is supposed to block under certain conditions, then a test for 
+  that behavior should succeed only if the thread does not proceed
+    - Testing that a method blocks is similar to testing that a method throws 
+      an exception; if the method returns normally, the test has failed
+    - Introducing an additional complication: once the method successfully 
+      blocks, you have to convince it somehow to unblock 
+        - The obvious way to do this is via interruption—start a blocking 
+          activity in a separate thread, 
+            - Wait until the thread blocks
+            - Interrupt it 
+            - And then assert that the blocking operation completed
+  ``` 
+    @Test
+    void test_Take_Method_Blocks_When_Empty() {
+
+        // Given
+        final Thread taker = new Thread(() -> {
+            try {
+                int unused = boundedBuffer.take();
+                fail(); // if we get here, it's an error
+            } catch (InterruptedException success) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        // When
+        taker.start();
+
+        // Then
+        await().until(() -> !isThreadAlive(taker));
+    }
+
+    static boolean isThreadAlive(@NonNull Thread thread) {
+        try {
+            Thread.sleep(LOCKUP_DETECT_TIMEOUT);
+            thread.interrupt();
+            thread.join(LOCKUP_DETECT_TIMEOUT);
+            return thread.isAlive();
+        } catch (Exception unexpected) {
+            fail();
+            throw new IllegalStateException();
+        }
+    }
+  ```
+
+> The result of Thread.getState should not be used for concurrency control, 
+> and is of limited usefulness for testing—its primary utility is as a source 
+> of debugging information 
+
+
+#### 12.1.3 Testing Safety
+
+- To test that a concurrent class performs correctly under unpredictable 
+  concurrent access, we need to set up multiple threads performing different 
+  operations (put and take, for example) over some amount of time and then 
+  somehow test that nothing went wrong 
+
+> Constructing tests to disclose safety errors in concurrent classes is a 
+> chickenand-egg problem: the test programs themselves are concurrent programs
+
+> Developing good concurrent tests can be more difficult than developing the 
+> classes they test
+
+> The challenge to constructing effective safety tests for concurrent classes is 
+> identifying easily checked properties that will, with high probability, fail 
+> if something goes wrong, while at the same time not letting the failure 
+> auditing code limit concurrency artificially 
+
+> It is best if checking the test property does not require any synchronization
+
+> Tests should be run on multiprocessor systems to increase the diversity of 
+> potential interleavings 
+
+> However, having more than a few CPUs does not necessarily make tests more 
+> effective
+
+> To maximize the chance of detecting timing-sensitive data races, there should 
+> be more active threads than CPUs, so that at any given time some threads are 
+> running and some are switched out, thus reducing the predicatability of 
+> interactions between threads
+
+
+#### 12.1.4 Testing resource management
+
+> The second aspect to test is that the thread does not do things it is not 
+> supposed to do, such as leak resources. Any object that holds or manages other 
+> objects should not continue to maintain references to those objects longer 
+> than necessary. Such storage leaks prevent garbage collectors from reclaiming 
+> memory (or threads, file handles, sockets, database connections, or other 
+> limited resources) and can lead to resource exhaustion and application failure
+
+
+#### 12.1.5 Using Callbacks
