@@ -2087,3 +2087,79 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
 
 ### 12.2 Testing for Performance
 
+#### Overview
+
+> It is almost always worthwhile to include some basic functionality testing 
+> within performance tests to ensure that you are not testing the performance 
+> of broken code
+
+> Performance tests seek to measure end-to-end performance metrics for 
+> representative use cases
+
+> A common secondary goal of performance testing is to select sizings 
+> empirically for various bounds, numbers of threads, buffer capacities, and so 
+> on
+
+
+#### 12.2.1 Measure the Time Taken for a Run - Extending PutTakeTest to Add Timing
+
+- Get a more accurate measure by timing the entire run and dividing by the 
+  number of operations to get a per-operation time
+    - We are already using a CyclicBarrier to start and stop the worker threads, 
+      so we can extend this by using a barrier action that measures the start 
+      and end time
+
+
+- Learn several things from permormance tests
+    - The throughput of the producer-consumer handoff operation for various 
+      combinations of parameters 
+    - How the bounded buffer scales with different numbers of threads
+    - How we might select the bound size
+
+
+- Answering those questions above requires running the test for various 
+  combinations of parameters
+
+
+#### 12.2.2 Comparing Multiple Algorithms
+
+- A linked queue must allocate a link node object for each insertion, and hence 
+  seems to be doing more work than the array-based queue
+    - However, even though it has more allocation and GC overhead
+        - A linked queue allows more concurrent access by puts and takes than 
+          an array-based queue because the best linked queue algorithms allow 
+          the head and tail to be updated independently
+    - Because allocation is usually thread-local, algorithms that can reduce 
+      contention by doing more allocation usually scale better
+
+
+#### 12.2.3 Measuring Responsiveness
+
+- Sometimes it is more important to know how long an individual action might 
+  take to complete, and in this case we want to measure the variance of service 
+  time 
+    - Measuring variance allows us to estimate the answers to quality-of-service 
+      questions like “What percentage of operations will succeed in under 100 
+      milliseconds?”
+
+
+- Histograms of task completion times are normally the best way to visualize 
+  variance in service time
+
+
+- Unless threads are continually blocking anyway because of tight synchronization 
+  requirements
+    - Unfair semaphores provide much better throughput 
+    - Fair semaphores provide lower variance 
+
+
+- Because the results are so dramatically different, Semaphore forces its 
+  clients to decide which of the two factors to optimize for 
+
+
+### 12.3 Avoiding Performance Testing Pitfalls
+
+#### Overview
+
+- In practice, developers have to watch out for a number of coding pitfalls that 
+  prevent performance tests from yielding meaningful results 
