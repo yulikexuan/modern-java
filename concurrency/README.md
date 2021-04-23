@@ -2162,4 +2162,275 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
 #### Overview
 
 - In practice, developers have to watch out for a number of coding pitfalls that 
-  prevent performance tests from yielding meaningful results 
+  prevent performance tests from yielding meaningful results
+
+
+#### 12.3.1 Garbage Collection
+
+> The timing of garbage collection is unpredictable, so there is always the 
+> possibility that the garbage collector will run during a measured test run
+
+> If a test program performs N iterations and triggers no garbage collection 
+> but iteration N + 1 would trigger a garbage collection, a small variation in 
+> the size of the run could have a big (but spurious) effect on the measured 
+> time per iteration
+
+
+- There are two strategies for preventing garbage collection from biasing your 
+  results
+    - One is to ensure that garbage collection does not run at all during your 
+      test (you can invoke the JVM with ``` -verbose:gc ``` to find out)
+    - Alternatively, you can make sure that the garbage collector runs a number 
+      of times during your run so that the test program adequately reflects the 
+      cost of ongoing allocation and garbage collection 
+        - This strategy is often better - it requires a longer test and is more 
+          likely to reflect real-world performance 
+
+
+- Most producer-consumer applications involve a fair amount of allocation and 
+  garbage collection—producers allocate new objects that are used and discarded 
+  by consumers 
+    - Running the bounded buffer test for long enough to incur multiple garbage 
+      collections yields more accurate results
+
+
+#### 12.3.2 Dynamic Compilation
+
+- Dynamically compiled languages like Java uses a combination of bytecode 
+  interpretation and dynamic compilation
+    - When a class is first loaded, the JVM executes it by interpreting the 
+      bytecode 
+    - At some point, if a method is run often enough, the dynamic compiler 
+      kicks in and converts it to machine code; 
+        - When compilation completes, it switches from interpretation to direct 
+          execution
+
+
+> The timing of compilation is unpredictable; So, your timing tests should run 
+> only after all code has been compiled
+
+
+- There is no value in measuring the speed of the interpreted code since most 
+  programs run long enough that all frequently executed code paths are compiled 
+
+- Allowing the compiler to run during a measured test run can bias test results 
+  in two ways: 
+    - Compilation consumes CPU resources, and measuring the run time of a 
+      combination of interpreted 
+    - Compiled code is not a meaningful performance metric 
+
+
+- Code may also be decompiled (reverting to interpreted execution) and 
+  recompiled for various reasons
+    - Loading a class that invalidates assumptions made by prior compilations 
+    - Gathering sufficient profiling data to decide that a code path should be 
+      recompiled with different optimizations
+
+> bias something: to have an effect on the results of research or an experiment 
+> so that they do not show the real situation
+
+
+- One way to to prevent compilation from biasing your results is to run your 
+  program for a long time (at least several minutes) so that compilation and 
+  interpreted execution represent a small fraction of the total run time
+
+- Another approach is to use an unmeasured “warm-up” run, in which your code is 
+  executed enough to be fully compiled when you actually start timing
+
+
+> On HotSpot, running your program with ``` -XX:+PrintCompilation ``` prints 
+> out a message when dynamic compilation runs, so you can verify that this is 
+> prior to, rather than during, measured test runs
+
+- Running the same test several times in the same JVM instance can be used to 
+  validate the testing methodology 
+    - The first group of results should be discarded as warm-up; seeing 
+      inconsistent results in the remaining groups suggests that the test should 
+      be examined further to determine why the timing results are not repeatable
+
+
+> The JVM uses various background threads for housekeeping tasks
+
+- When measuring multiple unrelated computationally intensive activities in a 
+  single run, place explicit pauses between the measured trials to give the JVM 
+  a chance to catch up with background tasks with minimal interference from 
+  measured tasks
+
+
+#### 12.3.3 Unrealistic Sampling of Code Paths
+
+> Runtime compilers use profiling information to help optimize the code being 
+> compiled
+
+- The JVM is permitted to use information specific to the execution in order to 
+  produce better code, which means that compiling method M in one program may 
+  generate different code than compiling M in another 
+
+
+- In some cases, the JVM may make optimizations based on assumptions that may 
+  only be true temporarily, and later back them out by invalidating the compiled 
+  code if they become untrue
+
+
+- It's important that your test programs not only adequately approximate the 
+  usage patterns of a typical application, but also approximate 
+  ___the set of code paths___ used by such an application 
+    - Otherwise, a dynamic compiler could make special optimizations to a purely 
+      single-threaded test program that could not be applied in real applications 
+      containing at least occasional parallelism
+
+
+> Tests of multithreaded performance should normally be mixed with tests of 
+> single-threaded performance, even if you want to measure only singlethreaded 
+> performance
+
+
+#### 12.3.4 Unrealistic Degrees of Contention
+
+> Concurrent applications tend to interleave two very different sorts of work: 
+> accessing shared data, such as fetching the next task from a shared work 
+> queue, and thread-local computation (executing the task, assuming the task 
+> itself does not access shared data)
+
+
+#### 12.3.5 Dead Code Elimination
+
+- One of the challenges of writing good benchmarks (in any language) is that 
+  optimizing compilers are adept at spotting and eliminating dead code: code 
+  that has no effect on the outcome
+    - For a benchmark this is a big problem because then you are measuring less 
+      execution than you think
+
+> Many microbenchmarks perform much “better” when run with HotSpot’s -server 
+> compiler than with -client, not just because the server compiler can produce 
+> more efficient code, but also because it is more adept at optimizing dead code
+
+> Prefer -server to -client for both production and testing on multiprocessor 
+> systems
+
+> Writing effective performance tests requires tricking the optimizer into not 
+> optimizing away your benchmark as dead code
+
+- A cheap trick for preventing a calculation from being optimized away without 
+  introducing too much overhead is to compute the hashCode of the field of some 
+  derived object, compare it to an arbitrary value such as the current value of 
+  ``` System.nanoTime ```, and print a useless and ignorable message if they 
+  happen to match
+    - The comparison will rarely succeed, and if it does, its only effect will 
+      be to insert a harmless space character into the output
+    - The ``` System.out.print ``` method buffers output until 
+      ``` System.out.println ``` is called, so in the rare case that ``` hashCode ```
+      and ``` System.nanoTime ``` are equal, no I/O is actually performed
+
+  ``` 
+  if (foo.x.hashCode() == System.nanoTime()) {
+      System.out.print(" ");
+  }
+  ```
+
+> Not only should every computed result be used, but results should also be 
+> unguessable; otherwise, a smart dynamic optimizing compiler is allowed to 
+> replace actions with precomputed results
+
+> Any test program whose input is static data is vulnerable to the optimization
+
+
+### 12.4 Complementary Testing Aproaches
+
+#### Overview
+
+> We’d like to believe that an effective testing program should “find all the 
+> bugs”, this is an unrealistic goal
+
+- NASA devotes more of its engineering resources to testing (it is estimated 
+  they employ 20 testers for each developer) than any commercial entity could 
+  afford to—and the code produced is still not free of defects
+
+> In complex programs, no amount of testing can find all coding errors 
+
+> The goal of testing is not so much to find errors as it is to increase 
+> confidence that the code works as expected
+
+> Since it is unrealistic to assume you can find all the bugs, the goal of a 
+> quality assurance (QA) plan should be to achieve the greatest possible 
+> confidence given the testing resources available
+
+> By employing complementary testing methodologies such as code review and 
+> static analysis, you can achieve greater confidence than you could with any 
+> single approach
+
+
+#### 12.4.1 Code Review
+
+> Even concurrency experts make mistakes; taking the time to have someone else 
+> review the code is almost always worthwhile
+
+> Expert concurrent programmers are better at finding subtle races than are 
+> most test programs
+
+
+#### 12.4.2 Static Analysis Tools
+
+- FindBugs includes detectors for the following concurrencyrelated bug patterns, 
+  and more are being added all the time:
+    - Inconsistent synchronization
+        - Analysis tools must guess at the synchronization policy because Java 
+          classes do not have formal concurrency specifications
+        - In the future, if annotations such as ``` @GuardedBy ``` are standardized, 
+          auditing tools could interpret annotations rather than having to 
+          guess at the relationship between variables and locks, thus improving 
+          the quality of analysis
+    - Invoking Thread.run
+    - Unreleased lock
+        - Unlike intrinsic locks, explicit locks (see Chapter 13) are not 
+          automatically released when control exits the scope in which they were 
+          acquired 
+            - The standard idiom is to release the lock from a finally block; 
+              otherwise the lock can remain unreleased in the event of an 
+              ``` Exception ```
+    - Empty synchronized block
+    - Double-checked locking
+        - Double-checked locking is a broken idiom for reducing synchronization 
+          overhead in lazy initialization (see Section 16.2.4) that involves 
+          reading a shared mutable field without appropriate synchronization
+    - Starting a thread from a constructor
+        - Starting a thread from a constructor introduces the risk of 
+          subclassing problems, and can allow the ``` this ``` reference to 
+          escape the constructor
+    - Notification errors
+        - The ``` notify ``` and ``` notifyAll ``` methods indicate that an 
+          object’s state may have changed in a way that would unblock threads 
+          that are waiting on the associated condition queue
+        - These methods should be called only when the state associated with the 
+          condition queue has changed
+        - A synchronized block that calls ``` notify ``` or ``` notifyAll ``` 
+          but does not modify any state is likely to be an error. (See Chapter 14.)
+    - Condition wait errors
+        - When waiting on a condition queue, ``` Object.wait ``` or 
+          ``` Condition.await ``` should be called in a loop, with the 
+          appropriate lock held, after testing some state predicate (see Chapter 14). 
+            - Calling ``` Object.wait ``` or ``` Condition.await ``` without the 
+              lock held, not in a loop, or without testing some state predicate 
+              is almost certainly an error
+    - Misuse of Lock and Condition
+        - Using a Lock as the lock argument for a synchronized block is likely 
+          to be a typo, as is calling Condition.wait instead of await (though 
+          the latter would likely be caught in testing, since it would throw an 
+          ``` IllegalMonitorStateException ``` the first time it was called) 
+    - Sleeping or waiting while holding a lock
+        - Calling ``` Thread.sleep ``` with a lock held can prevent other 
+          threads from making progress for a long time and is therefore a 
+          potentially serious  liveness hazard
+        - Calling Object.wait or Condition.await with two locks held poses a 
+          similar hazard
+    - Spin loops
+        - Code that does nothing but spin (busy wait) checking a field for an 
+          expected value can waste CPU time and, if the field is not volatile, 
+          is not guaranteed to terminate. Latches or condition waits are often a 
+          better technique when waiting for a state transition to occur
+
+
+#### 12.4.3 Aspect-Oriented Testing Techniques
+
+
+#### 12.4.4 Profilers and Monitoring Tools
