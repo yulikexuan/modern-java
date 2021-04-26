@@ -2601,4 +2601,72 @@ void lockInterruptibly() throws InterruptedException
 > of how control exits the block 
 
 
-#### 13.2 Performance Considerations
+### 13.2 Performance Considerations
+
+
+### 13.3 Fairness
+
+``` 
+public ReentrantLock(boolean fair)
+```
+
+- Threads acquire a fair lock in the order in which they requested it, whereas 
+  a nonfair lock permits barging: threads requesting a lock can jump ahead of 
+  the queue of waiting threads if the lock happens to be available when it is 
+  requested 
+
+> Programs using fair locks accessed by many threads may display lower overall 
+> throughput (i.e., are slower; often much slower) than those using the default 
+> setting, but have smaller variances in times to obtain locks and guarantee 
+> lack of starvation 
+
+> Don’t pay for fairness if you don’t need it
+
+
+### 13.4 Choosing between ``` synchronized ``` and ``` ReentrantLock ```
+
+- Intrinsic locks still have significant advantages over explicit locks
+    - The notation is familiar and compact, and many existing programs already 
+      use intrinsic locking—and mixing the two could be confusing and error-prone
+    - Reentrant-Lock is definitely a more dangerous tool than synchronization; 
+      if you forget to wrap the unlock call in a finally block, your code will 
+      probably appear to run properly, but you’ve created a time bomb that may 
+      well hurt innocent bystanders
+
+
+> Save ``` ReentrantLock ``` for situations in which you need something 
+> ReentrantLock provides that intrinsic locking doesn’t
+
+> ReentrantLock is an advanced tool for situations where intrinsic locking is 
+> not practical. Use it if you need its advanced features: timed, polled, or 
+> interruptible lock acquisition, fair queueing, or non-block-structured locking
+> Otherwise, ___Prefer Synchronized___
+
+
+### 13.5 Read-Write Locks
+
+> read-write locks allow: a resource can be accessed by multiple readers or a 
+> single writer at a time, but not both
+
+``` 
+public interface ReadWriteLock {
+    Lock readLock();
+    Lock writeLock();
+}
+```
+
+> To read data guarded by a ``` ReadWriteLock ``` you must first acquire the 
+> read lock, and to modify data guarded by a ``` ReadWriteLock ``` you must 
+> first acquire the write lock
+
+> The locking strategy implemented by read-write locks allows multiple 
+> simultaneous readers but only a single writer
+
+- Read-write locks are a performance optimization designed to allow greater 
+  concurrency in certain situations
+    - In practice, read-write locks can improve performance for frequently 
+      accessed read-mostly data structures on multiprocessor systems 
+    - under other conditions they perform slightly worse than exclusive locks 
+      due to their greater complexity
+    - Whether they are an improvement in any given situation is best determined 
+      via profiling
