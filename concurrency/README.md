@@ -2434,3 +2434,171 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
 
 
 #### 12.4.4 Profilers and Monitoring Tools
+
+
+# Part IV Advanced Topics
+
+
+## Chapter 13 Explicit Locks
+
+
+### Overview
+
+> Before Java 5.0, the only mechanisms for coordinating access to shared data 
+> were synchronized and volatile 
+
+> Java 5.0 adds another option: ``` ReentrantLock ```
+
+- ``` ReentrantLock ``` is not a replacement for intrinsic locking, but rather 
+  an alternative with advanced features for when intrinsic locking proves too 
+  limited
+
+
+### 13.1 ``` Lock ``` and ``` ReentrantLock ```
+
+#### Overview 
+
+``` 
+public interface Lock {
+    void lock();
+    void lockInterruptibly() throws InterruptedException;
+    boolean tryLock();
+    boolean tryLock(long timeout, TimeUnit unit)
+    throws InterruptedException;
+    void unlock();
+    Condition newCondition();
+}
+```
+
+- ``` Lock ``` offers a choice of unconditional, polled, timed, and 
+  interruptible lock acquisition, and all lock and unlock operations are 
+  explicit
+
+
+- ``` ReentrantLock ``` implements Lock, providing the same mutual exclusion 
+  and memory-visibility guarantees as synchronized 
+    - Acquiring a ``` ReentrantLock ``` has the same memory semantics as 
+      ___entering___ a synchronized block 
+    - Releasing a ``` ReentrantLock ``` has the same memory semantics as
+      ___exiting___ a synchronized block
+
+
+> ``` ReentrantLock ``` : When a thread requests a lock that is already held by 
+> another thread, the requesting thread blocks 
+
+> But because intrinsic locks are reentrant, if a thread tries to acquire a lock 
+> that it already holds, the request succeeds. Reentrancy means that locks are 
+> acquired on a per-thread rather than per-invocation basis 
+
+- ``` ReentrantLock ``` supports all of the lock-acquisition modes defined by 
+  Lock, providing more flexibility for dealing with lock unavailability than 
+  does synchronized
+
+
+- Why create a new locking mechanism that is so similar to intrinsic locking?
+    - It's not possible to interrupt a thread waiting to acquire a lock
+    - It's not possible to attempt to acquire a lock without being willing to 
+      wait for it forever
+    - Intrinsic locks also must be released in the same block of code in which 
+      they are acquired
+
+
+- The idiom: the lock must be released in a finally block 
+    - Otherwise, the lock would never be released if the guarded code were to 
+      throw an exception
+
+
+- When using locking, you must also consider what happens if an exception is 
+  thrown out of the try block; if it is possible for the object to be left in 
+  an inconsistent state, additional try-catch or try-finally blocks may be 
+  needed 
+
+``` 
+    Lock lock = new ReentrantLock();
+    ...
+    lock.lock();
+    try {
+        // update object state
+        // catch exceptions and restore invariants if necessary
+    } finally {
+        lock.unlock();
+    }
+```
+
+> Should always consider the effect of exceptions when using any form of 
+> locking, including intrinsic locking
+
+> Failing to use finally to release a Lock is a ticking time bomb
+
+
+- Failing to use finally to release a Lock make you have a hard time tracking 
+  down its origin as there will be no record of where or when the Lock should 
+  have been released
+    - This is one reason not to use ``` ReentrantLock ``` as a blanket 
+      substitute for synchronized
+
+- It is more “dangerous” because it doesn’t automatically clean up the lock 
+  when control leaves the guarded block
+
+
+#### 13.1.1 Polled and Timed Lock Acquisition
+
+> With intrinsic locks, there is no way to cancel a lock acquisition once it is 
+> started, so intrinsic locks put the ability to implement time-budgeted 
+> activities at risk 
+
+> The timed tryLock is also responsive to interruption and so can be used when
+> you need both timed and interruptible lock acquisition
+
+``` 
+boolean tryLock()
+```
+
+- Returns: true if the lock was acquired and false otherwise
+
+
+#### 13.1.2 Interruptible Lock Acquisition
+
+> Interruptible lock acquisition allows locking to be used within cancellable 
+> activities
+
+> Acquiring an intrinsic lock, that are not responsive to interruption
+> These non-interruptible blocking mechanisms complicate the implementation of 
+> cancellable tasks
+
+> The ``` lockInterruptibly ``` method allows you to try to acquire a lock while 
+> remaining responsive to interruption, and its inclusion in Lock avoids 
+> creating another category of non-interruptible blocking mechanisms
+
+> The timed tryLock is also responsive to interruption and so can be used when 
+> you need both timed and interruptible lock acquisition
+
+
+``` 
+void lockInterruptibly() throws InterruptedException
+```
+
+  - Acquires the lock unless the current thread is interrupted 
+      - Acquires the lock if it is available and returns immediately 
+      - If the lock is not available then the current thread becomes disabled 
+        for thread scheduling purposes and lies dormant (處於休眠狀態) until one 
+        of two things happens 
+          - The lock is acquired by the current thread
+          - Some other thread interrupts the current thread, and interruption of 
+            lock acquisition is supported 
+      - If the current thread 
+          - has its interrupted status set on entry to this method
+          - is interrupted while acquiring the lock, and interruption of lock 
+            acquisition is supported,
+          - then ``` InterruptedException ``` is thrown and the current thread's 
+            interrupted status is cleared 
+
+
+#### 13.1.3 Non-Block-Structured Locking
+
+> With intrinsic locks, acquire-release pairs are block-structured—a lock is 
+> always released in the same basic block in which it was acquired, regardless 
+> of how control exits the block 
+
+
+#### 13.2 Performance Considerations
