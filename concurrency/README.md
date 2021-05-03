@@ -2670,3 +2670,386 @@ public interface ReadWriteLock {
       due to their greater complexity
     - Whether they are an improvement in any given situation is best determined 
       via profiling
+
+
+## Chapter 14 Building Custom Synchronizers
+
+### Overview 
+
+- The class libraries include a number of state-dependent classes-those having 
+  operations with state-based preconditions
+    - FutureTask
+    - Semaphore
+    - BlockingQueue
+    - etc.
+
+
+> The easiest way to construct a state-dependent class is usually to build on 
+> top of an existing state-dependent library class
+
+
+### 14.1 Managing State Dependence
+
+#### Overview
+
+- How state dependence might be (painfully) tackled using polling and sleeping
+    - The form of blocking state-dependent action
+      ``` 
+        acquire lock on object state
+        while (precondition does not hold) {
+            release lock
+            wait until precondition might hold
+            optionally fail if interrupted or timeout expires
+            reacquire lock
+        }
+        perform action
+        release lock
+      ```
+    - State dependent operations can deal with precondition failure by 
+        - throwing an exception 
+        - returning an error status (making it the caller’s problem) 
+        - by blocking until the object transitions to the right state
+
+
+#### 14.1.1 Example: Propagating Precondition Failure to Callers
+
+- The fundamental problem: that callers must deal with precondition failures 
+  themselves
+
+
+- Pushing the state dependence back to the caller also makes it nearly 
+  impossible to do things like preserve FIFO ordering 
+    - By forcing the caller to retry, you lose the information of who arrived 
+      first
+
+
+#### 14.1.2 Example: crude blocking by polling and sleeping
+
+- In order to spare callers the inconvenience of implementing the retry logic 
+  on each call by encapsulating the same crude "poll and sleep" retry mechanism 
+  within the put and take operations
+    - This approach encapsulates precondition management and simplifies using 
+      the buffer—definitely a step in the right direction
+
+
+> It is usually a bad idea for a thread to go to sleep or otherwise block with 
+> a lock held, but in this case is even worse because the desired condition 
+> (buffer is full/empty) can never become true if the lock is not released!
+
+
+#### 14.1.3 Condition Queues to the Rescue
+
+- A ___condition queue___ gets its name because it gives a group of 
+  threads—called the wait set—a way to wait for a specific condition to become 
+  true 
+    - Unlike typical queues in which the elements are data items, the elements 
+      of a ___condition queue___ are the threads waiting for the condition 
+
+
+- Just as each Java object can act as a lock, each object can also act as a 
+  condition queue, and the ``` wait ```, ``` notify ```, and ``` notifyAll ``` 
+  methods in Object constitute the API for intrinsic condition queues
+
+
+- An object’s intrinsic lock and its intrinsic ___condition queue___ are related: 
+    - in order to call any of the condition queue methods on object X, you must 
+      hold the lock on X 
+        - This is because the mechanism for waiting for state-based conditions 
+          is necessarily tightly bound to the mechanism for preserving state 
+          consistency: 
+            - you cannot wait for a condition unless you can examine the state
+            - and you cannot release another thread from a condition wait unless 
+              you can modify the state 
+
+
+- ``` Object.wait ``` atomically releases the lock and asks the OS to suspend 
+  the current thread, allowing other threads to acquire the lock and therefore 
+  modify the object state
+    - Upon waking, it reacquires the lock before returning
+        - Intuitively, calling wait means “I want to go to sleep, but wake me 
+          when something interesting happens”, 
+        - and calling the notification methods means "something interesting 
+          happened" 
+
+
+### 14.2 Using Condition Queues
+
+#### Overview
+
+- ___Condition queues___ make it easier to build efficient and responsive 
+  state-dependent classes, but they are still easy to use incorrectly
+  
+
+- There are a lot of rules regarding their proper use that are not enforced by 
+  the compiler or platform
+
+
+- This is one of the reasons to build on top of classes like 
+    - ``` LinkedBlockingQueue ``` 
+    - ``` CountDownLatch ``` 
+    - ``` Semaphore ``` 
+    - ``` FutureTask ``` 
+
+
+- If you can, get away with ___Condition Queues___ and use JDK predefined 
+  synchronizers
+
+
+#### 14.2.1 The Condition Predicate
+
+> The key to using condition queues correctly is identifying the ___condition 
+> predicates___ that the object may wait for
+
+> The ___condition predicate___ is the precondition that makes an operation 
+> state-dependent in the first place
+
+- In a bounded buffer, 
+    - ``` take ``` can proceed only if the buffer is not empty; otherwise it 
+      must wait 
+        - For ``` take ```, the ___condition predicate___ is “the buffer is not 
+          empty”, which  ``` take ``` must test for before proceeding 
+    - Similarly, the ___condition predicate___ for ``` put ``` is “the buffer 
+      is not full”
+
+
+> ___Condition predicates___ are expressions constructed from the state 
+> variables of  the class 
+
+> Document the ___condition predicate(s)___ associated with a condition queue 
+> and the operations that wait on them
+
+- There is an important ___three-way relationship___ in a condition wait 
+  involving 
+    - Locking 
+    - The wait method 
+    - A condition predicate
+
+
+- The ___condition predicate___ involves ___state variables___, and the 
+  ___state variables___ are guarded by a lock
+    - so before testing the ___condition predicate___, we must hold that lock 
+    - the lock object and the condition queue object (the object on which wait 
+      and notify are invoked) __must also be the same object__
+
+
+- In ``` BoundedBuffer ```, the buffer state is guarded by the buffer lock and 
+  the buffer object is used as the condition queue
+    - The ``` take ``` method acquires the buffer lock and then tests the 
+      condition predicate
+        - If the buffer is indeed nonempty, it removes the first element, which 
+          it can do because it still holds the lock guarding the buffer state
+        - If the ___condition predicate___ is not true, ``` take ``` must wait 
+          until another thread puts an object in the buffer
+            - It does this by calling wait on the buffer’s intrinsic condition 
+              queue, which requires holding the lock on the condition queue 
+              object
+                - ``` take ``` already holds that lock, which it needed to test 
+                  the condition predicate
+        - The ``` wait ``` method releases the lock, blocks the current thread, 
+          and waits until: 
+            - the specified timeout expires, 
+            - the thread is interrupted 
+            - or the thread is awakened by a notification 
+        - After the thread wakes up, ``` wait ``` reacquires the lock before 
+          returning
+        - A thread waking up from wait gets no special priority in reacquiring 
+          the lock; it contends for the lock just like any other thread 
+          attempting to enter a synchronized block
+
+
+> Every call to ``` wait ``` is implicitly associated with a specific 
+> ___condition predicate___ 
+
+> When calling ``` wait ``` regarding a particular ___condition predicate___, 
+> the caller must already hold the lock associated with the condition queue, and 
+> that lock must also guard the state variables from which the 
+> ___condition predicate___ is composed 
+
+
+#### 14.2.2 Waking up Too Soon
+
+> The return of ``` wait ``` does not necessarily mean that the condition 
+> predicate the thread is waiting for has become true
+
+- A single intrinsic condition queue may be used with more than one 
+  ___condition predicate___
+
+> When your thread is awakened because someone called notifyAll, that doesn’t 
+> mean that the condition predicate you were waiting for is now true
+
+> Additionally, ``` wait ``` is even allowed to return “spuriously”, not in 
+> response to any thread calling notify 
+
+- When control re-enters the code calling wait, it has reacquired the lock associated
+  with the condition queue
+    - Is the condition predicate now true? Maybe 
+    - It might have been true at the time the notifying thread called notifyAll, 
+    - but could have become false again by the time you reacquire the lock
+        - Other threads may have acquired the lock and changed the object’s 
+          state between when your thread was awakened and when wait reacquired 
+          the lock
+    - Or maybe it hasn’t been true at all since you called wait
+        - You don’t know why another thread called notify or notifyAll; maybe 
+          it was because another condition predicate associated with the same 
+          condition queue became true
+        - Multiple condition predicates per condition queue are quite common, 
+          ``` BoundedBuffer ``` uses the same condition queue for both the 
+          “not full” and “not empty” predicates
+
+> For all these reasons, when you wake up from wait you must test the condition 
+> predicate again, and go back to waiting (or fail) if it is not yet true 
+
+> Since you can wake up repeatedly without your condition predicate being true, 
+> you must therefore always call ``` wait ``` from within a loop, testing the 
+> ___condition predicate___ in each iteration
+
+- The canonical form for a condition wait is
+  ``` 
+    void stateDependentMethod() throws InterruptedException {
+        // condition predicate must be guarded by lock
+        synchronized(lock) {
+            while (!conditionPredicate()) {
+                lock.wait();
+            }
+            // object is now in desired state
+        }
+    }
+  ```
+
+> __When using condition waits (Object.wait or Condition.await)__ 
+>   - Always have a ___condition predicate___, some test of object state that 
+      must hold before proceeding
+>   - Always test the ___condition predicate___ before calling wait, and again 
+      after returning from wait
+>   - Always call wait in a loop
+>   - Ensure that the state variables making up the ___condition predicate___
+      are guarded by the lock associated with the condition queue
+>   - Hold the lock associated with the the condition queue when calling 
+>       - ``` wait ```
+>       - ``` notify ```
+>       - ``` notifyAll ```
+>   - Do not release the lock after checking the ___condition predicate___ but 
+      before acting on it
+
+
+#### 14.2.3 Missed Signals
+
+- Chapter 10 discussed liveness failures such as deadlock and livelock
+    - Another form of liveness failure is __Missed Signals__
+
+> A ___missed signal___ occurs when a thread must wait for a specific condition 
+> that is already true, but fails to check the condition predicate before 
+> waiting
+>   - The thread is waiting to be notified of an event that has already occurred 
+
+> ___Missed signals___ are the result of coding errors like those warned against 
+> in the list above, such as failing to test the condition predicate before 
+> calling wait 
+
+
+#### 14.2.4 Notification
+
+> Whenever you wait on a condition, make sure that someone will perform a 
+> notification whenever the ___condition predicate___ becomes true
+
+- There are two notification methods in the condition queue API 
+    - ``` notify ```
+    - ``` notifyAll ```
+
+> To call either ``` notify ``` or ``` notifyAll ```, you must hold the lock 
+> associated with the condition queue object
+
+> Calling ``` notify ``` causes the JVM to select one thread waiting on that 
+> condition queue to wake up 
+
+> Calling ``` notifyAll ``` wakes up all the threads waiting on that condition 
+> queue
+
+> Because you must hold the lock on the condition queue object when calling 
+> ``` notify ``` or ``` notifyAll ```, and waiting threads cannot return from 
+> wait without reacquiring the lock, the notifying thread should release the 
+> lock quickly to ensure that the waiting threads are unblocked as soon as 
+> possible
+
+> Because multiple threads could be waiting on the same condition queue for 
+> different condition predicates, using ``` notify ``` instead of 
+> ``` notifyAll ``` can be dangerous, primarily because single notification is 
+> prone to a problem akin to ___missed signals___
+
+> Single ``` notify ``` can be used instead of ``` notifyAll ``` only when both 
+> of the following conditions hold:
+>   - __Uniform Waiters__: Only one ___condition predicate___ is associated with the
+      condition queue, and each thread executes the same logic upon returning
+      from wait 
+>   - __One-In, One-Out__: A notification on the condition variable enables at 
+      most one thread to proceed
+
+> The prevailing wisdom is to use notifyAll in preference to single notify
+
+- If many threads are waiting on a condition queue, calling ``` notifyAll ``` 
+  causes each of them to wake up and contend for the lock 
+    - Then most or all of them will go right back to sleep
+    - This means a lot of context switches and a lot of contended lock 
+      acquisitions for each event that enables (maybe) a single thread to make 
+      progress
+    - In the worst case, using ``` notifyAll ``` results in O(n2) wakeups where 
+      n would suffice.) 
+    - This is another situation where performance concerns support one approach 
+      and safety concerns support the other
+
+- Conditional Notification
+
+> __First make it right, and then make it fast, if it is not already fast enough__
+
+
+#### 14.2.5 Example: a gate class
+
+
+#### 14.2.6 Subclass Safety Issues
+
+- If you want to support subclassing at all, you must structure your class so 
+  subclasses can add the appropriate notification on behalf of the base class 
+  if it is subclassed in a way that violates one of the requirements for single 
+  or conditional notification
+
+
+> A state-dependent class should either fully expose (and document) its waiting 
+> and notification protocols to subclasses, or prevent subclasses from 
+> participating in them at all
+
+> Design and document for inheritance, or else prohibit it
+
+> At the very least, designing a state-dependent class for inheritance requires 
+> exposing the condition queues and locks and documenting the condition 
+> predicates and synchronization policy; it may also require exposing the 
+> underlying state variables 
+
+> The worst thing a state-dependent class can do is expose its state to 
+> subclasses but not document its protocols for waiting and notification; this 
+> is like a class exposing its state variables but not documenting its 
+> invariants
+
+- One option for doing this is to effectively prohibit subclassing, either by 
+    - making the class final or by hiding the condition queues, locks, and state 
+      variables from subclasses
+
+
+#### 14.2.7 Encapsulating Condition Queues
+
+> It is generally best to encapsulate the condition queue so that it is not 
+> accessible outside the class hierarchy in which it is used
+>   - Otherwise, callers might be tempted to think they understand your 
+      protocols for waiting and notification and use them in a manner 
+      inconsistent with your design
+
+
+#### 14.2.8 Entry and Exit Protocols
+
+> For each state-dependent operation and for each operation that modifies state 
+> on which another operation has a state dependency, you should define and 
+> document an entry and exit protocol
+>   - The entry protocol is the operation’s condition predicate; 
+>   - The exit protocol involves examining any state variables that have been 
+      changed by the operation to see if they might have caused some other 
+      condition predicate to become true, and if so, notifying on the associated 
+      condition queue
