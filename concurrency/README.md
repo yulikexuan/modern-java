@@ -3053,3 +3053,198 @@ public interface ReadWriteLock {
       changed by the operation to see if they might have caused some other 
       condition predicate to become true, and if so, notifying on the associated 
       condition queue
+
+
+### 14.3 Explicit Condition Objects
+
+> ``` Lock ``` is a generalization of intrinsic locks
+
+> ``` Condition ``` is a generalization of intrinsic condition queues
+
+- [``` Condition ```](https://docs.oracle.com/en/java/javase/15/docs/api/java.base/java/util/concurrent/locks/Condition.html)
+
+``` 
+public interface Condition {
+    void await() throws InterruptedException;
+    boolean await(long time, TimeUnit unit)
+    throws InterruptedException;
+    long awaitNanos(long nanosTimeout) throws InterruptedException;
+    void awaitUninterruptibly();
+    boolean awaitUntil(Date deadline) throws InterruptedException;
+    void signal();
+    void signalAll();
+}
+```
+
+- Intrinsic condition queues have several drawbacks
+    - Each intrinsic lock can have only one associated condition queue
+        - Multi-threads might wait on the same condition queue for different 
+          ___condition predicates___
+    - The most common pattern for locking involves exposing the condition queue 
+      object  
+      
+> A ``` Condition ``` is associated with a single Lock, just as a condition 
+> queue is associated with a single intrinsic lock
+>   - To create a ``` Condition ```, call ``` Lock.newCondition ``` on the 
+      associated lock
+      
+> Can have as many ``` Condition ``` objects per ``` Lock ``` as you want
+> ``` Condition ``` objects inherit the fairness setting of their associated 
+> ``` Lock ``` 
+>   - For fair locks, threads are released from ``` Condition.await ``` in FIFO 
+      order
+      
+> __Hazard warning: The equivalents of ``` wait ```, ``` notify ```, and 
+> ``` notifyAll ``` for ``` Condition ``` objects are ``` await ```, ``` signal ```, 
+> and ``` signalAll``` . However, ``` Condition ``` extends ``` Object ```, 
+> which means that it also has ``` wait ``` and ``` notify ``` methods. Be sure 
+> to use the proper versions—``` await ``` and ``` signal ``` instead!__
+
+> ``` Condition ``` makes it easier to meet the requirements for single 
+> notification. Using the more efficient ``` signal ``` instead of 
+> ``` signalAll ``` reduces the number of context switches and lock acquisitions 
+> triggered by each buffer operation
+
+> The three-way relationship among the lock, the ___condition predicate___, and 
+> the condition variable must also hold when using explicit Locks and Conditions 
+>   - The variables involved in the ___condition predicate___ must be guarded by 
+      the Lock, and the Lock must be held when testing the ___condition 
+      predicate___ and when calling await and signal
+
+
+### 14.4 Anatomy of a Synchronizer
+
+``` 
+public abstract class AbstractQueuedSynchronizer 
+            extends AbstractOwnableSynchronizer implements Serializable
+```
+
+> Not only are ``` ReentrantLock ``` and ``` Semaphore ``` built using AQS, but
+> so are ``` CountDownLatch ```, ``` ReentrantReadWriteLock ```,
+> ``` SynchronousQueue ```, and ``` FutureTask ```
+
+
+### 14.5 ``` AbstractQueuedSynchronizer ```
+
+#### Overview
+
+> The standard set of synchronizers are implemented on 
+> ``` AbstractQueuedSynchronizer ```, by seeing how the standard synchronizers 
+> are implemented can help clarify how they work
+
+> The basic operations that an AQS-based synchronizer performs are some variants 
+> of ___acquire___ and ___release___
+
+> Acquisition is the state-dependent operation and can always block
+
+> With a lock or semaphore, the meaning of acquire is straightforward 
+>    - acquire the lock or a permit—and the caller may have to wait until the 
+       synchronizer is in a state where that can happen
+>    - Release is not a blocking operation; a release may allow threads blocked 
+       in acquire to proceed
+       
+
+``` 
+boolean acquire() throws InterruptedException {
+    while (state does not permit acquire) {
+        if (blocking acquisition requested) {
+            enqueue current thread if not already queued
+            block current thread
+        } else {
+            return failure
+        }
+    }
+    possibly update synchronization state
+    dequeue thread if it was queued
+    return success
+}
+
+void release() {
+    update synchronization state
+    if (new state may permit a blocked thread to acquire) {
+        unblock one or more queued threads
+    }
+}
+```
+
+- A synchronizer supporting exclusive acquisition should implement the protected 
+  methods 
+    - ``` tryAcquire ```
+    - ``` tryRelease ```
+    - ``` isHeldExclusively ```
+
+
+- A synchronizer supporting shared acquisition should implement 
+    - ``` tryAcquireShared ```
+    - ``` tryReleaseShared ```
+
+
+- The ``` acquire, acquireShared, release ```, and ``` releaseShared ``` methods 
+  in AQS call the try forms of these methods in the synchronizer subclass to 
+  determine if the operation can proceed
+
+
+- The synchronizer subclass can use ``` getState, setState ```, and 
+  ```compareAndSetState ``` to examine and update the state according to its 
+  acquire and release semantics, and informs the base class through the return 
+  status whether the attempt to acquire or release the synchronizer was 
+  successful For example 
+    - Returning a negative value from ``` tryAcquireShared ``` indicates 
+      acquisition failure 
+    - Returning zero indicates the synchronizer was acquired exclusively 
+    - Returning a positive value indicates the synchronizer was acquired 
+      nonexclusively
+
+
+- The ``` tryRelease ``` and ``` tryReleaseShared ``` methods should return 
+  ``` true ``` if the release may let unblocked threads attempt to acquire 
+  the synchronizer
+
+
+#### 14.5.1 A Simple Latch
+
+
+### 14.6 AQS in ``` java.util.concurrent ``` Synchronizer Classes
+
+
+#### 14.6.1 ``` ReentrantLock ```
+
+
+#### 14.6.2 ``` Semaphore ``` and ``` CountDownLatch ```
+
+
+#### 14.6.3 ``` FutureTask ```
+
+
+#### 14.6.4 ``` ReentrantReadWriteLock ```
+
+- ``` ReentrantReadWriteLock ``` uses 
+    - 16 bits of the state for the write-lock count 
+        - Operations on the read lock use the shared acquire and release methods
+    - the other 16 bits for the read-lock count 
+        - Operations on the write lock use the exclusive acquire and release 
+          methods 
+    - Internally, AQS maintains a queue of waiting threads, keeping track of 
+      whether a thread has requested exclusive or shared access
+    - In ``` ReentrantReadWriteLock ```, when the lock becomes available, 
+        - if the thread at the head of the queue was looking for write access 
+          it will get it 
+        - if the thread at the head of the queue was looking for read access, 
+          all queued threads up to the first writer will get it 
+
+
+## Summary
+
+> If you need to implement a state-dependent class—one whose methods must block 
+> if a state-based precondition does not hold—the best strategy is usually to 
+> build upon an existing library class such as ``` Semaphore ```, 
+> ``` BlockingQueue ```, or ```CountDownLatch ```
+
+> Intrinsic condition queues are tightly bound to intrinsic locking, since the 
+> mechanism for managing state dependence is necessarily tied to the mechanism 
+> for ensuring state consistency 
+
+> Explicit Conditions are tightly bound to explicit Locks, and offer an extended 
+> feature set compared to intrinsic condition queues, including multiple wait 
+> sets per lock, interruptible or uninterruptible condition waits, fair or 
+> nonfair queuing, and deadline-based waiting
