@@ -3508,3 +3508,351 @@ void release() {
 
 
 ## Chapter 16 The Java Memory Model
+
+
+### 16.1 What is a memory model, and why would I want one?
+
+#### Overview
+
+> When reading a variable, compilers may 
+>   - generate instructions in a different order than the “obvious” one 
+      suggested by the source code
+>   - store variables in registers instead of in memory 
+>   - processors may execute instructions in parallel or out of order
+>   - caches may vary the order in which writes to variables are committed to 
+>     main memory
+>   - values stored in processor-local caches may not be visible to other 
+>     processors
+
+> Those factors above can __prevent a thread from seeing the most up-to-date value 
+> for a variable__ and can cause memory actions in other threads to appear to 
+> happen out of order, ___if no adequate synchronization used___
+
+
+#### 16.1.1 Platform Memory Models
+
+> In a shared-memory multiprocessor architecture, each processor has its own 
+> cache that is periodically reconciled with main memory
+
+> Sequential Consistency Model: there is a single order in which the operations 
+> happen in a program, regardless of what processor they execute on, and that 
+> each read of a variable will see the last write in the execution order to 
+> that variable by any processor
+
+> Software developers often mistakenly assume sequential consistency, but no 
+> modern multiprocessor offers sequential consistency and the JMM does not either
+
+> Java programs need not specify the placement of memory barriers; 
+> they need only identify when shared state is being accessed, through the 
+> proper use of synchronization
+
+
+#### 16.1.2 Reordering
+
+``` 
+public class PossibleReordering {
+
+    private static final String OUT_PUT_TEMPLATE = "(%s, %s) - (%d, %d)";
+
+    private static int x = 0;
+    private static int y = 0;
+
+    private static int a = 0;
+    private static int b = 0;
+
+    /*
+     * It is fairly easy to imagine how PossibleReordering could print
+     *   - (1, 0) : Thread B could run to completion before A starts
+     *   - (0, 1) : Thread A could run to completion before B starts
+     *   - (1, 1) : Actions in each thread could be interleaved
+     *   - (0, 0) : The actions in each thread have no dataflow dependence on
+     *              each other, and accordingly can be executed out of order
+     */
+    public static void main(String[] args) throws InterruptedException {
+
+        Thread one = new Thread(() -> { a = 1; x = b; }); // Thread A
+        Thread other = new Thread(() -> { b = 1; y = a; }); // Thread B
+
+        one.start();
+        other.start();
+
+        one.join();
+        other.join();
+
+        System.out.println(String.format(OUT_PUT_TEMPLATE, 'x', 'y', x, y));
+    }
+}
+```
+
+- Figure 16.1 shows a possible interleaving with reordering that results in 
+  printing (0, 0)
+![Interleaving showing reordering in PossibleReordering.](./images/Interleaving_showing_reordering.png "Interleaving showing reordering in PossibleReordering.")
+
+> ___Reordering___ at the memory level can make programs behave unexpectedly
+
+> It is prohibitively difficult to reason about ordering in the absence of 
+> synchronization; however it is much easier to ensure that if your program 
+> uses synchronization appropriately
+
+> Synchronization inhibits the compiler, runtime, and hardware from reordering 
+> memory operations in ways that would violate the visibility guarantees 
+> provided by the JMM
+
+
+#### 16.1.3 The Java Memory Model in 500 Words or Less
+
+> The Java Memory Model is JMM
+
+- The JMM defines a partial ordering called ___happens-before___ on all actions 
+  within the program
+    - To guarantee that the thread executing action B can see the results of 
+      action A (whether or not A and B occur in different threads), there must 
+      be a ___happens-before___ relationship between A and B
+    - In the absence of a ___happens-before___ ordering between two operations, 
+      the JVM is free to reorder them as it pleases
+
+> The rules for ___happens-before___ are:
+>   - ___Program Order Rule___ Each action in a thread ___happens-before___ every 
+>     action in that thread which comes later in the program order 
+>   - ___Monitor Lock Rule___ An unlock on a monitor lock ___happens-before___ 
+>     every subsequent lock on that same monitor lock 
+>   - ___Volatile Variable Rule___ A write to a volatile field ___happens-before___ 
+>     every subsequent read of that same field
+>   - ___Thread Start Rule___ A call to Thread.start on a thread ___happens-before___  
+>     every action in the started thread
+>   - ___Thread Termination Rule___ Any action in a thread ___happens-before___  
+>     any other thread detects that thread has terminated, either by successfully 
+>     return from ``` Thread.join ``` or by ``` Thread.isAlive ``` returning false
+>   - ___Interruption Rule___ A thread calling interrupt on another thread 
+>     ___happens-before___ the interrupted thread detects the interrupt (either 
+>     by having ``` InterruptedException ``` thrown, or invoking ``` isInterrupted ```
+>     or interrupted)
+>   - ___Finalizer Rule___ The end of a constructor for an object 
+>     ___happens-before___ the start of the finalizer for that object
+>   - ___Transitivity___ If A ___happens-before___ B, and B ___happens-before___
+>     C, then A ___happens-before___ C
+
+> Even though actions are only partially ordered, synchronization actions—lock 
+> acquisition and release, and reads and writes of volatile variables—are 
+> totally ordered
+
+> When two threads synchronize on different locks, we can’t say anything about 
+> the ordering of actions between them 
+>   - there is no ___happens-before___ relation between the actions in the two 
+>     threads
+
+
+#### 16.1.4 Piggybacking on Synchronization
+
+> Other ___happens-before___ orderings guaranteed by the class library include
+>   - Placing an item in a thread-safe collection ___happens-before___ another  
+>     thread retrieves that item from the collection
+>   - Counting down on a ``` CountDownLatch ``` ___happens-before___ a thread 
+>     returns from await on that latch
+>   - Releasing a permit to a ``` Semaphore ``` ___happens-before___ acquiring a  
+>     permit from that same Semaphore
+>   - Actions taken by the task represented by a Future ___happens-before___
+>     another thread successfully returns from ``` Future.get ```
+>   - Submitting a Runnable or Callable to an Executor ___happens-before___ the 
+>     task begins execution
+>   - A thread arriving at a ``` CyclicBarrier ``` or ``` Exchanger ``` \
+>     ___happens-before___ the other threads are released from that same barrier 
+>     or exchange point 
+>       - If ``` CyclicBarrier ``` uses a barrier action, arriving at the barrier 
+>         ___happens-before___ the barrier action, which in turn ___happens-before___ 
+>         threads are released from the barrier
+
+
+### 16.2 Publication
+
+
+#### 16.2.1 Unsafe Publication
+
+> The possibility of reordering in the absence of a ___happens-before___ 
+> relationship explains ___why publishing an object without adequate 
+> synchronization can allow another thread to see a partially constructed object___
+
+> Initializing a new object involves writing to variables 
+>   - the new object’s fields
+
+> Publishing a reference involves writing to another variable 
+>   - the reference to the new object
+
+- A partially constructed object
+    - If you do not ensure that publishing the shared reference ___happens-before___ 
+      another thread loads that shared reference, then the write of the 
+      reference to the new object can be reordered (from the perspective of the 
+      thread consuming the object) with the writes to its fields
+        - In that case, another thread could see an up-to-date value for the 
+          object reference but out-of-date values for some or all of that 
+          object’s state—a partially constructed object
+
+- Unsafe publication can happen as a result of an incorrect lazy initialization
+
+``` 
+@NotThreadSafe
+public class UnsafeLazyInitialization {
+
+    private static Resource resource;
+
+    public static Resource getInstance() {
+
+        if (resource == null) {
+            resource = new Resource(); // unsafe publication
+        }
+
+        return resource;
+    }
+
+    static class Resource {}
+
+}///:~
+```
+
+  - Suppose thread A is the first to invoke ``` getInstance ```
+  - It sees that ``` resource ``` is null, instantiates a new ``` Resource ```, 
+    and sets ``` resource ``` to reference it
+  - When thread B later calls ``` getInstance ```, it might see that ``` resource ```
+    already has a non-null value and just use the already constructed 
+    ``` Resource ```
+      - This might look harmless at first, but there is no ___happens-before___ 
+        ordering between the writing of ``` resource ``` in A and the reading of 
+        ``` resource ``` in B
+      - A data race has been used to publish the object, and therefore B is not 
+        guaranteed to see the correct state of the ``` Resource ```
+          - The ``` Resource ``` constructor changes the fields of the freshly 
+            allocated ``` Resource ``` from their default values (written by the 
+            Object constructor) to their initial values
+      - Since neither thread used synchronization, B could possibly see A’s 
+        actions in a different order than A performed them
+          - So even though A initialized the ``` Resource ``` before setting 
+            ``` resource ``` to reference it, B could see the write to resource 
+            as occurring before the writes to the fields of the ``` Resource ```
+      - B could thus see a partially constructed ``` Resource ``` that may well 
+        be in an invalid state, and whose state may unexpectedly change later
+
+> With the exception of immutable objects, it is not safe to use an object that 
+> has been initialized by another thread unless the publication ___happens-before___ 
+> the consuming thread uses it
+
+
+#### 16.2.2 Safe Publication
+
+- [Safe Publication Idioms](#safe-publication-idioms)
+
+
+#### 16.2.3 Safe Initialization Idioms: __The Lazy Initialization Holder Class Idiom__
+
+> Thus statically initialized objects require no explicit synchronization either 
+> during construction or when being referenced
+
+- Using eager initialization, eliminates the synchronization cost incurred on 
+  each call to getInstance in SafeLazyInitialization
+  ``` 
+    @ThreadSafe
+    public class EagerInitialization {
+    
+        private static Resource resource = new Resource();
+    
+        public static Resource getResource() {
+            return resource;
+        }
+    
+    }
+  ```
+
+- __The Lazy Initialization Holder Class Idiom__
+    - Using eager initialization with the JVM’s lazy class loading to create a 
+      lazy  initialization technique that does not require synchronization on 
+      the common  code path
+  ``` 
+    @ThreadSafe
+    public class ResourceFactory {
+    
+        /*
+         * The JVM defers initializing the ResourceHolder class until it is 
+         * actually used, and because the Resource is initialized with a static 
+         * initializer, no additional synchronization is needed
+         */
+        private static class ResourceHolder {
+            public static Resource resource = new Resource();
+        }
+        
+        /*
+         * The first call to getResource by any thread causes ResourceHolder to 
+         * be loaded and initialized, at which time the initialization of the 
+         * Resource happens through the static initializer
+         */
+        public static Resource getResource() {
+            return ResourceFactory.ResourceHolder.resource;
+        }
+    
+    }
+  ```
+
+
+#### 16.2.4 Double-Checked Locking
+
+``` 
+@NotThreadSafe
+public class DoubleCheckedLocking {
+
+    private static Resource resource;
+
+    public static Resource getInstance() {
+
+        if (resource == null) {
+            synchronized (DoubleCheckedLocking.class) {
+                if (resource == null) {
+                    resource = new Resource();
+                }
+            }
+        }
+
+        return resource;
+    }
+
+}
+```
+
+- DCL purported to offer the best of both worlds—lazy initialization without 
+  paying the synchronization penalty on the common code path
+
+
+- The way it worked as first to check whether initialization was needed without 
+  synchronizing, and if the resource reference was not null, use it; 
+    - Otherwise, synchronize and check again if the Resource is initialized, 
+      ensuring that only one thread actually initializes the shared Resource
+    - The common code path, fetching a reference to an already constructed 
+      Resource - doesn’t use synchronization
+    - And that’s where the problem is: as described in Section 16.2.1, it is 
+      possible for a thread to see a partially constructed Resource 
+
+
+### 16.3 Initialization Safety
+
+> Initialization safety guarantees that for properly constructed objects, all 
+> threads will see the correct values of final fields that were set by the 
+> constructor, regardless of how the object is published
+
+> Further, any variables that can be reached through a final field of a properly 
+> constructed object (such as the elements of a final array or the contents of 
+> a HashMap referenced by a final field) are also guaranteed to be visible to 
+> other threads 
+
+> For objects with final fields, initialization safety prohibits reordering any 
+> part of construction with the initial load of a reference to that object
+
+> All writes to final fields made by the constructor, as well as to any 
+> variables reachable through those fields, become “frozen” when the constructor 
+> completes
+>   - Any thread that obtains a reference to that object is guaranteed to see a 
+>     value that is at least as up to date as the frozen value
+>   - Writes that initialize variables reachable through final fields are not 
+>     reordered with operations following the post-construction freeze
+
+> Initialization safety makes visibility guarantees only for the values that 
+> are reachable through final fields as of the time the constructor finishes 
+
+> For values reachable through nonfinal fields, or values that may change after 
+> construction, you must use synchronization to ensure visibility
