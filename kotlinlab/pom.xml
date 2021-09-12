@@ -7,10 +7,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.yulikexuan</groupId>
-        <artifactId>core-java-bom</artifactId>
-        <version>2020.04-SNAPSHOT</version>
-        <relativePath />
+        <groupId>com.yulikexuan.jdk</groupId>
+        <artifactId>modern-java</artifactId>
+        <version>${revision}</version>
     </parent>
     
     <artifactId>kotlinlab</artifactId>
