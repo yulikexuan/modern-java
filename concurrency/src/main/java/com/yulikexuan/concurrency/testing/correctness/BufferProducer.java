@@ -4,12 +4,13 @@ package com.yulikexuan.concurrency.testing.correctness;
 
 
 import lombok.NonNull;
+import org.checkerframework.checker.index.qual.NonNegative;
 
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-final class BufferProducer implements Runnable {
+public final class BufferProducer implements Runnable {
 
     private final SeedFactory seedFactory = SeedFactory.newSeedFactory();
 
@@ -18,10 +19,11 @@ final class BufferProducer implements Runnable {
     private final SemaphoreBoundedBuffer<Integer> boundedBuffer;
     private final AtomicInteger putSum;
 
-    private BufferProducer(SemaphoreBoundedBuffer<Integer> boundedBuffer,
-                           CyclicBarrier barrier,
-                           int nTrials,
-                           AtomicInteger putSum) {
+    private BufferProducer(
+            SemaphoreBoundedBuffer<Integer> boundedBuffer,
+            CyclicBarrier barrier,
+            int nTrials,
+            AtomicInteger putSum) {
 
         this.boundedBuffer = boundedBuffer;
         this.barrier = barrier;
@@ -29,11 +31,11 @@ final class BufferProducer implements Runnable {
         this.putSum = putSum;
     }
 
-    static BufferProducer of(
+    public static BufferProducer of(
             @NonNull SemaphoreBoundedBuffer<Integer> boundedBuffer,
             @NonNull CyclicBarrier barrier,
             int nTrials,
-            AtomicInteger putSum) {
+            @NonNull AtomicInteger putSum) {
 
         if (nTrials < 1) {
             throw new IllegalArgumentException();

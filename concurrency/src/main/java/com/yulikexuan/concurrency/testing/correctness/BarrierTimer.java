@@ -2,9 +2,14 @@
 
 package com.yulikexuan.concurrency.testing.correctness;
 
+
 import lombok.NonNull;
 import org.checkerframework.checker.index.qual.NonNegative;
 
+
+/*
+ * This timer is only for CyclicBarrier
+ */
 public class BarrierTimer implements Runnable {
 
     private boolean started;
@@ -32,7 +37,7 @@ public class BarrierTimer implements Runnable {
     }
 
     public long getThroughput(@NonNull long items) {
-        if (items == 0) {
+        if (items <= 0) {
             throw new IllegalArgumentException();
         }
         return this.getTime() / items;

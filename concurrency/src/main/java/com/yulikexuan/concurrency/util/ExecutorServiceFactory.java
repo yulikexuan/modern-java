@@ -19,6 +19,11 @@ public class ExecutorServiceFactory {
         return createFixedPoolSizeExecutor(1);
     }
 
+    public static ExecutorService createSingleThreadExecutor(
+            ThreadFactory threadFactory) throws Exception {
+        return createFixedPoolSizeExecutor(1, threadFactory);
+    }
+
     public static ExecutorService createSingleTrackingThreadExecutor()
             throws Exception {
 
@@ -38,6 +43,24 @@ public class ExecutorServiceFactory {
                 numberOfCreatedThreads, numberOfCreatedThreads,
                 DEFAULT_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
                 workQueue);
+        executor.allowCoreThreadTimeOut(true);
+
+        return MoreExecutors.getExitingExecutorService(executor,
+                Duration.ofMillis(DEFAULT_KEEP_ALIVE_TIME));
+    }
+
+    public static ExecutorService createFixedPoolSizeExecutor(
+            int numberOfThreads, ThreadFactory threadFactory) throws Exception {
+
+        final int numberOfCreatedThreads =
+                getNumberOfCreatedThreads(numberOfThreads);
+
+        BlockingQueue<Runnable> workQueue = new LinkedTransferQueue<>();
+
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                numberOfCreatedThreads, numberOfCreatedThreads,
+                DEFAULT_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
+                workQueue, threadFactory);
         executor.allowCoreThreadTimeOut(true);
 
         return MoreExecutors.getExitingExecutorService(executor,

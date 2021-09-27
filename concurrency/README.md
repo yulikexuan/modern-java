@@ -4,6 +4,7 @@
   - [Home](https://jcip.net/)
   - [Source Code](https://jcip.net/listings.html)
   - [Errata](https://jcip.net/errata.html)
+  - [Chapter 12 Testing Concurrent Programs](README_TEST.md)
 
 
 # Part I Fundamentals
@@ -1924,6 +1925,8 @@ boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 > throughput
 
 
+[Chapter 12 Testing Concurrent Programs](README_TEST.md)
+
 
 ## Chapter 12 Testing Concurrent Programs
 
@@ -1934,72 +1937,236 @@ boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 > deterministic ones; tests that disclose such failures must be more extensive 
 > and run for longer than typical sequential tests 
 
+- Most tests of concurrent classes fall into one or both of the classic
+  categories of safety and liveness
 
-- Safety: nothing bad ever happens
-- liveness: something good eventually happens
-
-
-- Performance can be measured in a number of ways
-    - Throughput: the rate at which a set of concurrent tasks is completed
-    - Responsiveness: the delay between a request for and completion of some 
-      action (also called latency) 
-    - Scalability: the improvement in throughput (or lack thereof) as more 
-      resources usually CPUs) are made available
+> Safety: Nothing bad ever happens
+> Liveness: Something good eventually happens
 
 
 ### 12.1 Testing for Correctness
 
 #### 12.1.1 Basic Unit Tests
 
-> Including a set of sequential tests in your test suite is often helpful, 
-> since they can disclose when a problem is not related to concurrency issues 
-> before you start looking for data races
+> Including a set of sequential tests in current correctness test also to 
+> disclose when a problem is not related to concurrency issues before starting 
+> looking for data races
 
 #### 12.1.2 Testing blocking operations
 
+- Tests of essential concurrency properties require introducing more than one
+  thread 
+- Relay success or failure information back to the main test runner thread so 
+  it can be reported
+- Every test must wait until all the threads it created terminate
+- Make sure whether the tests passed and that failure information is
+  reported somewhere for use in diagnosing the problem 
+
 - If a method is supposed to block under certain conditions, then a test for 
   that behavior should succeed only if the thread does not proceed
-    - Testing that a method blocks is similar to testing that a method throws 
-      an exception; if the method returns normally, the test has failed
-    - Introducing an additional complication: once the method successfully 
-      blocks, you have to convince it somehow to unblock 
-        - The obvious way to do this is via interruption—start a blocking 
-          activity in a separate thread, 
-            - Wait until the thread blocks
-            - Interrupt it 
-            - And then assert that the blocking operation completed
+    - If the method returns normally, the test should be failed
+    - Once the method successfully blocks, there must be a way to unblock it
+        - Wait until the thread blocks 
+        - Interrupt it 
+        - Assert that the blocking operation completed
+
   ``` 
-    @Test
-    void test_Take_Method_Blocks_When_Empty() {
-
-        // Given
-        final Thread taker = new Thread(() -> {
-            try {
-                int unused = boundedBuffer.take();
-                fail(); // if we get here, it's an error
-            } catch (InterruptedException success) {
-                Thread.currentThread().interrupt();
-            }
-        });
-
-        // When
-        taker.start();
-
-        // Then
-        await().until(() -> !isThreadAlive(taker));
-    }
-
-    static boolean isThreadAlive(@NonNull Thread thread) {
-        try {
-            Thread.sleep(LOCKUP_DETECT_TIMEOUT);
-            thread.interrupt();
-            thread.join(LOCKUP_DETECT_TIMEOUT);
-            return thread.isAlive();
-        } catch (Exception unexpected) {
-            fail();
-            throw new IllegalStateException();
+    class CorrectnessTest {
+    
+        private static ThreadLocalRandom random;
+    
+        private static final int MIN_CAPACITY = 1_000;
+        private static final int MAX_DATA_CAPACITY = 100_000;
+        private static final long LOCKUP_DETECT_TIMEOUT = 1000L;
+        private static final long BLOCKING_TIMEOUT = 1100L;
+    
+        private SemaphoreBoundedBuffer<Integer> boundedBuffer;
+    
+        @BeforeAll
+        static void beforeAll() {
+            random = ThreadLocalRandom.current();
         }
-    }
+    
+        static boolean isThreadAlive(@NonNull Thread thread) {
+            try {
+                Thread.sleep(LOCKUP_DETECT_TIMEOUT);
+                thread.interrupt();
+                thread.join(LOCKUP_DETECT_TIMEOUT);
+                return thread.isAlive();
+            } catch (Exception unexpected) {
+                fail();
+                throw new IllegalStateException();
+            }
+        }
+    
+        @BeforeEach
+        void setUp() {
+            this.boundedBuffer = SemaphoreBoundedBuffer.of(MIN_CAPACITY);
+        }
+    
+        private void fullBuffer() throws InterruptedException {
+            IntStream.generate(random::nextInt).limit(MIN_CAPACITY)
+                    .forEach(i -> {
+                        try {
+                            boundedBuffer.put(i);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        }
+    
+        /*
+         * Including a set of sequential tests in the test suite is often helpful,
+         * since they can disclose when a problem is not related to concurrency
+         * issues before the start looking for data races
+         */
+        @Nested
+        @DisplayName("Sequentially Test the Correctness of BoundedBufferCt - ")
+        class SequentialCorrectnessTest {
+    
+            @Test
+            void test_The_Buffer_Should_Be_Empty_When_Constructed() {
+    
+                // Then
+                assertThat(boundedBuffer.isEmpty()).isTrue();
+                assertThat(boundedBuffer.isFull()).isFalse();
+            }
+    
+            @Test
+            void test_Being_Full_After_Put_All() throws InterruptedException {
+    
+                // Given
+                fullBuffer();
+    
+                // When & Then
+                assertThat(boundedBuffer.isFull()).isTrue();
+                assertThat(boundedBuffer.isEmpty()).isFalse();
+            }
+    
+        }//: End of SequentialCorrectnessTest
+    
+        @Nested
+        @DisplayName("")
+        class BlockingCorrectnessTest {
+    
+            private static final String TAKER_THREAD_NAME = "TAKER-THREAD";
+            private static final String FULLING_THREAD_NAME = "FULLING-THREAD";
+    
+            @Test
+            void test_Take_Method_Blocks_When_Empty() {
+    
+                // Given
+                final Thread taker = new Thread(() -> {
+                    try {
+                        int unused = boundedBuffer.take();
+                        fail(); // if we get here, it's an error
+                    } catch (InterruptedException success) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+    
+                // When
+                taker.start();
+    
+                // Then
+                await().until(() -> !isThreadAlive(taker));
+                assertThat(taker.isInterrupted()).isTrue();
+            }
+    
+            @Test
+            void test_Put_Method_Blocks_When_Full() throws InterruptedException {
+    
+                // Given
+                fullBuffer();
+    
+                final Thread taker = new Thread(() -> {
+                    try {
+                        boundedBuffer.put(1);
+                        fail(); // if we get here, it's an error
+                    } catch (InterruptedException success) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+    
+                // When
+                taker.start();
+    
+                // Then
+                await().until(() -> !isThreadAlive(taker));
+                assertThat(taker.isInterrupted()).isTrue();
+            }
+    
+            @Test
+            void given_Empty_Buffer_When_Take_Then_Blocking_With_Thread_Pool() throws Exception {
+    
+                // Given
+                ThreadFactory tf = runnable -> new Thread(runnable, TAKER_THREAD_NAME);
+                ExecutorService es = ExecutorServiceFactory.createSingleThreadExecutor(tf);
+    
+                Supplier<Integer> supplier = () -> {
+    
+                    Integer number = null;
+    
+                    String currentThreadName = Thread.currentThread().getName();
+    
+                    try {
+                        Integer unused = boundedBuffer.take();
+                        // if we get here, it’s an error
+                        Fail.fail(">>>>>>> The %s was not blocked.",
+                                currentThreadName);
+                    } catch (InterruptedException success) {
+                        log.info(">>>>>>> {} was interrupted.", currentThreadName);
+                        Thread.currentThread().interrupt();
+                    }
+    
+                    return number;
+                };
+    
+                try {
+                    CompletableFuture.supplyAsync(supplier, es)
+                            .get(BLOCKING_TIMEOUT, TimeUnit.MILLISECONDS);
+                } catch (Exception e) {
+                    log.info(">>>>>>> TIMEOUT");
+                    assertThat(e).isExactlyInstanceOf(TimeoutException.class);
+                }
+    
+            }
+    
+            @Test
+            void given_Full_Buffer_When_Put_Then_Blocking_With_Thread_Pool() throws Exception {
+    
+                // Given
+                fullBuffer();
+    
+                ThreadFactory tf = runnable -> new Thread(runnable, FULLING_THREAD_NAME);
+                ExecutorService es = ExecutorServiceFactory.createSingleThreadExecutor(tf);
+    
+                Runnable runnable = () -> {
+                    try {
+                        boundedBuffer.put(random.nextInt());
+                        // if we get here, it’s an error
+                        Fail.fail(">>>>>>> The %s was not blocked.",
+                                Thread.currentThread().getName());
+                    } catch (InterruptedException success) {
+                        log.info(">>>>>>> {} was interrupted.",
+                                Thread.currentThread().getName());
+                        Thread.currentThread().interrupt();
+                    }
+                };
+    
+                try {
+                    CompletableFuture.runAsync(runnable, es)
+                            .get(BLOCKING_TIMEOUT, TimeUnit.MILLISECONDS);
+                } catch (Exception e) {
+                    log.info(">>>>>>> FULLING TIMEOUT");
+                    assertThat(e).isExactlyInstanceOf(TimeoutException.class);
+                }
+    
+            }
+    
+        }//: End of Class BlockingCorrectnessTest
+    
+    }///:~
   ```
 
 > The result of Thread.getState should not be used for concurrency control, 
@@ -2007,31 +2174,326 @@ boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 > of debugging information 
 
 
-#### 12.1.3 Testing Safety
+#### 12.1.3 Testing Safety Strategy
 
-- To test that a concurrent class performs correctly under unpredictable 
-  concurrent access, we need to set up multiple threads performing different 
-  operations (put and take, for example) over some amount of time and then 
-  somehow test that nothing went wrong 
+- Set up multiple threads performing different operations over some amount of time
+    - put and take, for example
 
-> Constructing tests to disclose safety errors in concurrent classes is a 
-> chickenand-egg problem: the test programs themselves are concurrent programs
+- Checking the test property should not require any synchronization
 
-> Developing good concurrent tests can be more difficult than developing the 
-> classes they test
+- Compute checksums of the elements that are enqueued and dequeued using an 
+  order-sensitive checksum function, and compare them, if they match, the test passes
+    - Extending this approach to a multiple-producer, multiple-consumer situation
+      requires using a checksum function that is insensitive to the order in 
+      which the elements are combined, so that multiple checksums can be combined 
+      after the test
+    - Otherwise, synchronizing access to a shared checksum field could become
+      a concurrency bottleneck or distort the timing of the test
+    - Make the checksums themselves not be guessable by the compiler
 
-> The challenge to constructing effective safety tests for concurrent classes is 
-> identifying easily checked properties that will, with high probability, fail 
-> if something goes wrong, while at the same time not letting the failure 
-> auditing code limit concurrency artificially 
+``` 
+final class SeedFactory {
 
-> It is best if checking the test property does not require any synchronization
+    private SeedFactory() {}
+
+    static SeedFactory newSeedFactory() {
+        return new SeedFactory();
+    }
+
+    int initSeed(@NonNull final Object targetObj) {
+        return (targetObj.hashCode() ^ (int) System.nanoTime());
+    }
+
+    int nextSeed(int seed) {
+        return xorShift(seed);
+    }
+
+    private int xorShift(int y) {
+
+        y ^= (y << 6);
+        y ^= (y >>> 21);
+        y ^= (y << 7);
+
+        return y;
+    }
+
+}///:~
+```
+
+- Use a CyclicBarrier, initialized with the number of worker threads plus one
+    - and have the worker threads and the test driver wait at the barrier at the 
+      beginning and end of their run
+    - This ensures that all threads are up and running before any start working 
+
+- In order to make the scheduler won’t run each thread to completion sequentially, 
+  make the runs long enough reduces the extent to which scheduling distorts our 
+  the results
+
+- To maximize the chance of detecting timing-sensitive data races, there should 
+  be more active threads than CPUs, so that at any given time some threads are 
+  running and some are switched out, thus reducing the predicatability of 
+  interactions between threads
+
+``` 
+@ThreadSafe
+public class SemaphoreBoundedBuffer<E> {
+
+    @GuardedBy("this")
+    private final E[] items;
+
+    @GuardedBy("this")
+    private int putPosition = 0;
+
+    @GuardedBy("this")
+    private int takePosition = 0;
+
+    /*
+     * The availableItems semaphore represents the number of elements that can
+     * be removed from the buffer, and is initially zero (since the buffer is
+     * initially empty)
+     */
+    private final Semaphore availableItems;
+
+    /*
+     * The availableSpaces represents how many items can be inserted into the
+     * buffer, and is initialized to the size of the buffer
+     */
+    private final Semaphore availableSpaces;
+
+    private SemaphoreBoundedBuffer(@NonNull E[] items,
+                                   @NonNull Semaphore availableItems,
+                                   @NonNull Semaphore availableSpaces) {
+        this.items = items;
+        this.availableItems = availableItems;
+        this.availableSpaces = availableSpaces;
+    }
+
+    public static <E> SemaphoreBoundedBuffer of(int capacity) {
+
+        if (capacity <= 0) {
+            throw new IllegalArgumentException();
+        }
+
+        E[] items = (E[]) new Object[capacity];
+        Semaphore availableItems = new Semaphore(0);
+        Semaphore availableSpaces = new Semaphore(capacity);
+
+        return new SemaphoreBoundedBuffer(items, availableItems, availableSpaces);
+    }
+
+    public boolean isEmpty() {
+        return this.availableItems.availablePermits() == 0;
+    }
+
+    public boolean isFull() {
+        return this.availableSpaces.availablePermits() == 0;
+    }
+
+    public void put(E x) throws InterruptedException {
+        this.availableSpaces.acquire();
+        this.doInsert(x);
+        this.availableItems.release();
+    }
+
+    public E take() throws InterruptedException {
+        this.availableItems.acquire();
+        E item = this.doExtract();
+        this.availableSpaces.release();
+        return item;
+    }
+
+    private synchronized void doInsert(E x) {
+        int i = putPosition;
+        this.items[i] = x;
+        this.putPosition = (++i == items.length) ? 0 : i;
+    }
+
+    private synchronized E doExtract() {
+        int i = takePosition;
+        E x = items[i];
+        items[i] = null;
+        takePosition = (++i == items.length) ? 0 : i;
+        return x;
+    }
+
+}///:~
+
+final class BufferProducer implements Runnable {
+
+    private final SeedFactory seedFactory = SeedFactory.newSeedFactory();
+
+    private final int nTrials;
+    private final CyclicBarrier barrier;
+    private final SemaphoreBoundedBuffer<Integer> boundedBuffer;
+    private final AtomicInteger putSum;
+
+    private BufferProducer(
+            SemaphoreBoundedBuffer<Integer> boundedBuffer,
+            CyclicBarrier barrier,
+            int nTrials,
+            AtomicInteger putSum) {
+
+        this.boundedBuffer = boundedBuffer;
+        this.barrier = barrier;
+        this.nTrials = nTrials;
+        this.putSum = putSum;
+    }
+
+    static BufferProducer of(
+            @NonNull SemaphoreBoundedBuffer<Integer> boundedBuffer,
+            @NonNull CyclicBarrier barrier,
+            int nTrials,
+            @NonNull AtomicInteger putSum) {
+
+        if (nTrials < 1) {
+            throw new IllegalArgumentException();
+        }
+
+        return new BufferProducer(boundedBuffer, barrier, nTrials, putSum);
+    }
+
+    @Override
+    public void run() {
+        try {
+            int sum = 0;
+            this.barrier.await();
+            int seed = this.seedFactory.initSeed(this);
+            for (int i = nTrials; i > 0; --i) {
+                this.boundedBuffer.put(seed);
+                sum += seed;
+                seed = this.seedFactory.nextSeed(seed);
+            }
+            this.putSum.getAndAdd(sum);
+            this.barrier.await();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+}///:~
+
+final class BufferConsumer implements Runnable {
+
+    private final int nTrials;
+    private final CyclicBarrier barrier;
+    private final SemaphoreBoundedBuffer<Integer> boundedBuffer;
+    private final AtomicInteger takeSum;
+
+    private BufferConsumer(
+            SemaphoreBoundedBuffer<Integer> boundedBuffer,
+            CyclicBarrier barrier,
+            int nTrials,
+            AtomicInteger takeSum) {
+
+        this.boundedBuffer = boundedBuffer;
+        this.barrier = barrier;
+        this.nTrials = nTrials;
+        this.takeSum = takeSum;
+    }
+
+    static BufferConsumer of(
+            @NonNull SemaphoreBoundedBuffer<Integer> boundedBuffer,
+            @NonNull CyclicBarrier barrier,
+            int nTrials,
+            @NonNull AtomicInteger takeSum) {
+
+        if (nTrials < 1) {
+            throw new IllegalArgumentException();
+        }
+
+        return new BufferConsumer(boundedBuffer, barrier, nTrials, takeSum);
+    }
+
+    @Override
+    public void run() {
+        try {
+            this.barrier.await();
+            int sum = 0;
+            for (int i = this.nTrials; i > 0; --i) {
+                sum += this.boundedBuffer.take();
+            }
+            this.takeSum.getAndAdd(sum);
+            this.barrier.await();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+}///:~
+
+public class SafetyTest {
+
+    private static final int DEFAULT_CAPACITY = 1000;
+
+    // How many pairs of producer and consumer
+    private static final int N_PAIRS = 10;
+
+    private static final int N_TRIALS = 100_000;
+
+    private static ExecutorService executor;
+
+    private CyclicBarrier barrier;
+    private SemaphoreBoundedBuffer<Integer> bb;
+
+    private AtomicInteger putSum;
+    private AtomicInteger takeSum;
+
+    private BarrierTimer barrierTimer;
+
+
+    @BeforeAll
+    static void beforeAll() {
+        ThreadPoolExecutor threadPoolExecutor =
+                (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        executor = MoreExecutors.getExitingExecutorService(threadPoolExecutor);
+    }
+
+    @AfterAll
+    static void afterAll() {
+        executor.shutdown();
+    }
+
+    @BeforeEach
+    void setUp() {
+        this.bb = SemaphoreBoundedBuffer.of(DEFAULT_CAPACITY);
+        this.barrierTimer = new BarrierTimer();
+        this.barrier = new CyclicBarrier(N_PAIRS * 2 + 1, barrierTimer);
+        this.putSum = new AtomicInteger(0);
+        this.takeSum = new AtomicInteger(0);
+    }
+
+    @Test
+    void test_Bounded_Buffer_Safety() throws Exception {
+
+        for (int i = 0; i < N_PAIRS; i++) {
+            this.executor.execute(BufferProducer.of(
+                    this.bb, this.barrier, N_TRIALS, this.putSum));
+            this.executor.execute(BufferConsumer.of(
+                    this.bb, this.barrier, N_TRIALS, this.takeSum));
+        }
+
+        /*
+         * the arrival index of the current thread, where index
+         * getParties() - 1 indicates the first to arrive and zero
+         * indicates the last to arrive
+         */
+        barrier.await(); // waiting for all threads to be ready
+
+        barrier.await(); // waiting for all threads to be finished
+
+        long throughput = this.barrierTimer.getThroughput(
+                N_PAIRS * (long) N_TRIALS);
+
+        log.info(">>>>>> Throughput is : {} ns/item", throughput);
+
+        assertThat(putSum.get()).isEqualTo(takeSum.get());
+    }
+    
+}
+```
 
 > Tests should be run on multiprocessor systems to increase the diversity of 
-> potential interleavings 
-
-> However, having more than a few CPUs does not necessarily make tests more 
-> effective
+> potential interleavings
 
 > To maximize the chance of detecting timing-sensitive data races, there should 
 > be more active threads than CPUs, so that at any given time some threads are 
@@ -2039,7 +2501,14 @@ boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 > interactions between threads
 
 
+
 #### 12.1.4 Testing resource management
+
+> The Strategy: Forces a garbage collection and then records information about 
+> the heap size and memory usage
+
+- [Verbose Garbage Collection in Java](https://www.baeldung.com/java-verbose-gc)
+- [GCeasy](https://gceasy.io/gc-index.jsp#features)
 
 > The second aspect to test is that the thread does not do things it is not 
 > supposed to do, such as leak resources. Any object that holds or manages other 
@@ -2051,6 +2520,90 @@ boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 
 #### 12.1.5 Using Callbacks
 
+- To count how many thread created in a thread pool
+``` 
+public class TestingThreadFactory implements ThreadFactory {
+
+    private final LongAdder numCreated = new LongAdder();
+    private final ThreadFactory factory;
+
+    private TestingThreadFactory(ThreadFactory factory) {
+        this.factory = factory;
+    }
+
+    public static TestingThreadFactory of(@NonNull ThreadFactory factory) {
+        return new TestingThreadFactory(factory);
+    }
+
+    @Override
+    public Thread newThread(Runnable r) {
+        this.numCreated.increment();
+        return this.factory.newThread(r);
+    }
+
+    public long getThreadNumberOfCreated() {
+        return this.numCreated.longValue();
+    }
+
+}///:~ 
+```
+
+- Validating the FixedThreadPool
+``` 
+public class ThreadPoolTest {
+
+    private static final int MAX_SIZE = 10;
+    private static final long MAX_TASK_NUMBER = MAX_SIZE * 10;
+
+    private ExecutorService executor;
+    private TestingThreadFactory threadFactory;
+
+    @BeforeEach
+    void setUp() {
+        this.threadFactory = TestingThreadFactory.of(
+                Executors.defaultThreadFactory());
+        this.executor = Executors.newFixedThreadPool(MAX_SIZE, this.threadFactory);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        this.executor.shutdown();
+        this.executor.awaitTermination(300, TimeUnit.MILLISECONDS);
+        if (!this.executor.isTerminated()) {
+            List<Runnable> notRun = this.executor.shutdownNow();
+            log.warn(">>>>>>> {} threads are never run.", notRun.size());
+        }
+    }
+
+    @Test
+    void test_Pool_Expansion() throws Exception {
+
+        // Given
+        for (int i = 0; i < MAX_TASK_NUMBER; i++) {
+            this.executor.execute(() -> {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(Long.MAX_VALUE);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+        }
+
+        // When
+        for (int i = 0; i < 20 && this.threadFactory
+                .getThreadNumberOfCreated() < MAX_SIZE; i++) {
+
+            TimeUnit.MILLISECONDS.sleep(100L);
+        }
+
+        // Then
+        assertThat(this.threadFactory.getThreadNumberOfCreated())
+                .isEqualTo(MAX_SIZE);
+    }
+
+}///:~
+```
+
 > Callbacks to client-provided code can be helpful in constructing test cases; 
 > callbacks are often made at known points in an object’s lifecycle that are 
 > good opportunities to assert invariants
@@ -2058,28 +2611,22 @@ boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 
 #### 12.1.6 Generating More Interleavings
 
-> A useful trick for increasing the number of interleavings, and therefore more 
-> effectively exploring the state space of your programs, is to use 
-> ``` Thread.yield ``` to encourage more context switches during operations that 
-> access shared state
-
-> The effectiveness of this technique is platform-specific, since the JVM is 
-> free to treat Thread.yield as a no-op [JLS 17.9]; using a short but nonzero 
-> sleep would be slower but more reliable 
+> Using ``` Thread.yield ``` more to encourage more context switches during 
+> operations that access shared state, however, 
+> using a short but nonzero sleep would be slower but more reliable 
 
 ``` 
 public synchronized void transferCredits(Account from, Account to, int amount) {
     from.setBalance(from.getBalance() - amount);
     if (random.nextInt(1000) > THRESHOLD) {
-        Thread.yield();
+        Thread.yield(); // TimeUnit.MILLISECONDS.sleep(7);
     }
     to.setBalance(to.getBalance() + amount);
 }
 ```
 
-- By sometimes yielding in the middle of an operation, you may activate 
-  timing-sensitive bugs in code that does not use adequate synchronization to 
-  access state
+- By sometimes yielding in the middle of an operation, may activate timing-sensitive 
+  bugs in code that does not use adequate synchronization to access state
     - The inconvenience of adding these calls for testing and removing them for 
       production can be reduced by adding them using aspect-oriented programming 
       (AOP) tools
@@ -2087,15 +2634,28 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
 
 ### 12.2 Testing for Performance
 
-#### Overview
+#### Overview & Goals
 
-> It is almost always worthwhile to include some basic functionality testing 
-> within performance tests to ensure that you are not testing the performance 
-> of broken code
+- Performance can be measured in a number of ways
+    - Throughput: the rate at which a set of concurrent tasks is completed
+    - Responsiveness: the delay between a request for and completion of some
+      action (also called latency)
+    - Scalability: the improvement in throughput (or lack thereof) as more
+      resources usually CPUs) are made available
 
+- Find a typical usage scenario
+- Write a program that executes that scenario many times, and time it
+- Watch out for a number of coding pitfalls that prevent performance tests from 
+  yielding meaningful results
+
+> Always include some basic functionality testing within performance tests to 
+> ensure not testing the performance of broken code
+
+- The first goal
 > Performance tests seek to measure end-to-end performance metrics for 
 > representative use cases
 
+- The second goal
 > A common secondary goal of performance testing is to select sizings 
 > empirically for various bounds, numbers of threads, buffer capacities, and so 
 > on
@@ -2113,8 +2673,8 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
 - Learn several things from permormance tests
     - The throughput of the producer-consumer handoff operation for various 
       combinations of parameters 
-    - How the bounded buffer scales with different numbers of threads
-    - How we might select the bound size
+    - How the bounded buffer scales with different numbers of threads (pairs)
+    - How we might select the bound size (capacities)
 
 
 - Answering those questions above requires running the test for various 
@@ -2122,7 +2682,7 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
 
 
 #### 12.2.2 Comparing Multiple Algorithms
-
+- ``` LinkedBlockingQueue ``` scales better than ``` ArrayBlockingQueue ```
 - A linked queue must allocate a link node object for each insertion, and hence 
   seems to be doing more work than the array-based queue
     - However, even though it has more allocation and GC overhead
@@ -2142,16 +2702,13 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
       questions like “What percentage of operations will succeed in under 100 
       milliseconds?”
 
-
 - Histograms of task completion times are normally the best way to visualize 
   variance in service time
-
 
 - Unless threads are continually blocking anyway because of tight synchronization 
   requirements
     - Unfair semaphores provide much better throughput 
     - Fair semaphores provide lower variance 
-
 
 - Because the results are so dramatically different, Semaphore forces its 
   clients to decide which of the two factors to optimize for 
@@ -2176,19 +2733,18 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
 > time per iteration
 
 
-- There are two strategies for preventing garbage collection from biasing your 
-  results
-    - One is to ensure that garbage collection does not run at all during your 
-      test (you can invoke the JVM with ``` -verbose:gc ``` to find out)
-    - Alternatively, you can make sure that the garbage collector runs a number 
-      of times during your run so that the test program adequately reflects the 
-      cost of ongoing allocation and garbage collection 
+- Two Strategies for preventing garbage collection from biasing the test results
+    - Ensure that the GC does not run at all during the test 
+        - Invoke the JVM with ``` -verbose:gc ``` to find out
+    - Make sure that the GC runs a number of times during the run so that the 
+      test program adequately reflects the cost of ongoing allocation and 
+      garbage collection 
         - This strategy is often better - it requires a longer test and is more 
           likely to reflect real-world performance 
 
 
 - Most producer-consumer applications involve a fair amount of allocation and 
-  garbage collection—producers allocate new objects that are used and discarded 
+  garbage collection, producers allocate new objects that are used and discarded 
   by consumers 
     - Running the bounded buffer test for long enough to incur multiple garbage 
       collections yields more accurate results
@@ -2206,7 +2762,7 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
           execution
 
 
-> The timing of compilation is unpredictable; So, your timing tests should run 
+> The timing of compilation is unpredictable; So, the timing tests should run 
 > only after all code has been compiled
 
 
@@ -2248,6 +2804,18 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
       inconsistent results in the remaining groups suggests that the test should 
       be examined further to determine why the timing results are not repeatable
 
+> On HotSpot, running the program with ``` -XX:+PrintCompilation ``` prints out 
+> a message when dynamic compilation runs, so you can verify that this is prior 
+> to, rather than during, measured test runs
+
+> The JVM uses various background threads for housekeeping tasks
+
+- Running the same test several times in the same JVM instance can be used to
+  validate the testing methodology
+    - The first group of results should be discarded as warm-up 
+    - seeing inconsistent results in the remaining groups suggests that the test 
+      should be examined further to determine why the timing results are not 
+      repeatable
 
 > The JVM uses various background threads for housekeeping tasks
 
@@ -2280,9 +2848,8 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
       containing at least occasional parallelism
 
 
-> Tests of multithreaded performance should normally be mixed with tests of 
-> single-threaded performance, even if you want to measure only singlethreaded 
-> performance
+> Mixed Tests of Multithreaded Performance with Tests of Single Threaded 
+> Performance, even if only Single threaded Performance Tests are required
 
 
 #### 12.3.4 Unrealistic Degrees of Contention
@@ -2292,6 +2859,23 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
 > queue, and thread-local computation (executing the task, assuming the task 
 > itself does not access shared data)
 
+
+Depending on the relative proportions of the two types of work, the application 
+will experience different levels of contention and exhibit different performance 
+and scaling behaviors 
+
+If N threads are fetching tasks from a shared work queue and executing them,
+and the tasks are compute-intensive and long-running (and do not access shared
+data very much), there will be almost no contention; throughput is dominated
+by the availability of CPU resources.
+
+On the other hand, if the tasks are very short-lived, there will be a lot of 
+contention for the work queue and throughput is dominated by the cost of 
+synchronization.
+
+if an application did a significant amount of thread-local computation for each 
+time it accesses the shared data structure, the contention level might be low 
+enough to offer good performance
 
 #### 12.3.5 Dead Code Elimination
 

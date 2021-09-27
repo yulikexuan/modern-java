@@ -9,16 +9,18 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-final class BufferConsumer implements Runnable {
+public final class BufferConsumer implements Runnable {
 
     private final int nTrials;
     private final CyclicBarrier barrier;
     private final SemaphoreBoundedBuffer<Integer> boundedBuffer;
     private final AtomicInteger takeSum;
 
-    private BufferConsumer(SemaphoreBoundedBuffer<Integer> boundedBuffer,
-                           CyclicBarrier barrier, int nTrials,
-                           AtomicInteger takeSum) {
+    private BufferConsumer(
+            SemaphoreBoundedBuffer<Integer> boundedBuffer,
+            CyclicBarrier barrier,
+            int nTrials,
+            AtomicInteger takeSum) {
 
         this.boundedBuffer = boundedBuffer;
         this.barrier = barrier;
@@ -26,9 +28,10 @@ final class BufferConsumer implements Runnable {
         this.takeSum = takeSum;
     }
 
-    static BufferConsumer of(
+    public static BufferConsumer of(
             @NonNull SemaphoreBoundedBuffer<Integer> boundedBuffer,
-            @NonNull CyclicBarrier barrier, int nTrials,
+            @NonNull CyclicBarrier barrier,
+            int nTrials,
             @NonNull AtomicInteger takeSum) {
 
         if (nTrials < 1) {
