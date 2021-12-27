@@ -5,16 +5,16 @@
   <parent>
     <groupId>com.yulikexuan.jdk</groupId>
     <artifactId>modern-java</artifactId>
-    <version>2021.03-SNAPSHOT</version>
+    <version>2021.04-SNAPSHOT</version>
   </parent>
   <groupId>com.yulikexuan.jdk</groupId>
   <artifactId>effectivejava</artifactId>
-  <version>2021.03-SNAPSHOT</version>
+  <version>2021.04-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>org.mutabilitydetector</groupId>
       <artifactId>MutabilityDetector</artifactId>
-      <version>0.10.4</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

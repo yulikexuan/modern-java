@@ -6,6 +6,13 @@
   - [Errata](https://jcip.net/errata.html)
   - [Chapter 12 Testing Concurrent Programs](README_TEST.md)
 
+### Content
+
+[CompletableFuture](README_CompletableFuture.md)
+
+[Testing Concurrent Programs](README_TEST.md)
+
+[Cancellation and Shutdown](README_Cancellation_and_Shutdown.md)
 
 # Part I Fundamentals
 

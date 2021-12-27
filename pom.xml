@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
@@ -9,24 +9,24 @@
     <parent>
         <groupId>com.yulikexuan</groupId>
         <artifactId>core-java-bom</artifactId>
-        <version>2021.03-SNAPSHOT</version>
+        <version>2021.04-SNAPSHOT</version>
     </parent>
 
     <groupId>com.yulikexuan.jdk</groupId>
     <artifactId>modern-java</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
-
     <name>modern-java</name>
+
     <description>The Lab of Modern Java</description>
 
     <properties>
-        <revision>2021.03-SNAPSHOT</revision>
-        <spring.framework.version>5.3.9</spring.framework.version>
+        <revision>2021.04-SNAPSHOT</revision>
+        <spring.framework.version>5.3.14</spring.framework.version>
         <quartz.version>2.3.2</quartz.version>
-        <commons-vfs2.version>2.7.0</commons-vfs2.version>
-        <json-path.version>2.4.0</json-path.version>
-        <txw2.version>2.4.0-b180830.0438</txw2.version>
+        <commons-vfs2.version>2.9.0</commons-vfs2.version>
+        <json-path.version>2.6.0</json-path.version>
+        <txw2.version>3.0.2</txw2.version>
         <flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
     </properties>
 
@@ -42,11 +42,8 @@
     </modules>
 
     <build>
-
         <pluginManagement>
-
             <plugins>
-
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>flatten-maven-plugin</artifactId>
@@ -72,18 +69,14 @@
                         </execution>
                     </executions>
                 </plugin>
-
             </plugins>
-
         </pluginManagement>
 
         <plugins>
-
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
             </plugin>
-
         </plugins>
 
     </build>

@@ -5,10 +5,10 @@
   <parent>
     <groupId>com.yulikexuan.jdk</groupId>
     <artifactId>modern-java</artifactId>
-    <version>2021.03-SNAPSHOT</version>
+    <version>2021.04-SNAPSHOT</version>
   </parent>
   <groupId>com.yulikexuan.jdk</groupId>
   <artifactId>ocp2</artifactId>
-  <version>2021.03-SNAPSHOT</version>
+  <version>2021.04-SNAPSHOT</version>
   <name>ocp2</name>
 </project>
