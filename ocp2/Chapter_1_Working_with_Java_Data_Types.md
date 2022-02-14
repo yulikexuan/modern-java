@@ -2,7 +2,6 @@
 
 
 1. ### Which of the following are not valid variable names? (Choose two)
---------------------------------------------------------------------------------
 - A. _
 - B. _blue
 - C. 2blue
@@ -15,7 +14,6 @@
     int tip = 2;
     var total = meal + (meal > 6 ? tip++ : tip--);
     ```
---------------------------------------------------------------------------------
 - A. 1
 - B. 2
 - C. 3
@@ -23,7 +21,6 @@
 - E. None of the above
 
 3. ### Which is equivalent to ``` var q = 4.0f; ```?
---------------------------------------------------------------------------------
 - A. float q = 4.0f;
 - B. Float q = 4.0f;
 - C. double q = 4.0f;
@@ -37,7 +34,6 @@
     b.reverse();
     System.out.println(b.toString());
     ```
---------------------------------------------------------------------------------
 - A. 12
 - B. 123
 - C. 321
@@ -51,7 +47,6 @@
     System.out.print(" ");
     System.out.print(line.length());
     ```
---------------------------------------------------------------------------------
 - A. false 1
 - B. false 2
 - C. true 1
@@ -63,7 +58,6 @@
    #### which expression most closely represents the filled‐in region of the diagram?
 
    ![venn diagram](images/chap_01_06.png)
---------------------------------------------------------------------------------
 - A. apples && oranges && !bananas
 - B. orange || (oranges && !bananas)
 - C. (apples || bananas) && oranges
@@ -80,7 +74,6 @@
     System.out.print(" ");
     System.out.print(line.length());
     ```
---------------------------------------------------------------------------------
 - A. false 1
 - B. false 2
 - C. true 1
@@ -93,7 +86,6 @@
         _____ pi = 3.14;
     }
     ```
---------------------------------------------------------------------------------
 - A. byte
 - B. double
 - C. float
@@ -104,7 +96,6 @@
    #### The operators !=, _______, _______, _______, and ++ are listed in 
    #### the same or increasing level of operator precedence. (Choose two)
 
---------------------------------------------------------------------------------
 - A. ==, *, !
 - B. /, %, *
 - C. *, ‐‐, /
@@ -122,7 +113,6 @@
     Comparator<String> c5 = (var j, var k) -> 0; // 22
     ```
 
---------------------------------------------------------------------------------
 - A. 0
 - B. 1
 - C. 2
@@ -140,7 +130,6 @@
         int num = mystery.length();
     }
     ```
---------------------------------------------------------------------------------
 - A. String
 - B. StringBuilder
 - C. Both
@@ -154,14 +143,12 @@
     teams.append(" 1601");
     System.out.print(teams);
     ```
---------------------------------------------------------------------------------
 - A. 333
 - B. 333 806 1601
 - C. The code compiles but outputs something else.
 - D. The code does not compile.
 
 13. ### Which of the following declarations does not compile?
---------------------------------------------------------------------------------
 - A. double num1, int num2 = 0;
 - B. int num1, num2;
 - C. int num1, num2 = 0;
@@ -182,7 +169,6 @@
         // line a4
     }
     ```
---------------------------------------------------------------------------------
 - A. a2
 - B. a3
 - C. a2 and a3
@@ -204,7 +190,6 @@
     list.removeIf(x -> {int keep = num; return x == keep;}); // 19
     System.out.println(list); // 20
     ```
---------------------------------------------------------------------------------
 - A. []
 - B. [8, 10]
 - C. [8, 9, 10]
