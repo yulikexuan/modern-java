@@ -192,7 +192,7 @@ import static org.mockito.Mockito.times;
  *                                                      BiConsumer<T, U> action)
  *                 Consumes the result of this and other, using a BiConsumer
  *
- *               - CompletableFuture<Void> runAfterBoth​(CompletionStage<?> other,
+ *               - CompletableFuture<Void> runAfterBoth(CompletionStage<?> other,
  *                                                      Runnable action)
  *                 Triggers the execution of a Runnable on the completion of
  *                 this and other
@@ -212,23 +212,22 @@ import static org.mockito.Mockito.times;
  *           - The combined elements should produce the same types of result,
  *             because only one of them will be selected
  *
- *           - <U> CompletionStage<U> applyToEither​(
+ *           - <U> CompletionStage<U> applyToEither(
  *                     CompletionStage<? extends T> other,
- *                     Function<? super T, ​U> fn)
+ *                     Function<? super T, U> fn)
  *             Selects the first available result from this and other, and
  *             applies the function to it
  *
- *           - CompletableFuture<Void> acceptEither​(
+ *           - CompletableFuture<Void> acceptEither(
  *                     CompletionStage<? extends T> other,
  *                     Consumer<? super T> action)
  *             Selects the first available result from this and other, and
  *             passes it to the consumer
  *
- *           - CompletableFuture<Void> runAfterEither​(
+ *           - CompletableFuture<Void> runAfterEither(
  *                     CompletionStage<?> other, Runnable action)
  *             Runs the provided action after the first result from this and
  *             other have been made available
- *
  *
  */
 @Slf4j
@@ -309,9 +308,9 @@ public class CompletableFutureTest {
             }
 
             /*
-             * thenAccept​(Consumer<? super T> action)
-             * thenAcceptAsync​(Consumer<? super T> action)
-             * thenAcceptAsync​(Consumer<? super T> action, Executor executor)
+             * thenAccept(Consumer<? super T> action)
+             * thenAcceptAsync(Consumer<? super T> action)
+             * thenAcceptAsync(Consumer<? super T> action, Executor executor)
              */
             @Test
             void test_Given_An_Upstream_Element_Then_Consume_Its_Result() throws Exception {
@@ -329,36 +328,57 @@ public class CompletableFutureTest {
             }
 
             /*
-             * thenRun​(Runnable action)
-             * thenRunAsync​(Runnable action)
-             * thenRunAsync​(Runnable action, Executor executor)
+             * thenRun(Runnable action)
+             * thenRunAsync(Runnable action)
+             * thenRunAsync(Runnable action, Executor executor)
              */
             @Test
             void test_Given_An_Upstream_Element_Then_Run_Something_Without_Consuming_And_Producing_Nothing()
                     throws Exception {
 
                 // Given
+                final StopWatch stopWatch = StopWatch.create();
+
                 final int numOfLoop = 2;
-                Runnable runnable = () -> {
+
+                Runnable task_0 = () -> {
                     IntStream.range(0, numOfLoop)
                             .forEach(i -> {
                                 System.out.println("Running ... ...");
-                                takeMilliSecs(100);
+                                takeMilliSecs(RUNNING_TIME_MILLI);
+                            });
+                };
+
+                Runnable task_1 = () -> {
+                    IntStream.range(0, 1)
+                            .forEach(i -> {
+                                System.out.println("Running ... ...");
+                                takeMilliSecs(300);
                             });
                 };
 
                 ExecutorService executorService = ExecutorServiceFactory
-                        .createFixedPoolSizeExecutor(1);
+                        .createFixedPoolSizeExecutor(2);
 
                 // When
-                CompletableFuture<Void> cfVoid = CompletableFuture.runAsync(
-                        runnable, executorService);
+                stopWatch.start();
+                CompletableFuture<Void> cfVoid_0 = CompletableFuture.runAsync(
+                        task_0, executorService);
+                CompletableFuture<Void> cfVoid_1 = CompletableFuture.runAsync(
+                        task_1, executorService);
 
-                cfVoid.thenRun(() -> System.out.println("\nI am done."));
+                cfVoid_0.join();
+                cfVoid_1.join();
+
+                stopWatch.stop();
+                long timeElapsed = stopWatch.getTime(TimeUnit.MILLISECONDS);
+                assertThat(timeElapsed).isLessThan(450L);
+                System.out.printf("%n>>> I am done. Time Elapsed: %d ms%n%n",
+                        timeElapsed);
 
                 // Then
                 ExecutorServiceConfig.terminateExecutorServeceAfter(executorService,
-                        Duration.ofMillis(RUNNING_TIME_MILLI * (numOfLoop + 1)));
+                        Duration.ofMillis(RUNNING_TIME_MILLI));
             }
 
         }//: End of class OneToOnePatternTest
