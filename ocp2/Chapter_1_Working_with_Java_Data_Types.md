@@ -1,3 +1,4 @@
+
 # Chapter 1 Working with Java Data Types
 
 ## INTRODUCING VAR
@@ -24,7 +25,31 @@
 - [Style Guidelines for Local Variable Type Inference in Java](https://openjdk.java.net/projects/amber/guides/lvti-style-guide)
 
 
-### Review of var Rules
+### ``` var ``` Rules
+
+#### A ``` var ``` is USED as a Local Variable in 
+- a constructor 
+- method 
+- initializer block 
+
+#### A ``` var ``` CANNOT be Used in 
+- constructor parameters 
+- method parameter 
+- instance variables 
+- class variables
+
+#### A ``` var ``` is always initialized on the same line (or statement) 
+- where it is declared
+
+#### The value of a ``` var ``` can change, but the TYPE CANNOT 
+
+#### A ``` var ``` cannot be initialized with a null value Without A Type 
+
+#### A var is NOT PERMITTED in a Multiple-Variable Declaration 
+
+#### A var is a reserved type name but not a reserved word
+- meaning it can be used as an identifier 
+  - except as a ``` class ``` , ``` interface ```, or ``` enum name ```
 
 
 ## Quiz
@@ -450,3 +475,5 @@
 - C. 3
 - D. 4
 - E. Does not compile
+
+
