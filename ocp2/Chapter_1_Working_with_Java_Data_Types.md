@@ -1,5 +1,33 @@
 # Chapter 1 Working with Java Data Types
 
+## INTRODUCING VAR
+
+### Local Variable Type Inference
+#### Only use this feature for local variables
+
+### Type Inference
+#### The compiler looks at the code on the line of the declaration 
+- and uses it to infer the type
+#### The type of ``` var ``` can’t change at runtime
+#### The initial value used to determine the type needs to be part of the same statement
+#### All the types declared on a single line must be the same type 
+- and share the same declaration
+#### Java Does Not Allow ``` var ``` in Multiple Variable Declarations
+#### Java Does Not Allow ``` var ``` for null
+- a ``` var ``` cannot be initialized with a ``` null ``` value without a type 
+  - it can be assigned a ``` null ``` value after it is declared 
+  - provided that the underlying data type of the ``` var ``` is an object
+#### While var is not a reserved word and allowed to be used as an identifier 
+  - it is considered a Reserved Type Name
+#### It is often inappropriate to use var as the type for every local variable in your code
+- That just makes the code difficult to understand
+- [Style Guidelines for Local Variable Type Inference in Java](https://openjdk.java.net/projects/amber/guides/lvti-style-guide)
+
+
+### Review of var Rules
+
+
+## Quiz
 
 1. ### Which of the following are not valid variable names? (Choose two)
 - A. _
@@ -195,3 +223,230 @@
 - C. [8, 9, 10]
 - D. [10, 8]
 - E. The code does not compile.
+
+16. Which of the following can fill in the blank so the code prints ``` true ```?
+    ``` 
+    var happy = " :) - (: ";
+    var really = happy.trim();
+    var question = _____________________;
+    System.out.println(really.equals(question));
+    ```
+- A. happy.substring(0, happy.length() ‐ 1)
+- B. happy.substring(0, happy.length())
+- C. happy.substring(1, happy.length() ‐ 1)
+- D. happy.substring(1, happy.length())
+
+17. How many of the following lines contain a compiler error?
+    ``` 
+    double num1 = 2.718;
+    double num2 = 2._718;
+    double num3 = 2.7_1_8;
+    double num4 = _2.718;
+    ```
+- A. 0
+- B. 1
+- C. 2
+- D. 3
+- E. 4
+
+18. What is the output of the following application?
+    ``` 
+    public class Airplane {
+        static int start = 2;
+        final int end;
+        public Airplane(int x) {
+            x = 4;
+            end = x;
+        }
+        public void fly(int distance) {
+            System.out.print(end-start+" ");
+            System.out.print(distance);
+        }
+        public static void main(String… start) {
+            new Airplane(10).fly(5);
+        }
+    }
+    ```
+- A. 2 5
+- B. 8 5
+- C. 6 5
+- D. The code does not compile 
+- E. None of the above 
+
+19. What is the output of the following class?
+    ``` 
+    1: package rocket;
+    2: public class Countdown {
+    3:     public static void main(String[] args) {
+    4:         var builder = "54321";
+    5:         builder = builder.substring(4);
+    6:         System.out.println(builder.charAt(2));
+    7:     }
+    8: }
+    ```
+- A. 2
+- B. 3
+- C. 4
+- D. None of the above
+
+20. What is the output of the following application?
+    ``` 
+    package transporter;
+    public class Rematerialize {
+        public static void main(String[] input) {
+            int init = 11;
+            int split = 3;
+            int partA = init / split;
+            int partB = init % split;
+            int result = split * (partB + partA);
+            System.out.print(result);
+        }
+    }
+    ```
+- A. 9
+- B. 11
+- C. 12
+- D. 15
+- E. The code does not compile.
+- F. None of the above.
+
+21. What is the result of the following code?
+    ``` 
+    var sb = new StringBuilder("radical")
+            .insert(sb.length(), "robots");
+    System.out.println(sb);
+    ```
+- A. radicarobots
+- B. radicalrobots
+- C. The code does not compile 
+- D. The code compiles but throws an exception at runtime 
+
+22. Given the following code snippet, what is the value of ``` dinner ``` 
+    after it is executed?
+    ``` 
+    int time = 9;
+    int day = 3;
+    var dinner = ++time>= 10 ? day-- <= 2
+            ? "Takeout" : "Salad" : "Leftovers";
+    ```
+- A. Takeout
+- B. Leftovers
+- C. Salad
+- D. The code does not compile but would compile if parentheses were added
+- E. None of the above 
+
+23. What is the output of the following?
+    ``` 
+    var teams = new String("694");
+    teams.concat(" 1155");
+    teams.concat(" 2265");
+    teams.concat(" 2869");
+    System.out.println(teams);
+    ```
+- A. 694
+- B. 694 1155 2265 2869
+- C. The code compiles but outputs something else 
+- D. The code does not compile 
+
+24. How many of the following lines compile?
+    ``` 
+    bool b = null;
+    Bool bl = null;
+    int i = null;
+    Integer in = null;
+    String s = null;
+    ```
+- A. None
+- B. One
+- C. Two
+- D. Three
+- E. Four
+- F. Five
+
+25. What is the output of the following code snippet?
+    ``` 
+    int height = 2, length = 3;
+    boolean w = height> 1 | --length < 4;
+    var x = height!=2 ? length++ : height;
+    boolean z = height % length == 0;
+    System.out.println(w + "-" + x + "-" + z);
+    ```
+- A. true‐2‐true
+- B. false‐2‐false
+- C. true‐2‐false
+- D. true‐3‐false
+- E. true‐3‐true
+- F. false‐3‐false
+
+26. What is the output of the following?
+    ```
+    1: public class Legos {
+    2:     public static void main(String[] args) {
+    3:         var sb = new StringBuilder();
+    4:         sb.append("red");
+    5:         sb.deleteCharAt(0);
+    6:         sb.delete(1, 2);
+    7:         System.out.println(sb);
+    8:     }
+    9: }
+    ```
+- A. e
+- B. d
+- C. ed
+- D. None of the above
+
+27. Which is a true statement?
+- A. If ``` s.contains("abc") ``` is ``` true```, then ``` s.equals("abc") ``` 
+     is also ``` true ```
+- B. If ``` s.contains("abc") ``` is ``` true ``` , then ``` s.startsWith("abc") ``` 
+     is also ``` true ```
+- C. If ``` s.startsWith("abc") ``` is true, then ``` s.equals("abc") ``` is 
+     also ``` true ```
+- D. If ``` s.startsWith("abc") ``` is ``` true ``` , then ``` s.contains("abc") ``` 
+     is also ``` true ``` 
+
+28. What is the output of the following code snippet?
+    ```
+    boolean carrot = true;
+    Boolean potato = false;
+    var broccoli = true;
+    carrot = carrot & potato; // false
+    broccoli = broccoli ? !carrot : potato; // true
+    potato = !broccoli ^ carrot; // false ^ false
+    System.out.println(carrot + "," + potato + "," + broccoli);
+    ```
+- A. true,false,true
+- B. true,true,true
+- C. false,false,false
+- D. false,true,true
+- E. false,false,true
+- F. The code does not compile 
+
+29. What does this code output?
+    ```
+    var babies = Arrays.asList("chick", "cygnet", "duckling");
+    babies.replaceAll(x -> { var newValue = "baby"; return newValue; });
+    System.out.println(babies);
+    ```
+- A. ``` [baby] ```
+- B. ``` [baby, baby, baby] ```
+- C. ``` [chick, cygnet, duckling] ```
+- D. None of the above
+- E. The code does not compile
+
+30. What is the output of the following class?
+    ```
+    1: package rocket;
+    2: public class Countdown {
+    3:     public static void main(String[] args) {
+    4:         var builder = new StringBuilder("54321");
+    5:         builder.substring(2);
+    6:         System.out.println(builder.charAt(1));
+    7:     }
+    8: }
+    ```
+- A. 1
+- B. 2
+- C. 3
+- D. 4
+- E. Does not compile
