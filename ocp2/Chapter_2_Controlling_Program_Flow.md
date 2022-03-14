@@ -282,3 +282,287 @@
 - C. Two
 - D. Three
 - E. Four
+
+16. How many of these statements can be inserted after the ``` print(ch) ``` 
+    to have the code flow follow the arrow in this diagram ? (and which?)
+    ``` 
+    break;
+    break letters;
+    break numbers;
+    continue;
+    continue letters;
+    continue numbers;
+    ```
+![img.png](images/Chapter_2_Controlling_Program_Flow_1.png)
+- A. One
+- B. Two
+- C. Three
+- D. Four
+- E. Five
+- F. None of above
+
+17. What is the output of the following application?
+
+    ``` 
+    package dessert;
+    public class IceCream {
+            public final static void main(String… args) {
+                var flavors = 30;
+                int eaten = 0;
+                switch(flavors) {
+                    case 30: eaten++;
+                    case 40: eaten+=2;
+                    default: eaten--;
+               }
+               System.out.print(eaten);
+           }
+    }
+    ```
+- A. 1
+- B. 2
+- C. 3
+- D. The code does not compile because var cannot be used in a
+     switch statement.
+- E. The code does not compile for another reason.
+- F. None of the above.
+
+18. Which of the following statements compile and create infinite loops at 
+    runtime? (Choose two.)
+- A. while (!false) {}
+- B. do {}
+- C. for( : ) {}
+- D. do {} while (true);
+- E. while {}
+- F. for( ; ; ) {}
+
+19. Which of the following iterates a different number of times than the others?
+- A. for (int k=0; k < 5; k++) {}
+- B. for (int k=1; k <= 5; k++) {}
+- C. int k=0; do { } while(k++ < 5);
+- D. int k=0; while (k++ < 5) {}
+- E. All of these iterate the same number of times.
+
+20. What is the output of the following code snippet?
+    ``` 
+    int count = 0;
+    var stops = new String[] { 
+        "Washington", 
+        "Monroe",
+        "Jackson", 
+        "LaSalle" 
+    };
+    while (count < stops.length)
+        if (stops[++count].length() < 8)
+            break;
+        else continue;
+    System.out.println(count);
+    ```
+- A. 0
+- B. 1
+- C. 2
+- D. 3
+- E. The code does not compile.
+- F. None of the above.
+
+21. What is the output of the following code snippet?
+    ``` 
+    int hops = 0;
+    int jumps = 0;
+    jumps = hops++;
+    if (jumps)
+        System.out.print("Jump!");
+    else
+        System.out.print("Hop!");
+    ```
+- A. Jump!
+- B. Hop!
+- C. The code does not compile.
+- D. The code compiles but throws an exception at runtime.
+- E. None of the above.
+
+22. Which of the following best describes the flow of execution in this for 
+    loop if beta always returns false?
+    ``` 
+    for (alpha; beta; gamma) {
+        delta;
+    }
+    ```
+- A. alpha
+- B. alpha, beta
+- C. alpha, beta, gamma
+- D. alpha, gamma
+- E. alpha, gamma, beta
+- F. None of the above
+
+23. What is the output of the following code snippet?
+     ``` 
+     boolean balloonInflated = false;
+     do {
+         if (!balloonInflated) {
+             balloonInflated = true;
+             System.out.print("inflate-");
+         }
+     } while (! balloonInflated);
+     System.out.println("done");
+     ```
+- A. done
+- B. inflate‐done
+- C. The code does not compile.
+- D. This is an infinite loop.
+- E. None of the above.
+
+24. Which of these code snippets behaves differently from the others?
+- A.
+  ``` 
+    if (numChipmunks == 1)
+        System.out.println("One chipmunk");
+    if (numChipmunks == 2)
+        System.out.println("Two chipmunks");
+    if (numChipmunks == 3)
+        System.out.println("Three chipmunks");
+  ```
+- B.
+  ``` 
+      switch (numChipmunks) {
+        case 1: System.out.println("One chipmunk");
+        case 2: System.out.println("Two chipmunks");
+        case 3: System.out.println("Three chipmunks");
+      }
+  ```
+- C. 
+    ```
+    if (numChipmunks == 1)
+        System.out.println("One chipmunk");
+    else if (numChipmunks == 2)
+        System.out.println("Two chipmunks");
+    else if (numChipmunks == 3)
+        System.out.println("Three chipmunks");
+    ```
+- D. All three code snippets do the same thing 
+
+25. Which statements about loops are correct? (Choose three.)
+- A. A do/while loop requires a body.
+- B. A while loop cannot be exited early with a return statement.
+- C. A while loop requires a conditional expression.
+- D. A do/while loop executes the body (if present) at least once.
+- E. A do/while loop cannot be exited early with a return statement.
+- F. A while loop executes the body (if present) at least once.
+
+26. Given the following enum and class, which option fills in the blank and 
+    allows the code to compile?
+    ``` 
+    enum Season { SPRING, SUMMER, WINTER }
+    public class Weather {
+        public int getAverageTemperate(Season s) {
+            switch (s) {
+                default:
+                ______________ return 30;
+            }
+        }
+    }
+    ```
+- A. case Season.WINTER:
+- B. case WINTER, SPRING:
+- C. case SUMMER | WINTER:
+- D. case SUMMER ‐>
+- E. case FALL:
+- F. None of the above
+
+27. Fill in the blank with the line of code that causes the application to 
+    compile and print exactly one line at runtime.
+    ``` 
+    package nyc;
+    public class TourBus {
+        public static void main(String… args) {
+            var nycTour = new String[] { "Downtown", "Uptown", "Brooklyn" };
+            var times = new String[] { "Day", "Night" };
+            for (_______________ i < nycTour.length && j < times.length; i++, j++)
+                System.out.println(nycTour[i] + "-" + times[j]);
+        } 
+    }
+    ```
+- A. int i=1; j=1;
+- B. int i=0, j=1;
+- C. int i=1; int j=0;
+- D. int i=1, int j=0;
+- E. int i=1, j=0;
+- F. None of the above
+
+28. The code contains six pairs of curly braces. How many pairs can be removed 
+    without changing the behavior?
+    ``` 
+    12: public static void main(String[] args) {
+    13:     int secret = 0;
+    14:     for (int i = 0; i < 10; i++) {
+    15:         while (i < 10) {
+    16:             if (i == 5) {
+    17:                 System.out.println("if");
+    18:             } else {
+    19:                 System.out.println("in");
+    20:                 System.out.println("else");
+    21:             }
+    22:         }
+    23:     }
+    24:     switch (secret) {
+    25:         case 0: System.out.println("zero");
+    26:     }
+    27: }
+    ```
+- A. One
+- B. Two
+- C. Three
+- D. Four
+- E. Five
+- F. Six
+
+29. Which of the following can replace the body of the ``` travel() ``` method 
+    to produce the same output on any non-empty input?
+    ``` 
+    public void travel(List<Integer> roads) {
+        for (int w = 1; w <= roads.size(); w++)
+            System.out.print(roads.get(w-1));
+    }
+    ```
+- A. 
+  ```
+    for (int r = 0; r < roads.size(); r += 1)
+            System.out.print(roads.get(0));
+  ```
+- B.
+  ``` 
+    for(var z : roads)
+            System.out.print(z);
+  ```
+- C.
+  ``` 
+    for (int t = roads.size(); t> 0; t--)
+            System.out.print(roads.get(t));
+  ```
+- D.
+  ``` 
+    for (var var : roads)
+            System.out.print(roads);
+  ```
+- E.
+  ``` 
+    for (int q = roads.size(); q>= 0; q++)
+            System.out.print(roads.get(q));
+  ```
+- F. None of the above
+
+30. Which statement about the following code snippet is correct?
+    ``` 
+    3: final var javaVersions = List.of(9,10,11);
+    4: var exams = List.of("1Z0-811", "1Z0-819");
+    5: V: for (var e1 : javaVersions) {
+    6:     E: for (String e2 : exams)
+    7:            System.out.println(e1 + "_" + e2);
+    8:            break;
+    9: }
+    ```
+- A. One line does not compile.
+- B. Two lines do not compile.
+- C. Three lines do not compile.
+- D. It compiles and prints two lines at runtime.
+- E. It compiles and prints three lines at runtime.
+- F. None of the above.
